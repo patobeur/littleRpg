@@ -20,6 +20,7 @@ const archetypes = {
 				magicArmor: 0,
 			},
 			scale: 1,
+			radius: 0.1, // Fixed collision radius
 			fbx: "tank.fbx",
 			png: "tank.png",
 		},
@@ -30,7 +31,7 @@ const archetypes = {
 			stats: {
 				speed: 1.2,
 				detectionRange: 6,
-				hitDistance: 6,
+				hitDistance: 1,
 				autoAttackDamage: 1,
 				autoAttackCd: 1,
 				strength: 5, intelligence: 15, dexterity: 8, hp: 100, mana: 150,
@@ -38,6 +39,7 @@ const archetypes = {
 				magicArmor: 0,
 			},
 			scale: 1,
+			radius: 0.1,
 			fbx: "mage.fbx",
 			png: "mage.png",
 		},
@@ -48,7 +50,7 @@ const archetypes = {
 			stats: {
 				speed: 1.1,
 				detectionRange: 6,
-				hitDistance: 5,
+				hitDistance: 1,
 				autoAttackDamage: 1,
 				autoAttackCd: 1,
 				strength: 6, intelligence: 12, dexterity: 10, hp: 100, mana: 100,
@@ -56,6 +58,7 @@ const archetypes = {
 				magicArmor: 20,
 			},
 			scale: 1,
+			radius: 0.1,
 			fbx: "healer.fbx",
 			png: "healer.png",
 		},

@@ -31,7 +31,7 @@ export class EntityManager {
                     loader.load(modelPath, resolve, undefined, reject);
                 });
 
-                fbx.scale.setScalar(0.01);
+                fbx.scale.setScalar(0.01 * (player.scale || 1));
                 fbx.position.set(0, 0, 0); // Position will be set by server
                 fbx.traverse(child => {
                     if (child.isMesh) {
@@ -75,6 +75,10 @@ export class EntityManager {
                     console.warn(`No walk animation for ${player.class}`);
                 }
 
+                // Use radius from server config
+                const calculatedRadius = player.radius || 0.25;
+                console.log(`[EntityManager] Radius for ${player.name}: ${calculatedRadius}`);
+
                 // Store player data
                 this.playerData.set(player.characterId, {
                     model: fbx,
@@ -82,6 +86,7 @@ export class EntityManager {
                     actions: actions,
                     currentActionName: 'idle',
                     positionSet: false,
+                    radius: calculatedRadius, // Store radius
                     fallbackSpawn: { x: startX + i * spacing, y: 0, z: 0 },
                     disconnected: false
                 });
@@ -127,7 +132,7 @@ export class EntityManager {
                     loader.load(modelPath, resolve, undefined, reject);
                 });
 
-                fbx.scale.setScalar(0.01);
+                fbx.scale.setScalar(0.01 * (enemyState.scale || 1));
                 fbx.position.set(enemyState.position.x, enemyState.position.y, enemyState.position.z);
 
                 // Shadows
@@ -179,13 +184,18 @@ export class EntityManager {
                     }
                 }
 
+                // Use radius from server config
+                const calculatedRadius = enemyState.radius || 0.4;
+                console.log(`[EntityManager] Radius for enemy ${enemyState.type}: ${calculatedRadius}`);
+
                 this.enemies.set(enemyState.id, {
                     id: enemyState.id,
                     model: fbx,
                     mixer: mixer,
                     actions: actions,
                     currentActionName: 'idle',
-                    stats: { hp: enemyState.hp, maxHp: enemyState.maxHp }
+                    stats: { hp: enemyState.hp, maxHp: enemyState.maxHp },
+                    radius: calculatedRadius // Store radius
                 });
 
                 if (actions['idle']) actions['idle'].play();

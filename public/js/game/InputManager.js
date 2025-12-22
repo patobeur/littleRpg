@@ -101,7 +101,29 @@ export class InputManager {
 
         if (moveX !== 0 || moveZ !== 0) {
             const moveVec = new THREE.Vector3(moveX, 0, moveZ).normalize().multiplyScalar(moveSpeed);
-            targetModel.position.add(moveVec);
+
+            // Propose new position
+            const proposedPosition = targetModel.position.clone().add(moveVec);
+
+            // Get local player radius
+            const myData = this.game.entityManager.playerData.get(this.game.localCharacterId);
+            const myRadius = myData ? (myData.radius || 0.3) : 0.3;
+
+            // Check Collision
+            if (this.game.collisionManager.isValidPosition(proposedPosition, myRadius)) {
+                targetModel.position.copy(proposedPosition);
+            } else {
+                // Sliding Logic (Simplified): Try moving in X only, then Z only
+                const proposedX = targetModel.position.clone().add(new THREE.Vector3(moveVec.x, 0, 0));
+                if (this.game.collisionManager.isValidPosition(proposedX, myRadius)) {
+                    targetModel.position.copy(proposedX);
+                } else {
+                    const proposedZ = targetModel.position.clone().add(new THREE.Vector3(0, 0, moveVec.z));
+                    if (this.game.collisionManager.isValidPosition(proposedZ, myRadius)) {
+                        targetModel.position.copy(proposedZ);
+                    }
+                }
+            }
 
             // Character faces the camera direction (MMORPG style) usually acts differently if moving backwards?
             // Simple approach: face movement direction if desired, or face camera yaw if strafing?

@@ -4,6 +4,8 @@
 const Character = require('./models/Character');
 const { getSceneConfig, getSpawnPosition, getNextScene, isPlayerInZone } = require('./config/scenes');
 const enemiesData = require('./models/enemies');
+const archetypes = require('./models/archetypes');
+const CollisionSystem = require('./utils/CollisionSystem');
 
 class LobbyManager {
     constructor(io) {
@@ -140,12 +142,19 @@ class LobbyManager {
             console.log(`[LobbyManager] Cleared all positions for new game in lobby ${code}`);
 
             this.io.to(code).emit('game_started', {
-                players: lobby.players.map(p => ({
-                    id: p.id,
-                    name: p.name,
-                    characterId: p.characterId,
-                    class: p.class
-                }))
+                players: lobby.players.map(p => {
+                    const archetype = archetypes.chars[p.class] || archetypes.chars['Warrior'];
+                    const baseScale = archetype.scale || 1;
+                    const baseRadius = archetype.radius || 0.1;
+                    return {
+                        id: p.id,
+                        name: p.name,
+                        characterId: p.characterId,
+                        class: p.class,
+                        scale: baseScale,
+                        radius: baseRadius * baseScale // Scaled radius
+                    };
+                })
             });
 
             // Initialize enemies for the first scene
@@ -282,6 +291,24 @@ class LobbyManager {
                     timeScale: data.timeScale || 1,
                     lastDBSave: oldState ? oldState.lastDBSave : 0
                 };
+
+                // Server-Side Validation
+                const currentScene = this.lobbyScenes.get(code) || 'scene_01';
+                // Lookup radius from archetype if not cached (can optimize by caching in this.players or similar)
+                // For now, re-fetch from config
+                const playerClass = this.lobbies.get(code).players.find(p => p.characterId === data.characterId)?.class || 'Warrior';
+                const archetype = archetypes.chars[playerClass] || archetypes.chars['Warrior'];
+                const scale = archetype.scale || 1;
+                const baseRadius = archetype.radius || 0.1;
+                const playerRadius = baseRadius * scale;
+
+                if (!CollisionSystem.isValidPosition(newState.position, currentScene, playerRadius)) {
+                    // console.warn(`[LobbyManager] Invalid position for ${data.characterId}:`, newState.position);
+                    // Force reset to old valid position if available, or just ignore update
+                    if (oldState) {
+                        newState.position = oldState.position;
+                    }
+                }
 
                 this.playerStates.set(data.characterId, newState);
 
@@ -534,6 +561,8 @@ class LobbyManager {
                     maxHp: enemyDef.stats.hp,
                     animation: 'idle',
                     modelPath: `/enemies/${enemyDef.glb}`,
+                    scale: enemyDef.scale || 1,
+                    radius: enemyDef.radius || 0.4, // Send radius
                     animations: enemyDef.animations,
                     // Add other necessary data for client
                 });

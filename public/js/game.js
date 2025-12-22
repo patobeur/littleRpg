@@ -4,6 +4,7 @@ import { NetworkManager } from './game/NetworkManager.js';
 import { EntityManager } from './game/EntityManager.js';
 import { InputManager } from './game/InputManager.js';
 import { UIManager } from './game/UIManager.js';
+import { CollisionManager } from './game/CollisionManager.js';
 import { fadeModel } from './game/Utils.js';
 
 class GameEngine {
@@ -15,6 +16,7 @@ class GameEngine {
         this.sceneManager = new SceneManager(this);
         this.networkManager = new NetworkManager(this);
         this.entityManager = new EntityManager(this);
+        this.collisionManager = new CollisionManager(this); // Init Collision
         this.inputManager = new InputManager(this);
         this.uiManager = new UIManager(this);
 
