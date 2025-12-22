@@ -107,16 +107,28 @@ export class TransformGizmo {
         }
     }
 
+    attachToScene(scene) {
+        this.scene = scene;
+        this.scene.add(this.gizmoGroup);
+    }
+
     // Returns true if the gizmo consumed the click
-    onPointerDown(event, mouse) {
+    onPointerDown(event, raycaster) {
         if (!this.gizmoGroup.visible) return false;
 
-        this.raycaster.setFromCamera(mouse, this.camera);
-        const intersects = this.raycaster.intersectObjects(this.gizmoGroup.children, true);
+        // Uses passed raycaster which is updated in Input.js
+        const intersects = raycaster.intersectObjects(this.gizmoGroup.children, true);
 
         if (intersects.length > 0) {
             const hit = intersects[0].object;
             if (hit.userData.isGizmo) {
+                // Determine mouse
+                // We re-calculate mouse for dragStart
+                const rect = this.domElement.getBoundingClientRect();
+                const mouse = new THREE.Vector2(
+                    ((event.clientX - rect.left) / rect.width) * 2 - 1,
+                    -((event.clientY - rect.top) / rect.height) * 2 + 1
+                );
                 this.startDrag(hit.userData.axis, mouse);
                 return true;
             }
