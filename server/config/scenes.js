@@ -16,6 +16,9 @@ const SCENES = {
             { x: 0, y: 0.1, z: 8, radius: 1.5, class: 'Warrior', color: 0xff4444 },
             { x: -6, y: 0.1, z: -5, radius: 1.5, class: 'Mage', color: 0x4444ff },
             { x: 6, y: 0.1, z: -5, radius: 1.5, class: 'Healer', color: 0x44ff44 }
+        ],
+        enemies: [
+            { type: 'Alistar', x: 0, y: 0, z: -10, id: 'alistar_01' }
         ]
     },
     scene_02: {

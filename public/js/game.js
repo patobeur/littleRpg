@@ -154,6 +154,11 @@ class GameEngine {
                 this.updateSceneConfig({ sceneId: data.sceneId, config: data.config });
             }
 
+            // Load enemies for the new scene
+            if (data.enemies) {
+                this.entityManager.loadEnemies(data.enemies);
+            }
+
             // Clear my zone state
             this.myTeleportZone = null;
             this.inMyZone = false;

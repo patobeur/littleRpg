@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
-import { setModelOpacity, fadeModel } from './Utils.js';
+import { setModelOpacity } from './Utils.js';
 
 export class EntityManager {
     constructor(game) {
@@ -10,6 +10,9 @@ export class EntityManager {
         this.playerData = new Map(); // Store { model, mixer, actions, currentActionName, targetPosition, ... }
         this.localCharacterId = null;
         this.targetModel = null;
+
+        // Enemies
+        this.enemies = new Map(); // id -> { model, mixer, actions, stats }
     }
 
     async loadPlayers(players, localCharacterId) {
@@ -90,8 +93,6 @@ export class EntityManager {
 
                 if (player.characterId === this.localCharacterId) {
                     this.targetModel = fbx;
-                    // Trigger camera setup in GameEngine if needed, or handle here?
-                    // GameEngine checks this.entityManager.targetModel
                 }
 
             } catch (error) {
@@ -101,6 +102,101 @@ export class EntityManager {
                 const mat = new THREE.MeshStandardMaterial({ color: 0x8b5cf6 });
                 const cube = new THREE.Mesh(geom, mat);
                 cube.position.set(startX + i * spacing, 1, 0);
+                this.game.sceneManager.scene.add(cube);
+            }
+        }
+    }
+
+    async loadEnemies(enemyList) {
+        console.log(`[EntityManager] Loading ${enemyList.length} enemies...`);
+
+        // Clear existing enemies
+        this.enemies.forEach(e => {
+            if (e.model) this.game.sceneManager.scene.remove(e.model);
+        });
+        this.enemies.clear();
+
+        const loader = new FBXLoader();
+
+        for (const enemyState of enemyList) {
+            const modelPath = enemyState.modelPath || `/archetypes/${enemyState.type}.fbx`; // Fallback
+
+            try {
+                console.log(`Loading model for enemy ${enemyState.name}: ${modelPath}`);
+                const fbx = await new Promise((resolve, reject) => {
+                    loader.load(modelPath, resolve, undefined, reject);
+                });
+
+                fbx.scale.setScalar(0.01);
+                fbx.position.set(enemyState.position.x, enemyState.position.y, enemyState.position.z);
+
+                // Shadows
+                fbx.traverse(child => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                });
+
+                this.game.sceneManager.scene.add(fbx);
+
+                const mixer = new THREE.AnimationMixer(fbx);
+                this.mixers.push(mixer);
+                const actions = {};
+
+                // 1. Setup Idle (generic load, similar to players)
+                if (fbx.animations && fbx.animations.length > 0) {
+                    const idleClip = fbx.animations.find(clip =>
+                        clip.name.toLowerCase().includes('idle') ||
+                        clip.name.toLowerCase().includes('mixamo')
+                    ) || fbx.animations[0];
+                    actions['idle'] = mixer.clipAction(idleClip);
+                }
+
+                if (fbx.animations && fbx.animations.length > 0) {
+                    const idleClip = fbx.animations.find(clip =>
+                        clip.name.toLowerCase().includes('idle') ||
+                        clip.name.toLowerCase().includes('mixamo')
+                    ) || fbx.animations[0];
+                    actions['idle'] = mixer.clipAction(idleClip);
+                }
+
+                // Load specialized animations from config
+                if (enemyState.animations) {
+                    // Walk
+                    if (enemyState.animations.walk_path) {
+                        try {
+                            const walkPath = `/${enemyState.animations.walk_path}`;
+                            const walkFbx = await new Promise((resolve, reject) => {
+                                loader.load(walkPath, resolve, undefined, reject);
+                            });
+                            if (walkFbx.animations && walkFbx.animations.length > 0) {
+                                actions['walk'] = mixer.clipAction(walkFbx.animations[0]);
+                            }
+                        } catch (err) {
+                            console.warn(`[EntityManager] Failed to load walk animation for ${enemyState.name}`, err);
+                        }
+                    }
+                }
+
+                this.enemies.set(enemyState.id, {
+                    id: enemyState.id,
+                    model: fbx,
+                    mixer: mixer,
+                    actions: actions,
+                    currentActionName: 'idle',
+                    stats: { hp: enemyState.hp, maxHp: enemyState.maxHp }
+                });
+
+                if (actions['idle']) actions['idle'].play();
+
+            } catch (error) {
+                console.error(`Failed to load enemy ${enemyState.name}:`, error);
+                // Fallback: Red Box
+                const geom = new THREE.BoxGeometry(1, 2, 1);
+                const mat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+                const cube = new THREE.Mesh(geom, mat);
+                cube.position.set(enemyState.position.x, 1, enemyState.position.z);
                 this.game.sceneManager.scene.add(cube);
             }
         }

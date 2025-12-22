@@ -3,6 +3,7 @@
  */
 const Character = require('./models/Character');
 const { getSceneConfig, getSpawnPosition, getNextScene, isPlayerInZone } = require('./config/scenes');
+const enemiesData = require('./models/enemies');
 
 class LobbyManager {
     constructor(io) {
@@ -13,6 +14,7 @@ class LobbyManager {
         this.lobbyScenes = new Map(); // code -> sceneId
         this.playersInZone = new Map(); // code -> Set of characterIds
         this.sceneChangeTimers = new Map(); // code -> timer
+        this.enemyStates = new Map(); // code -> Map<enemyId, { type, position, rotation, animation, health, maxHealth }>
     }
 
     init() {
@@ -145,6 +147,9 @@ class LobbyManager {
                     class: p.class
                 }))
             });
+
+            // Initialize enemies for the first scene
+            this.loadEnemiesForScene(code, 'scene_01');
         }
     }
 
@@ -237,6 +242,15 @@ class LobbyManager {
                 socket.emit('initial_states', { states });
             } else {
                 console.log(`[LobbyManager] No states to send for lobby ${code}`);
+            }
+
+            // Send enemy states
+            if (this.enemyStates.has(lobbyCode)) {
+                const enemies = Array.from(this.enemyStates.get(lobbyCode).values());
+                if (enemies.length > 0) {
+                    console.log(`[LobbyManager] Sending ${enemies.length} enemies to socket ${socket.id}`);
+                    socket.emit('enemy_states', { enemies });
+                }
             }
 
             // Send scene configuration to client (reuse currentScene from above)
@@ -473,11 +487,16 @@ class LobbyManager {
         this.playersInZone.delete(code); // Clear zone tracking
         this.sceneChangeTimers.delete(code);
 
+        // Load enemies for the new scene
+        this.loadEnemiesForScene(code, nextScene);
+        const currentEnemies = this.enemyStates.get(code) ? Array.from(this.enemyStates.get(code).values()) : [];
+
         // Notify clients with spawn positions AND new scene config
         this.io.to(code).emit('scene_changed', {
             sceneId: nextScene,
             spawns: spawnPositions,
-            config: sceneConfig // Include full scene config (teleport zones, etc.)
+            config: sceneConfig, // Include full scene config (teleport zones, etc.)
+            enemies: currentEnemies
         });
     }
 
@@ -491,6 +510,40 @@ class LobbyManager {
             }
         } while (this.lobbies.has(code));
         return code;
+    }
+
+    loadEnemiesForScene(code, sceneId) {
+        const sceneConfig = getSceneConfig(sceneId);
+        if (!sceneConfig || !sceneConfig.enemies) {
+            this.enemyStates.delete(code);
+            return;
+        }
+
+        const lobbyEnemies = new Map();
+
+        sceneConfig.enemies.forEach(spawn => {
+            const enemyDef = enemiesData.enemies[spawn.type];
+            if (enemyDef) {
+                lobbyEnemies.set(spawn.id, {
+                    id: spawn.id,
+                    type: spawn.type,
+                    name: enemyDef.name,
+                    position: { x: spawn.x, y: spawn.y, z: spawn.z },
+                    rotation: 0,
+                    hp: enemyDef.stats.hp,
+                    maxHp: enemyDef.stats.hp,
+                    animation: 'idle',
+                    modelPath: `/enemies/${enemyDef.glb}`,
+                    animations: enemyDef.animations,
+                    // Add other necessary data for client
+                });
+            } else {
+                console.warn(`[LobbyManager] Unknown enemy type ${spawn.type} in scene ${sceneId}`);
+            }
+        });
+
+        this.enemyStates.set(code, lobbyEnemies);
+        console.log(`[LobbyManager] Loaded ${lobbyEnemies.size} enemies for lobby ${code} in ${sceneId}`);
     }
 }
 
