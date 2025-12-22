@@ -123,6 +123,20 @@ app.get('/api/maps', requireLocalhost, (req, res) => {
     });
 });
 
+app.get('/api/maps/:name', requireLocalhost, (req, res) => {
+    const safeName = req.params.name.replace(/[^a-zA-Z0-9_-]/g, '');
+    const filePath = path.join(__dirname, 'data/maps', `${safeName}.json`);
+
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) return res.status(404).json({ error: 'Map not found' });
+        try {
+            res.json(JSON.parse(data));
+        } catch (e) {
+            res.status(500).json({ error: 'Invalid map file' });
+        }
+    });
+});
+
 app.post('/api/maps', requireLocalhost, express.json(), (req, res) => {
     const { name, data } = req.body;
     if (!name || !data) return res.status(400).json({ error: 'Missing name or data' });

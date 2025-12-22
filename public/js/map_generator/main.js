@@ -2,8 +2,9 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { TransformGizmo } from './Gizmo.js';
+import { generateOrganicVillage } from './ProceduralGen.js';
 
-// Global State
+
 const state = {
     scene: null,
     camera: null,
@@ -80,6 +81,8 @@ function init() {
     window.addSpawn = addSpawn;
     window.addEnemy = addEnemy;
     window.deleteSelected = deleteSelected;
+    window.refreshMapList = refreshMapList;
+    window.loadSelectedMap = loadSelectedMap;
 
     // Tick
     animate();
@@ -87,6 +90,7 @@ function init() {
     // Auto-generate for initial feedback
     console.log('Map Generator Initialized');
     generateVillage(10);
+    refreshMapList(); // Load initial list
 }
 
 function animate() {
@@ -208,30 +212,65 @@ function generateMap() {
     state.gizmo.detach();
 
     if (type === 'village') {
-        generateVillage(size);
+        const data = generateOrganicVillage(Date.now(), size * 5); // Scale up grid size
+        buildGeneratedMap(data);
     } else {
         generateForest(size);
     }
 }
 
-function generateVillage(size) {
-    // Simple Grid Layout
-    const spacing = 10;
-    const offset = (size * spacing) / 2;
+async function buildGeneratedMap(data) {
+    // 1. Draw Roads
+    if (data.roads) {
+        const material = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.9 });
+        data.roads.edges.forEach(edge => {
+            const nA = data.roads.nodes[edge.a];
+            const nB = data.roads.nodes[edge.b];
 
-    for (let x = 0; x < size; x++) {
-        for (let z = 0; z < size; z++) {
-            // Leave a central road
-            if (x === Math.floor(size / 2)) continue;
+            const dx = nB.x - nA.x;
+            const dz = nB.z - nA.z;
+            const len = Math.sqrt(dx * dx + dz * dz);
+            const angle = Math.atan2(dx, dz);
 
-            // Random chance
-            if (Math.random() > 0.6) {
-                const posX = (x * spacing) - offset;
-                const posZ = (z * spacing) - offset;
-                addStructure('house', posX, posZ);
+            const roadMesh = new THREE.Mesh(new THREE.BoxGeometry(6, 0.1, len), material);
+            // Angle is relative to +Z? 
+            // Atan2(dx, dz) -> 0 is +Z.
+            // Box default Z axis length.
+            // We rotate Y.
+            roadMesh.position.set((nA.x + nB.x) / 2, 0.05, (nA.z + nB.z) / 2);
+            roadMesh.rotation.y = angle;
+
+            state.scene.add(roadMesh);
+            state.objects.push(roadMesh); // Make selectable? Or just visual.
+            // If selectable, gizmo might attach.
+            // roadMesh.userData = { type: 'road', id: `road_${edge.a}_${edge.b}`, isRoot: true };
+        });
+    }
+
+    // 2. Place Structures
+    if (data.structures) {
+        for (let s of data.structures) {
+            const obj = await addStructureResult(s.type, s.x, s.z);
+            if (obj) {
+                // Apply rotation
+                obj.rotation.y = s.rot;
             }
         }
     }
+
+    // 3. Place Trees
+    if (data.trees) {
+        data.trees.forEach(t => {
+            // Use placeholder cone for trees for now (or tree.fbx if we had it)
+            addPlaceholder('tree', t.x, t.z, 0x228b22);
+        });
+    }
+}
+
+function generateVillage(size) {
+    // Used by Init
+    const data = generateOrganicVillage(12345, size * 5);
+    buildGeneratedMap(data);
 }
 
 function generateForest(size) {
@@ -249,27 +288,26 @@ function generateForest(size) {
 // Object Creation
 // ------------------------------------------------------------------
 
-async function addStructure(type, x = 0, z = 0) {
-    // Load Model
-    const modelPath = `/structures/${type}.fbx`;
-
-    try {
-        const group = new THREE.Group(); // Container
+async function addStructureResult(type, x, z) {
+    return new Promise((resolve) => {
+        // Reuse logic from addStructure but return object
+        const modelPath = `/structures/${type}.fbx`;
+        const group = new THREE.Group();
         group.userData = { type: type, id: `${type}_${Date.now()}`, isRoot: true };
 
-        // Visuals
         state.loader.load(modelPath, (fbx) => {
-            // Apply scale if needed (houses are 1:1 now)
             fbx.scale.setScalar(1);
-            // Fix rotation: House model needs -90 X to stand up
             if (type === 'house') {
                 fbx.rotation.x = -Math.PI / 2;
             }
             fbx.traverse(c => { if (c.isMesh) c.castShadow = true; });
             group.add(fbx);
+
+            // Resolve when loaded? Or return group immediately?
+            // Usually returns group immediately and loads async.
+            // But if we want to rotate the group, we can do it immediately.
         }, undefined, (err) => {
             console.error(err);
-            // Fallback
             const mesh = new THREE.Mesh(
                 new THREE.BoxGeometry(2, 2, 2),
                 new THREE.MeshStandardMaterial({ color: 0x885522 })
@@ -282,9 +320,36 @@ async function addStructure(type, x = 0, z = 0) {
         state.scene.add(group);
         state.objects.push(group);
 
-    } catch (e) {
-        console.error(e);
-    }
+        resolve(group);
+    });
+}
+
+async function addStructure(type, x = 0, z = 0) {
+    return addStructureResult(type, x, z);
+}
+
+function addSpawnAt(x, z) {
+    const mesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.5, 0.5, 2, 8),
+        new THREE.MeshStandardMaterial({ color: 0x00ff00 })
+    );
+    mesh.userData = { type: 'spawn', id: `spawn_${Date.now()}`, isRoot: true };
+    mesh.position.set(x, 1, z);
+    state.scene.add(mesh);
+    state.objects.push(mesh);
+    return mesh;
+}
+
+function addEnemyAt(type, x, z) {
+    const mesh = new THREE.Mesh(
+        new THREE.CapsuleGeometry(0.5, 2, 4),
+        new THREE.MeshStandardMaterial({ color: 0xff0000 })
+    );
+    mesh.userData = { type: 'enemy', enemyType: type, id: `${type}_${Date.now()}`, isRoot: true };
+    mesh.position.set(x, 1, z);
+    state.scene.add(mesh);
+    state.objects.push(mesh);
+    return mesh;
 }
 
 function addSpawn() {
@@ -318,6 +383,127 @@ function addPlaceholder(type, x, z, color) {
     mesh.position.set(x, 2, z);
     state.scene.add(mesh);
     state.objects.push(mesh);
+}
+
+// ------------------------------------------------------------------
+// Map Loading
+// ------------------------------------------------------------------
+
+function refreshMapList() {
+    const selector = document.getElementById('mapList');
+    selector.innerHTML = '<option>Loading...</option>';
+
+    fetch('/api/maps')
+        .then(r => r.json())
+        .then(files => {
+            selector.innerHTML = '';
+            files.forEach(file => {
+                const name = file.replace('.json', '');
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.innerText = name;
+                selector.appendChild(opt);
+            });
+        })
+        .catch(err => {
+            console.error(err);
+            selector.innerHTML = '<option>Error loading list</option>';
+        });
+}
+
+function loadSelectedMap() {
+    const name = document.getElementById('mapList').value;
+    if (!name) return;
+
+    fetch(`/api/maps/${name}`)
+        .then(r => r.json())
+        .then(data => {
+            loadMapData(data);
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Failed to load map');
+        });
+}
+
+function loadMapData(mapData) {
+    // Clear Scene
+    state.objects.forEach(obj => state.scene.remove(obj));
+    state.objects = [];
+    state.selectedObject = null;
+    state.gizmo.detach();
+    document.getElementById('mapName').value = mapData.name || 'loaded_map';
+
+    // 1. Structures
+    if (mapData.structures) {
+        mapData.structures.forEach(s => {
+            // Mapping back from save data
+            // We use addStructure logic but need to handle async loading or manual placement
+            // addStructure is async, so we assume it handles it.
+            // Wait, we need to respect Rotation.
+            // Our save format stores: { x: -90, y: 0, z: WORLD_ROT_Y } for House.
+            // addStructure('house') sets Rotation X to -90 default.
+            // So we only need to apply Y rotation.
+
+            // Wait, addStructure generates ID. We might want to preserve ID if useful?
+            // For now new ID is fine as this is a generator.
+
+            addStructure(s.type, s.x, s.z).then(() => {
+                // Find the just added object (last in list)
+                // This is risky if race conditions.
+                // Better to refactor addStructure to return the object.
+                // But addStructure IS NOT RETURNING anything currently (async void).
+                // I will update addStructure to return the Group.
+
+                // Hacky fix: Since JS is single threaded event loop, we can probably find it if we modify addStructure.
+            });
+        });
+    }
+
+    // We need to refactor addStructure to handle rotation injection.
+    // Instead, I'll update loadMapData to:
+    // 1. Call addStructure.
+    // 2. But addStructure doesn't take rotation.
+
+    // Alternative: Re-implement reconstruction locally here to have control.
+    reconstructScene(mapData);
+}
+
+async function reconstructScene(mapData) {
+    if (mapData.structures) {
+        for (let s of mapData.structures) {
+            // We need to wait for each add to apply rotation? 
+            // Or act on the promise. 
+            // Let's modify addStructure to accept rotation or return the object.
+
+            const obj = await addStructureResult(s.type, s.x, s.z);
+            if (obj) {
+                // Apply rotation
+                // Saved house rotation: {x:-90, y:0, z: Y_ANGLE_DEG}
+                // Our internal house logic: X is -90. Rotation around Y axis is what we want.
+                // Gizmo rotates around Y (obj.rotation.y).
+                // Saved Z seems to correspond to our Y?
+                // Let's look at saveMap:
+                // rotation: { x: -90, y: 0, z: THREE.MathUtils.radToDeg(obj.rotation.y) }
+                // So saved Z is the Y rotation in degrees.
+
+                const yRad = THREE.MathUtils.degToRad(s.rotation.z);
+                obj.rotation.y = yRad;
+            }
+        }
+    }
+
+    if (mapData.spawns) {
+        mapData.spawns.forEach(s => {
+            addSpawnAt(s.x, s.z);
+        });
+    }
+
+    if (mapData.enemies) {
+        mapData.enemies.forEach(e => {
+            addEnemyAt(e.type, e.x, e.z);
+        });
+    }
 }
 
 // ------------------------------------------------------------------
