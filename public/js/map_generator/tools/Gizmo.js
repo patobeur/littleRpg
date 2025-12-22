@@ -34,7 +34,7 @@ export class TransformGizmo {
         const matProps = { depthTest: false, depthWrite: false, transparent: true, opacity: 0.8 };
 
         // X Axis (Red)
-        const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), 4, 0xff0000, 1, 0.5);
+        const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), 6, 0xff0000, 2, 1);
         // ArrowHelper sub-materials need traversal to apply depthTest
         arrowX.line.material.depthTest = false;
         arrowX.cone.material.depthTest = false;
@@ -42,28 +42,28 @@ export class TransformGizmo {
         arrowX.cone.material.depthWrite = false;
         arrowX.userData = { axis: 'X', isGizmo: true };
 
-        const colliderX = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 4), new THREE.MeshBasicMaterial({ visible: false }));
+        const colliderX = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 6), new THREE.MeshBasicMaterial({ visible: false }));
         colliderX.rotation.z = -Math.PI / 2;
-        colliderX.position.x = 2;
+        colliderX.position.x = 3;
         colliderX.userData = { axis: 'X', isGizmo: true };
         this.gizmoGroup.add(arrowX, colliderX);
 
         // Z Axis (Blue)
-        const arrowZ = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), 4, 0x0000ff, 1, 0.5);
+        const arrowZ = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), 6, 0x0000ff, 2, 1);
         arrowZ.line.material.depthTest = false;
         arrowZ.cone.material.depthTest = false;
         arrowZ.line.material.depthWrite = false;
         arrowZ.cone.material.depthWrite = false;
 
         arrowZ.userData = { axis: 'Z', isGizmo: true };
-        const colliderZ = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 4), new THREE.MeshBasicMaterial({ visible: false }));
+        const colliderZ = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 6), new THREE.MeshBasicMaterial({ visible: false }));
         colliderZ.rotation.x = Math.PI / 2;
-        colliderZ.position.z = 2;
+        colliderZ.position.z = 3;
         colliderZ.userData = { axis: 'Z', isGizmo: true };
         this.gizmoGroup.add(arrowZ, colliderZ);
 
         // Y Axis (Green) - Rotation
-        const ringGeo = new THREE.TorusGeometry(3, 0.1, 16, 32);
+        const ringGeo = new THREE.TorusGeometry(5, 0.2, 16, 32);
         const ringMat = new THREE.MeshBasicMaterial({ color: 0x00ff00, ...matProps });
         const ringY = new THREE.Mesh(ringGeo, ringMat);
         ringY.rotation.x = Math.PI / 2;

@@ -77,9 +77,11 @@ export function addPlaceholder(type, x, z, color) {
         new THREE.ConeGeometry(0.5, 2, 8),
         new THREE.MeshStandardMaterial({ color: color })
     );
+
+    mesh.userData = { type: type, id: `${type}_${Date.now()}_${Math.random()}`, isRoot: true };
     mesh.position.set(x, 1, z);
     state.scene.add(mesh);
-    // state.objects.push(mesh); // Optional
+    state.objects.push(mesh);
 }
 
 export function deleteSelected() {
@@ -90,4 +92,16 @@ export function deleteSelected() {
         if (index > -1) state.objects.splice(index, 1);
         state.selectedObject = null;
     }
+}
+
+export function addRoad(len, x, z, rot) {
+    const material = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.9 });
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(6, 0.1, len), material);
+    mesh.position.set(x, 0.05, z);
+    mesh.rotation.y = rot;
+    mesh.userData = { type: 'road', len: len, id: `road_${Date.now()}_${Math.random()}`, isRoot: true };
+
+    state.scene.add(mesh);
+    state.objects.push(mesh);
+    return mesh;
 }

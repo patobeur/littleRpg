@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { state } from './State.js';
-import { addStructureResult, addSpawnAt, addEnemyAt } from './Objects.js';
+import { addStructureResult, addSpawnAt, addEnemyAt, addPlaceholder, addRoad } from './Objects.js';
 
 export function refreshMapList() {
     const selector = document.getElementById('mapList');
@@ -31,21 +31,37 @@ export function saveMap() {
         name: name,
         structures: [],
         spawns: [],
-        enemies: []
+        enemies: [],
+        roads: [],
+        trees: []
     };
 
     state.objects.forEach(obj => {
-        if (obj.userData.type === 'house' || obj.userData.type === 'structure') {
+        const type = obj.userData.type;
+        const pos = obj.position;
+        const rot = obj.rotation;
+        const scale = obj.scale.x; // Assume uniform
+
+        if (type === 'house' || type === 'structure') {
             data.structures.push({
-                type: obj.userData.type,
-                x: obj.position.x,
-                z: obj.position.z,
-                rotation: { x: -90, y: 0, z: THREE.MathUtils.radToDeg(obj.rotation.y) }
+                type: type,
+                x: pos.x, z: pos.z,
+                scale: scale,
+                rotation: { z: THREE.MathUtils.radToDeg(rot.y) } // Save Y rot as Z for legacy compat or simplified
             });
-        } else if (obj.userData.type === 'spawn') {
-            data.spawns.push({ x: obj.position.x, z: obj.position.z });
-        } else if (obj.userData.type === 'enemy') {
-            data.enemies.push({ type: obj.userData.enemyType, x: obj.position.x, z: obj.position.z });
+        } else if (type === 'spawn') {
+            data.spawns.push({ x: pos.x, z: pos.z, scale: scale });
+        } else if (type === 'enemy') {
+            data.enemies.push({ type: obj.userData.enemyType, x: pos.x, z: pos.z, scale: scale });
+        } else if (type === 'road') {
+            data.roads.push({
+                x: pos.x, z: pos.z,
+                rot: rot.y,
+                len: obj.userData.len || 6, // Default len if missing
+                scale: scale
+            });
+        } else if (type === 'tree') {
+            data.trees.push({ x: pos.x, z: pos.z, scale: scale });
         }
     });
 
@@ -84,10 +100,18 @@ function loadMapData(mapData) {
 
     if (mapData.structures) {
         mapData.structures.forEach(s => {
+            // "Legacy" format stored type 'house' and rot in s.rotation.z (actually Y angle)
+            // Or our new simplified format?
+            // Let's support both: s.rotation object or s.rot value if we change it.
+            // Our saver saves: rotation: { z: deg }
+            let rotY = 0;
+            if (s.rotation && s.rotation.z !== undefined) rotY = THREE.MathUtils.degToRad(s.rotation.z);
+            else if (s.rot) rotY = s.rot;
+
             addStructureResult(s.type, s.x, s.z).then(obj => {
-                if (obj && s.rotation) {
-                    const yRad = THREE.MathUtils.degToRad(s.rotation.z);
-                    obj.rotation.y = yRad;
+                if (obj) {
+                    obj.rotation.y = rotY;
+                    if (s.scale) obj.scale.setScalar(s.scale);
                 }
             });
         });
@@ -95,13 +119,38 @@ function loadMapData(mapData) {
 
     if (mapData.spawns) {
         mapData.spawns.forEach(s => {
-            addSpawnAt(s.x, s.z);
+            const obj = addSpawnAt(s.x, s.z);
+            if (s.scale) obj.scale.setScalar(s.scale);
         });
     }
 
     if (mapData.enemies) {
         mapData.enemies.forEach(e => {
-            addEnemyAt(e.type, e.x, e.z);
+            const obj = addEnemyAt(e.type, e.x, e.z);
+            if (e.scale) obj.scale.setScalar(e.scale);
+        });
+    }
+
+    if (mapData.roads) {
+        mapData.roads.forEach(r => {
+            // Support both old format (from procedural gen) and new save format
+            // Procedural: { edges: ... } - handled by buildGeneratedMap
+            // Saved: { x, z, rot, len, scale }
+            const obj = addRoad(r.len, r.x, r.z, r.rot);
+            if (r.scale) obj.scale.setScalar(r.scale);
+        });
+    }
+
+    if (mapData.trees) {
+        mapData.trees.forEach(t => {
+            // addPlaceholder returns nothing, need to modify it or find the obj?
+            // Actually Objects.js addPlaceholder adds to array.
+            // We can assume the last added object is it, or update addPlaceholder to return it.
+            // Let's trust addPlaceholder for now or update it?
+            // It's synchronous.
+            addPlaceholder('tree', t.x, t.z, 0x228b22);
+            const obj = state.objects[state.objects.length - 1];
+            if (obj && t.scale) obj.scale.setScalar(t.scale);
         });
     }
 }

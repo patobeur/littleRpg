@@ -1,5 +1,6 @@
+import { UI } from './UI.js';
 import * as THREE from 'three';
-import { initThree, onWindowResize } from './Scene.js';
+import { initThree, onWindowResize, updateEnvironment } from './Scene.js';
 import { initEvents } from './Input.js';
 import { state } from './State.js';
 import { TransformGizmo } from '../tools/Gizmo.js';
@@ -11,8 +12,12 @@ function init() {
     initThree();
 
     // Tools
-    state.gizmo = new TransformGizmo(state.camera, state.renderer.domElement);
+    state.gizmo = new TransformGizmo(state.scene, state.camera, state.renderer.domElement);
     state.gizmo.attachToScene(state.scene);
+
+    // Disable controls while dragging
+    state.gizmo.onDragStart = () => { state.controls.enabled = false; };
+    state.gizmo.onDragEnd = () => { state.controls.enabled = true; };
 
     // Events
     initEvents();
@@ -21,31 +26,14 @@ function init() {
     window.addEventListener('resize', () => {
         onWindowResize();
     });
-    // Trigger initial resize
-    // Environment Controls
-    const updateEnv = () => {
-        const settings = {
-            bgColor: document.getElementById('bgColor').value,
-            fogColor: document.getElementById('fogColor').value,
-            fogNear: document.getElementById('fogNear').value,
-            fogFar: document.getElementById('fogFar').value,
-            ambColor: document.getElementById('ambColor').value,
-            ambInt: document.getElementById('ambInt').value
-        };
-        import('./Scene.js').then(m => m.updateEnvironment(settings));
-    };
 
-    ['bgColor', 'fogColor', 'fogNear', 'fogFar', 'ambColor', 'ambInt'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener('input', updateEnv);
-            // Initialize
-            // updateEnv(); // Don't force init right away, let Scene.js defaults hold until user tweaks? 
-            // Actually, we should probably sync visual to UI or UI to visual.
-            // For now, let's trigger it so UI matches scene visually.
-            updateEnv();
-        }
-    });
+    // UI Bindings
+    UI.initBindings(
+        // Callback when Transform inputs change -> update Gizmo
+        () => state.gizmo.updatePosition(),
+        // Callback when Env inputs change -> update Scene
+        (settings) => updateEnvironment(settings)
+    );
 
     // Expose Global API for UI
     window.generateMap = generateMap;
@@ -107,8 +95,10 @@ async function buildGeneratedMap(data) {
             roadMesh.position.set((nA.x + nB.x) / 2, 0.05, (nA.z + nB.z) / 2);
             roadMesh.rotation.y = angle;
 
+            roadMesh.userData = { type: 'road', id: `road_${edge.a}_${edge.b}`, len: len, isRoot: true };
+
             state.scene.add(roadMesh);
-            // state.objects.push(roadMesh);
+            state.objects.push(roadMesh);
         });
     }
 
