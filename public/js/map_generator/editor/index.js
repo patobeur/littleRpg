@@ -22,7 +22,30 @@ function init() {
         onWindowResize();
     });
     // Trigger initial resize
-    onWindowResize();
+    // Environment Controls
+    const updateEnv = () => {
+        const settings = {
+            bgColor: document.getElementById('bgColor').value,
+            fogColor: document.getElementById('fogColor').value,
+            fogNear: document.getElementById('fogNear').value,
+            fogFar: document.getElementById('fogFar').value,
+            ambColor: document.getElementById('ambColor').value,
+            ambInt: document.getElementById('ambInt').value
+        };
+        import('./Scene.js').then(m => m.updateEnvironment(settings));
+    };
+
+    ['bgColor', 'fogColor', 'fogNear', 'fogFar', 'ambColor', 'ambInt'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', updateEnv);
+            // Initialize
+            // updateEnv(); // Don't force init right away, let Scene.js defaults hold until user tweaks? 
+            // Actually, we should probably sync visual to UI or UI to visual.
+            // For now, let's trigger it so UI matches scene visually.
+            updateEnv();
+        }
+    });
 
     // Expose Global API for UI
     window.generateMap = generateMap;

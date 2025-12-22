@@ -66,6 +66,25 @@ export function initThree() {
     state.loader = new FBXLoader();
 }
 
+export function updateEnvironment(settings) {
+    if (settings.bgColor) {
+        state.scene.background = new THREE.Color(settings.bgColor);
+        state.scene.fog.color = new THREE.Color(settings.fogColor || settings.bgColor);
+    }
+
+    if (settings.fogNear !== undefined && settings.fogFar !== undefined) {
+        state.scene.fog.near = parseFloat(settings.fogNear);
+        state.scene.fog.far = parseFloat(settings.fogFar);
+    }
+
+    // Lights
+    const amb = state.scene.children.find(c => c.isAmbientLight);
+    if (amb) {
+        if (settings.ambColor) amb.color = new THREE.Color(settings.ambColor);
+        if (settings.ambInt !== undefined) amb.intensity = parseFloat(settings.ambInt);
+    }
+}
+
 export function onWindowResize() {
     const viewport = document.getElementById('viewport');
     if (!viewport) return;
