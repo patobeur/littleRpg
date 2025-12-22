@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - LittleRPG</title>
+    <link rel="icon" type="image/png" href="/medias/littlerpg_favicon_32.png">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/components.css">
+    <link rel="stylesheet" href="/styles/layouts.css">
+</head>
+
+<body class="dashboard-layout">
+    <!-- Navigation injected by nav.js -->
+
+    <!-- Hero Section -->
+    <div class="dashboard-hero">
+        <div class="container text-center">
+            <h1 id="welcome-message">Welcome, Hero!</h1>
+            <p class="text-muted">Select a character or create a new one</p>
+        </div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-content">
+        <div class="container">
+            <!-- Character Slots Section -->
+            <div class="dashboard-section">
+                <div class="section-header">
+                    <h2 class="section-title">Your Characters</h2>
+                    <button class="btn btn-primary" id="create-game-btn" disabled>
+                        🎮 Create/Join Game
+                    </button>
+                </div>
+
+                <div id="error-message" class="hidden"></div>
+                <div id="success-message" class="hidden"></div>
+
+                <div class="grid grid-cols-3" id="character-slots">
+                    <!-- Character slots will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Character Modal -->
+    <div id="create-character-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <button class="modal-close" id="close-modal">&times;</button>
+            <h2>Create New Character</h2>
+
+            <form id="create-character-form">
+                <div class="form-group">
+                    <label for="character-name" class="form-label">Character Name</label>
+                    <input type="text" id="character-name" class="form-input" placeholder="Enter character name"
+                        required>
+                    <span class="form-help">2-20 characters</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Select Class</label>
+                    <div class="class-selection-grid">
+                        <label class="class-option">
+                            <input type="radio" name="charClass" value="Warrior" checked>
+                            <div class="class-card">
+                                <img src="/medias/archetypes/tank.png" alt="Warrior">
+                                <span>Guerrier</span>
+                            </div>
+                        </label>
+                        <label class="class-option">
+                            <input type="radio" name="charClass" value="Mage">
+                            <div class="class-card">
+                                <img src="/medias/archetypes/mage.png" alt="Mage">
+                                <span>Mage</span>
+                            </div>
+                        </label>
+                        <label class="class-option">
+                            <input type="radio" name="charClass" value="Healer">
+                            <div class="class-card">
+                                <img src="/medias/archetypes/healer.png" alt="Healer">
+                                <span>Soigneur</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <input type="hidden" id="selected-slot" value="">
+
+                <div class="card-footer">
+                    <button type="button" class="btn btn-secondary" id="cancel-btn">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Create Character
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Rename Character Modal -->
+    <div id="rename-character-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <button class="modal-close" id="close-rename-modal">&times;</button>
+            <h2>Rename Character</h2>
+
+            <form id="rename-character-form">
+                <div class="form-group">
+                    <label for="new-character-name" class="form-label">New Name</label>
+                    <input type="text" id="new-character-name" class="form-input" required>
+                </div>
+
+                <input type="hidden" id="rename-character-id" value="">
+
+                <div class="card-footer">
+                    <button type="button" class="btn btn-secondary" id="cancel-rename-btn">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Save Name
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lobby Selection Modal -->
+    <div id="lobby-selection-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <button class="modal-close" id="close-lobby-modal">&times;</button>
+            <h2>Multiplayer Lobby</h2>
+            <p class="text-muted mb-4">Select an action to continue</p>
+
+            <div class="lobby-actions">
+                <div class="card p-4 text-center cursor-pointer mb-3" id="create-game-action">
+                    <h3>👑 Create New Game</h3>
+                    <p>Start a new adventure and invite friends.</p>
+                </div>
+
+                <div class="card p-4 mb-3">
+                    <h3>⚔️ Join Existing Game</h3>
+                    <div class="flex gap-2">
+                        <input type="text" id="lobby-code-input" class="form-input" placeholder="ENTER CODE"
+                            maxlength="6"
+                            style="text-transform: uppercase; text-align: center; font-size: 1.5rem; letter-spacing: 2px;">
+                        <button class="btn btn-primary" id="join-lobby-btn">Join</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/nav.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/dashboard.js"></script>
+</body>
+
+</html>

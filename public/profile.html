@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - LittleRPG</title>
+    <link rel="icon" type="image/png" href="/medias/littlerpg_favicon_32.png">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/components.css">
+    <link rel="stylesheet" href="/styles/layouts.css">
+</head>
+
+<body class="profile-layout">
+    <!-- Navigation injected by nav.js -->
+
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="container text-center">
+            <h1>Your Profile</h1>
+            <p class="text-muted">Manage your account information</p>
+        </div>
+    </div>
+
+    <!-- Profile Content -->
+    <div class="profile-content">
+        <div class="container">
+            <div class="profile-card card">
+                <div class="profile-avatar" id="profile-avatar">
+                    ?
+                </div>
+
+                <div class="profile-info">
+                    <h2 class="profile-username" id="profile-username">Loading...</h2>
+                    <p class="profile-meta">
+                        Member since <span id="profile-date">...</span>
+                    </p>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="profile-stats" id="profile-stats">
+                    <div class="stat-item">
+                        <span class="stat-value" id="character-count">0</span>
+                        <span class="stat-label">Characters</span>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <button class="btn btn-secondary" onclick="redirectTo('/dashboard.html')">
+                        Back to Dashboard
+                    </button>
+                    <button class="btn btn-danger" id="logout-btn">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/nav.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/profile.js"></script>
+</body>
+
+</html>

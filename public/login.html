@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - LittleRPG</title>
+  <link rel="icon" type="image/png" href="/medias/littlerpg_favicon_32.png">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/styles/main.css">
+  <link rel="stylesheet" href="/styles/components.css">
+  <link rel="stylesheet" href="/styles/layouts.css">
+</head>
+
+<body>
+  <!-- Navigation injected by nav.js -->
+  <div class="auth-layout">
+    <div class="auth-container">
+      <div class="auth-card">
+        <div class="auth-header">
+          <h1 class="auth-logo">⚔️ LittleRPG</h1>
+          <p class="auth-subtitle">Enter the realm of adventure</p>
+        </div>
+
+        <div id="error-message" class="hidden"></div>
+
+        <form id="login-form">
+          <div class="form-group">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" id="username" name="username" class="form-input" placeholder="Enter your username"
+              autocomplete="username" required>
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" id="password" name="password" class="form-input" placeholder="Enter your password"
+              autocomplete="current-password" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg">
+            Login
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          <p class="text-muted">
+            Don't have an account?
+            <a href="/register.html">Create one now</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/nav.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/login-page.js"></script>
+
+</body>
+
+</html>

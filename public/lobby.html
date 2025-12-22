@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lobby - LittleRPG</title>
+    <link rel="icon" type="image/png" href="/medias/littlerpg_favicon_32.png">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/components.css">
+    <link rel="stylesheet" href="/styles/layouts.css">
+</head>
+
+<body class="dashboard-layout">
+    <!-- Navigation injected by nav.js -->
+
+    <div class="container py-8">
+        <div class="card max-w-2xl mx-auto shadow-2xl bg-opacity-90">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold mb-2">Adventure Lobby</h1>
+                <p class="text-muted">Waiting for players to get ready...</p>
+                <div class="divider"></div>
+
+                <div class="mb-6">
+                    <span class="text-sm text-muted uppercase tracking-widest">Lobby Code</span>
+                    <div id="lobby-code" class="lobby-code-display">------</div>
+                    <p class="text-sm text-accent">Share this code with your friends!</p>
+                </div>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-title">Players (<span id="player-count">0</span>/4)</h2>
+            </div>
+
+            <div id="player-list" class="player-list mb-8">
+                <!-- Players will be rendered here -->
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="chat-container mb-6">
+                <div id="chat-messages" class="chat-messages mb-4">
+                    <div class="text-xs text-center text-muted">System: Welcome to the lobby!</div>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="chat-input" class="form-input" placeholder="Type a message..."
+                        maxlength="200">
+                    <button class="btn btn-primary" id="send-chat-btn">Send</button>
+                </div>
+            </div>
+
+            <div class="card-footer justify-between items-center">
+                <button class="btn btn-secondary" id="leave-lobby-btn">
+                    🚪 Leave
+                </button>
+                <button class="btn btn-primary btn-lg" id="ready-btn">
+                    ⚔️ I'M READY !
+                </button>
+                <button class="btn btn-primary btn-lg hidden" id="start-game-btn">
+                    🚩 START MISSION
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/nav.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/lobby.js"></script>
+</body>
+
+</html>

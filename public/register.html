@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - LittleRPG</title>
+    <link rel="icon" type="image/png" href="/medias/littlerpg_favicon_32.png">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/components.css">
+    <link rel="stylesheet" href="/styles/layouts.css">
+</head>
+
+<body>
+    <!-- Navigation injected by nav.js -->
+    <div class="auth-layout">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1 class="auth-logo">⚔️ LittleRPG</h1>
+                    <p class="auth-subtitle">Begin your journey</p>
+                </div>
+
+                <div id="error-message" class="hidden"></div>
+
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" id="username" name="username" class="form-input"
+                            placeholder="Choose a username" autocomplete="username" required>
+                        <span class="form-help">3-20 characters, letters, numbers, and underscores only</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" id="email" name="email" class="form-input"
+                            placeholder="your.email@example.com" autocomplete="email" required>
+                        <span class="form-help">A valid email address</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" name="password" class="form-input"
+                            placeholder="Create a password" autocomplete="new-password" required>
+                        <span class="form-help">Minimum 8 characters</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm-password" class="form-label">Confirm Password</label>
+                        <input type="password" id="confirm-password" name="confirm-password" class="form-input"
+                            placeholder="Confirm your password" autocomplete="new-password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block btn-lg">
+                        Create Account
+                    </button>
+                </form>
+
+                <div class="auth-footer">
+                    <p class="text-muted">
+                        Already have an account?
+                        <a href="/">Login here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/nav.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/register.js"></script>
+</body>
+
+</html>
