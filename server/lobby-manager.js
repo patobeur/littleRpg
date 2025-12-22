@@ -2,6 +2,7 @@
  * Lobby Manager
  */
 const Character = require('./models/Character');
+const { getSceneConfig, getSpawnPosition, getNextScene, isPlayerInZone } = require('./config/scenes');
 
 class LobbyManager {
     constructor(io) {
@@ -209,6 +210,17 @@ class LobbyManager {
             } else {
                 console.log(`[LobbyManager] No states to send for lobby ${code}`);
             }
+
+            // Send scene configuration to client
+            const currentScene = this.lobbyScenes.get(lobbyCode) || 'scene_01';
+            const sceneConfig = getSceneConfig(currentScene);
+            if (sceneConfig) {
+                console.log(`[LobbyManager] Sending scene config for ${currentScene} to ${socket.id}`);
+                socket.emit('scene_config', {
+                    sceneId: currentScene,
+                    config: sceneConfig
+                });
+            }
         } else {
             console.warn(`[LobbyManager] Lobby ${code} NOT found in handleJoinGame`);
         }
@@ -304,13 +316,33 @@ class LobbyManager {
         const lobby = this.lobbies.get(code);
         if (!lobby) return;
 
+        // SERVER-SIDE VALIDATION: Check if player is actually in their zone
+        const player = lobby.players.find(p => p.characterId === characterId);
+        if (!player) return;
+
+        const playerState = this.playerStates.get(characterId);
+        if (!playerState || !playerState.position) {
+            console.warn(`[LobbyManager] No position data for player ${characterId}, accepting zone entry`);
+            // Accept if no position data (shouldn't happen, but don't block)
+        } else {
+            const currentScene = this.lobbyScenes.get(code) || 'scene_01';
+            // Use tolerance of 1.0 to account for latency and movement between updates
+            const isInZone = isPlayerInZone(playerState.position, currentScene, player.class, 1.0);
+
+            if (!isInZone) {
+                console.warn(`[LobbyManager] Player ${characterId} claims to be in zone but server validation failed!`);
+                console.warn(`[LobbyManager] Position: x=${playerState.position.x.toFixed(2)}, z=${playerState.position.z.toFixed(2)}, class=${player.class}`);
+                return; // Reject - player is not actually in zone (possible cheat attempt)
+            }
+        }
+
         // Add to zone tracking
         if (!this.playersInZone.has(code)) {
             this.playersInZone.set(code, new Set());
         }
         this.playersInZone.get(code).add(characterId);
 
-        console.log(`[LobbyManager] Player ${characterId} entered zone in lobby ${code}`);
+        console.log(`[LobbyManager] Player ${characterId} entered zone in lobby ${code} (validated)`);
 
         // Check if all players are in their zones
         const allInZone = lobby.players.every(p =>
@@ -360,10 +392,8 @@ class LobbyManager {
         // Get current scene
         const currentScene = this.lobbyScenes.get(code) || 'scene_01';
 
-        // Calculate next scene
-        const sceneIds = ['scene_01', 'scene_02', 'scene_03'];
-        const currentIndex = sceneIds.indexOf(currentScene);
-        const nextScene = sceneIds[currentIndex + 1];
+        // Calculate next scene using centralized config
+        const nextScene = getNextScene(currentScene);
 
         if (!nextScene) {
             console.log(`[LobbyManager] No more scenes! End of game.`);
@@ -373,40 +403,17 @@ class LobbyManager {
 
         console.log(`[LobbyManager] Changing scene from ${currentScene} to ${nextScene}`);
 
-        // Load scene config (inline since we can't import ES modules in CommonJS easily)
-        const sceneConfigs = {
-            'scene_01': {
-                spawns: [
-                    { x: 0, y: 0, z: 5, class: 'Warrior' },
-                    { x: -4, y: 0, z: -2, class: 'Mage' },
-                    { x: 4, y: 0, z: -2, class: 'Healer' }
-                ]
-            },
-            'scene_02': {
-                spawns: [
-                    { x: -3, y: 0, z: 0, class: 'Warrior' },
-                    { x: 0, y: 0, z: 0, class: 'Mage' },
-                    { x: 3, y: 0, z: 0, class: 'Healer' }
-                ]
-            },
-            'scene_03': {
-                spawns: [
-                    { x: 0, y: 0, z: -5, class: 'Warrior' },
-                    { x: -4, y: 0, z: 2, class: 'Mage' },
-                    { x: 4, y: 0, z: 2, class: 'Healer' }
-                ]
-            }
-        };
+        // Get scene config from centralized source
+        const sceneConfig = getSceneConfig(nextScene);
 
-        const sceneConfig = sceneConfigs[nextScene];
         const spawnPositions = {};
 
         // Reset positions and assign new spawns
         for (const player of lobby.players) {
             await Character.resetPositionForScene(player.characterId, nextScene);
 
-            // Find spawn for this player's class
-            const spawn = sceneConfig.spawns.find(s => s.class === player.class);
+            // Get spawn position using helper function
+            const spawn = getSpawnPosition(nextScene, player.class);
             if (spawn) {
                 spawnPositions[player.characterId] = {
                     x: spawn.x,
@@ -431,10 +438,11 @@ class LobbyManager {
         this.playersInZone.delete(code); // Clear zone tracking
         this.sceneChangeTimers.delete(code);
 
-        // Notify clients with spawn positions
+        // Notify clients with spawn positions AND new scene config
         this.io.to(code).emit('scene_changed', {
             sceneId: nextScene,
-            spawns: spawnPositions
+            spawns: spawnPositions,
+            config: sceneConfig // Include full scene config (teleport zones, etc.)
         });
     }
 

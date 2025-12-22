@@ -1,6 +1,7 @@
 // Character model
 const database = require('../database/database');
 const config = require('../config');
+const archetypes = require('./archetypes');
 
 class Character {
     // Create a new character
@@ -132,12 +133,13 @@ class Character {
 
     // Get base stats for a class
     static getBaseStats(charClass) {
-        const stats = {
-            'Warrior': { strength: 15, intelligence: 5, dexterity: 8, hp: 150, mana: 20 },
-            'Mage': { strength: 5, intelligence: 15, dexterity: 8, hp: 100, mana: 150 },
-            'Healer': { strength: 6, intelligence: 12, dexterity: 10, hp: 100, mana: 100 }
-        };
-        return stats[charClass] || stats['Warrior'];
+        // Use stats from archetypes.js
+        const archetype = archetypes.chars[charClass];
+        if (!archetype) {
+            // Default to Warrior if class not found
+            return archetypes.chars.Warrior.stats;
+        }
+        return archetype.stats;
     }
 
     // Update character position in DB

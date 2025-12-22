@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { SCENE_CONFIG, getSpawnPosition, getTeleportZone, getNextScene } from './scene-config.js';
+// Scene config is now received from server via Socket.io
 
 class GameEngine {
     constructor() {
@@ -23,6 +23,7 @@ class GameEngine {
         this.invertY = false; // Set to true to invert vertical look
         this.disconnectTimers = new Map(); // Track disconnection timers
         this.currentSceneId = 'scene_01'; // Current scene
+        this.currentSceneConfig = null; // Scene config from server
         this.teleportZones = []; // Visual teleport zones
         this.myTeleportZone = null; // My assigned zone
         this.inMyZone = false; // Am I in my zone?
@@ -247,10 +248,13 @@ class GameEngine {
         });
         this.teleportZones = [];
 
-        const sceneConfig = SCENE_CONFIG[this.currentSceneId];
-        if (!sceneConfig) return;
+        // Use server-provided config instead of local SCENE_CONFIG
+        if (!this.currentSceneConfig) {
+            console.warn('[GameEngine] No scene config received from server yet');
+            return;
+        }
 
-        sceneConfig.teleportZones.forEach(zoneConfig => {
+        this.currentSceneConfig.teleportZones.forEach(zoneConfig => {
             // Create glowing circle
             const geometry = new THREE.CircleGeometry(zoneConfig.radius, 32);
             const material = new THREE.MeshBasicMaterial({
@@ -549,6 +553,15 @@ class GameEngine {
             this.handleSceneChange(data);
         });
 
+        this.socket.on('scene_config', (data) => {
+            console.log(`[GameEngine] Received scene config for ${data.sceneId}`);
+            this.currentSceneId = data.sceneId;
+            this.currentSceneConfig = data.config;
+
+            // Recreate teleport zones with new config
+            this.createTeleportZones();
+        });
+
         this.socket.on('game_complete', () => {
             console.log('🎉 Game Complete!');
             alert('Félicitations ! Vous avez terminé toutes les scènes !');
@@ -587,6 +600,11 @@ class GameEngine {
                         console.log(`[GameEngine] Spawned ${charId} at (${spawn.x}, ${spawn.y}, ${spawn.z})`);
                     }
                 });
+            }
+
+            // Update scene config from server
+            if (data.config) {
+                this.currentSceneConfig = data.config;
             }
 
             // Clear and recreate teleport zones
