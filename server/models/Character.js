@@ -168,6 +168,15 @@ class Character {
             [sceneId, id]
         );
     }
+
+    // Clear position when game ends (position only persists during active game)
+    static async clearPosition(id) {
+        console.log(`[Character DB] Clearing position for char ${id} (game ended)`);
+        await database.run(
+            'UPDATE characters SET pos_x = NULL, pos_y = NULL, pos_z = NULL, rotation_y = NULL, current_scene_id = NULL WHERE id = ?',
+            [id]
+        );
+    }
 }
 
 module.exports = Character;

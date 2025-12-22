@@ -117,7 +117,7 @@ class LobbyManager {
         }
     }
 
-    handleStartGame(socket) {
+    async handleStartGame(socket) {
         const code = this.playerToLobby.get(socket.id);
         if (!code) return;
 
@@ -128,6 +128,15 @@ class LobbyManager {
         if (allReady && lobby.players.length > 0) {
             lobby.started = true; // Mark lobby as started to prevent immediate closure on refresh
             console.log(`Lobby ${code} starting game...`);
+
+            // Clear all player positions - new game starts at spawn points
+            for (const player of lobby.players) {
+                await Character.clearPosition(player.characterId);
+                // Also clear from memory
+                this.playerStates.delete(player.characterId);
+            }
+            console.log(`[LobbyManager] Cleared all positions for new game in lobby ${code}`);
+
             this.io.to(code).emit('game_started', {
                 players: lobby.players.map(p => ({
                     id: p.id,
@@ -168,6 +177,10 @@ class LobbyManager {
             }
 
             console.log(`[LobbyManager] Found lobby ${lobbyCode}, players count: ${lobby.players.length}`);
+
+            // Get current scene for spawn positions
+            const currentScene = this.lobbyScenes.get(lobbyCode) || 'scene_01';
+
             const states = [];
             for (const p of lobby.players) {
                 let state = this.playerStates.get(p.characterId);
@@ -188,7 +201,22 @@ class LobbyManager {
                             };
                             this.playerStates.set(p.characterId, state);
                         } else {
-                            console.log(`[LobbyManager] No DB position found for char ${p.characterId}, using defaults.`);
+                            // No DB position - use spawn position from scene config
+                            console.log(`[LobbyManager] No DB position found for char ${p.characterId}, using spawn position for ${p.class}`);
+                            const spawnPos = getSpawnPosition(currentScene, p.class);
+                            if (spawnPos) {
+                                state = {
+                                    position: { x: spawnPos.x, y: spawnPos.y, z: spawnPos.z },
+                                    rotation: 0,
+                                    animation: 'idle',
+                                    timeScale: 1,
+                                    lastDBSave: 0
+                                };
+                                this.playerStates.set(p.characterId, state);
+                                console.log(`[LobbyManager] Spawning ${p.class} at x=${spawnPos.x}, z=${spawnPos.z}`);
+                            } else {
+                                console.warn(`[LobbyManager] No spawn position found for ${p.class} in ${currentScene}`);
+                            }
                         }
                     } catch (err) {
                         console.error('[LobbyManager] Error loading initial position from DB:', err);
@@ -211,8 +239,7 @@ class LobbyManager {
                 console.log(`[LobbyManager] No states to send for lobby ${code}`);
             }
 
-            // Send scene configuration to client
-            const currentScene = this.lobbyScenes.get(lobbyCode) || 'scene_01';
+            // Send scene configuration to client (reuse currentScene from above)
             const sceneConfig = getSceneConfig(currentScene);
             if (sceneConfig) {
                 console.log(`[LobbyManager] Sending scene config for ${currentScene} to ${socket.id}`);
@@ -397,6 +424,14 @@ class LobbyManager {
 
         if (!nextScene) {
             console.log(`[LobbyManager] No more scenes! End of game.`);
+
+            // Game complete - clear all positions
+            for (const player of lobby.players) {
+                await Character.clearPosition(player.characterId);
+                this.playerStates.delete(player.characterId);
+            }
+            console.log(`[LobbyManager] Game complete - cleared all positions for lobby ${code}`);
+
             this.io.to(code).emit('game_complete');
             return;
         }

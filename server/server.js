@@ -26,16 +26,34 @@ const lobbyManager = new LobbyManager(io);
 lobbyManager.init();
 
 // Security middleware
-app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-            "script-src": ["'self'", "'unsafe-inline'"],
-            "img-src": ["'self'", "data:", "blob:"],
-            "connect-src": ["'self'", "ws://localhost:*", "http://localhost:*"],
+// In development, disable CSP entirely to avoid blocking local resources
+// In production, use strict security policies
+// Security middleware
+if (config.server.env === 'production') {
+    // In production, use strict security policies
+    console.log("Production mode: Enabling Content Security Policy");
+    app.use(helmet({
+        contentSecurityPolicy: {
+            directives: {
+                ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+                "script-src": ["'self'", "'unsafe-inline'"],
+                "img-src": ["'self'", "data:", "blob:"],
+                "connect-src": ["'self'", "ws://*:*", "http://*:*"],
+                "font-src": ["'self'", "data:"],
+            },
         },
-    },
-}));
+    }));
+} else {
+    // In development:
+    // 1. Do NOT use Helmet (avoid default security headers that might block local dev)
+    // 2. Explicitly remove CSP headers to override any browser cache or defaults
+    console.log("Development mode: Disabling Content Security Policy");
+    app.use((req, res, next) => {
+        res.removeHeader("Content-Security-Policy");
+        res.removeHeader("X-Content-Security-Policy");
+        next();
+    });
+}
 
 
 // Body parsing middleware

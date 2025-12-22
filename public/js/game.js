@@ -25,6 +25,7 @@ class GameEngine {
         this.currentSceneId = 'scene_01'; // Current scene
         this.currentSceneConfig = null; // Scene config from server
         this.teleportZones = []; // Visual teleport zones
+        this.spawnMarkers = []; // Visual spawn point markers
         this.myTeleportZone = null; // My assigned zone
         this.inMyZone = false; // Am I in my zone?
 
@@ -120,8 +121,56 @@ class GameEngine {
         grid.position.y = 0.01;
         this.scene.add(grid);
 
-        // Create teleport zones
+        // Create spawn point markers and teleport zones
+        this.createSpawnMarkers();
         this.createTeleportZones();
+    }
+
+    createSpawnMarkers() {
+        // Clear existing spawn markers
+        if (this.spawnMarkers) {
+            this.spawnMarkers.forEach(marker => {
+                if (marker.mesh) this.scene.remove(marker.mesh);
+            });
+        }
+        this.spawnMarkers = [];
+
+        // Use server-provided config
+        if (!this.currentSceneConfig) {
+            console.warn('[GameEngine] No scene config for spawn markers yet');
+            return;
+        }
+
+        // Color mapping for classes (same as teleport zones)
+        const colorMap = {
+            'Warrior': 0xff4444,
+            'Mage': 0x4444ff,
+            'Healer': 0x44ff44
+        };
+
+        this.currentSceneConfig.spawns.forEach(spawnConfig => {
+            // Create small circle at spawn point
+            const geometry = new THREE.CircleGeometry(0.5, 32); // Smaller radius than teleport zones
+            const material = new THREE.MeshBasicMaterial({
+                color: colorMap[spawnConfig.class] || 0xffffff,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.4
+            });
+            const circle = new THREE.Mesh(geometry, material);
+            circle.position.set(spawnConfig.x, 0.05, spawnConfig.z); // Slightly above ground
+            circle.rotation.x = -Math.PI / 2; // Horizontal
+
+            this.scene.add(circle);
+
+            this.spawnMarkers.push({
+                config: spawnConfig,
+                mesh: circle,
+                material: material
+            });
+        });
+
+        console.log(`[GameEngine] Created ${this.spawnMarkers.length} spawn markers`);
     }
 
     setupUI() {
@@ -558,7 +607,8 @@ class GameEngine {
             this.currentSceneId = data.sceneId;
             this.currentSceneConfig = data.config;
 
-            // Recreate teleport zones with new config
+            // Recreate visual elements with new config
+            this.createSpawnMarkers();
             this.createTeleportZones();
         });
 
@@ -607,9 +657,10 @@ class GameEngine {
                 this.currentSceneConfig = data.config;
             }
 
-            // Clear and recreate teleport zones
+            // Clear and recreate visual elements
             this.myTeleportZone = null;
             this.inMyZone = false;
+            this.createSpawnMarkers();
             this.createTeleportZones();
 
             console.log('[GameEngine] Scene change complete!');
