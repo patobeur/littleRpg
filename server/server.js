@@ -1,5 +1,6 @@
 // Main server file
 const express = require('express');
+const fs = require('fs');
 const session = require('express-session');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
@@ -95,6 +96,45 @@ app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'login.html'));
 });
 
+
+
+// Map Generator Routes
+// Middleware to restrict access to localhost
+const requireLocalhost = (req, res, next) => {
+    const ip = req.ip || req.connection.remoteAddress;
+    if (ip === '::1' || ip === '127.0.0.1' || ip === '::ffff:127.0.0.1') {
+        next();
+    } else {
+        res.status(403).send('Access denied. Localhost only.');
+    }
+};
+
+app.get('/map_generator.html', requireLocalhost, (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'public', 'map_generator', 'index.html'));
+});
+
+app.get('/api/maps', requireLocalhost, (req, res) => {
+    const mapDir = path.join(__dirname, 'data/maps');
+    if (!fs.existsSync(mapDir)) fs.mkdirSync(mapDir, { recursive: true });
+
+    fs.readdir(mapDir, (err, files) => {
+        if (err) return res.status(500).json({ error: 'Failed to list maps' });
+        res.json(files.filter(f => f.endsWith('.json')));
+    });
+});
+
+app.post('/api/maps', requireLocalhost, express.json(), (req, res) => {
+    const { name, data } = req.body;
+    if (!name || !data) return res.status(400).json({ error: 'Missing name or data' });
+
+    const safeName = name.replace(/[^a-zA-Z0-9_-]/g, '');
+    const filePath = path.join(__dirname, 'data/maps', `${safeName}.json`);
+
+    fs.writeFile(filePath, JSON.stringify(data, null, 2), (err) => {
+        if (err) return res.status(500).json({ error: 'Failed to save map' });
+        res.json({ success: true, message: 'Map saved' });
+    });
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
