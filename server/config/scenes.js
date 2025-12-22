@@ -30,8 +30,28 @@ const SCENES = {
             { type: 'Alistar', x: 0, y: 0, z: -10, id: 'alistar_01' }
         ],
         structures: [
-            { type: 'house', x: 10, y: 0, z: 20, id: 'house_01', rotation: { x: 0, y: 45, z: 0 } },
-            { type: 'house', x: 15, y: 0, z: 20, id: 'house_02', rotation: { x: 0, y: 90, z: 0 } }
+            // Left Side
+            { type: 'house', x: -10, y: 0, z: 10, id: 'h_l_1', rotation: { x: -90, y: 0, z: -90 } },
+            { type: 'house', x: -10, y: 0, z: 20, id: 'h_l_2', rotation: { x: -90, y: 0, z: -90 } },
+            { type: 'house', x: -10, y: 0, z: 30, id: 'h_l_3', rotation: { x: -90, y: 0, z: -90 } },
+            { type: 'house', x: -10, y: 0, z: 40, id: 'h_l_4', rotation: { x: -90, y: 0, z: -90 } },
+            { type: 'house', x: -10, y: 0, z: 50, id: 'h_l_5', rotation: { x: -90, y: 0, z: -90 } },
+            { type: 'house', x: -10, y: 0, z: 60, id: 'h_l_6', rotation: { x: -90, y: 0, z: -90 } },
+            { type: 'house', x: -10, y: 0, z: 70, id: 'h_l_7', rotation: { x: -90, y: 0, z: -90 } },
+            { type: 'house', x: -10, y: 0, z: 80, id: 'h_l_8', rotation: { x: -90, y: 0, z: -90 } },
+            { type: 'house', x: -10, y: 0, z: 90, id: 'h_l_9', rotation: { x: -90, y: 0, z: -90 } },
+            { type: 'house', x: -10, y: 0, z: 100, id: 'h_l_10', rotation: { x: -90, y: 0, z: -90 } },
+            // Right Side
+            { type: 'house', x: 10, y: 0, z: 10, id: 'h_r_1', rotation: { x: -90, y: 0, z: 90 } },
+            { type: 'house', x: 10, y: 0, z: 20, id: 'h_r_2', rotation: { x: -90, y: 0, z: 90 } },
+            { type: 'house', x: 10, y: 0, z: 30, id: 'h_r_3', rotation: { x: -90, y: 0, z: 90 } },
+            { type: 'house', x: 10, y: 0, z: 40, id: 'h_r_4', rotation: { x: -90, y: 0, z: 90 } },
+            { type: 'house', x: 10, y: 0, z: 50, id: 'h_r_5', rotation: { x: -90, y: 0, z: 90 } },
+            { type: 'house', x: 10, y: 0, z: 60, id: 'h_r_6', rotation: { x: -90, y: 0, z: 90 } },
+            { type: 'house', x: 10, y: 0, z: 70, id: 'h_r_7', rotation: { x: -90, y: 0, z: 90 } },
+            { type: 'house', x: 10, y: 0, z: 80, id: 'h_r_8', rotation: { x: -90, y: 0, z: 90 } },
+            { type: 'house', x: 10, y: 0, z: 90, id: 'h_r_9', rotation: { x: -90, y: 0, z: 90 } },
+            { type: 'house', x: 10, y: 0, z: 100, id: 'h_r_10', rotation: { x: -90, y: 0, z: 90 } }
         ]
     },
     scene_02: {
@@ -59,10 +79,10 @@ const SCENES = {
     scene_03: {
         name: 'Dragon Lair',
         scene: {
-            background: 0x2e0505,
-            fog: { color: 0x2e0505, near: 8, far: 40 },
+            background: 0xffffff,
+            fog: { color: 0xffffff, near: 8, far: 40 },
             ground: {
-                color: 0x331111,
+                color: 0xffffff,
                 roughness: 0.6,
                 metalness: 0.4
             }

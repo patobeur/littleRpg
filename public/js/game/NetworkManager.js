@@ -20,6 +20,7 @@ export class NetworkManager {
         this.socket.on('player_updated', (data) => this.handlePlayerUpdated(data));
         this.socket.on('initial_states', (data) => this.handleInitialStates(data));
         this.socket.on('enemy_states', (data) => this.handleEnemyStates(data));
+        this.socket.on('structure_states', (data) => this.handleStructureStates(data));
         this.socket.on('entity_update', (data) => this.handleEntityUpdate(data)); // New listener
         this.socket.on('player_disconnected', (data) => this.handlePlayerDisconnected(data));
         this.socket.on('player_reconnected', (data) => this.handlePlayerReconnected(data));
@@ -83,6 +84,12 @@ export class NetworkManager {
     handleEnemyStates(data) {
         if (data.enemies) {
             this.game.entityManager.loadEnemies(data.enemies);
+        }
+    }
+
+    handleStructureStates(data) {
+        if (data.structures) {
+            this.game.entityManager.loadStructures(data.structures);
         }
     }
 

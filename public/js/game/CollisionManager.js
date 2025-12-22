@@ -60,6 +60,17 @@ export class CollisionManager {
             }
         }
 
+        // Check against Structures
+        for (const [id, struct] of this.game.entityManager.structures) {
+            if (!struct.model) continue;
+
+            // Structures might need a larger radius or box check. For now, circle.
+            const structRadius = struct.radius || 3.0;
+            if (this.checkCircleCollision(position, radius, struct.model.position, structRadius)) {
+                return true;
+            }
+        }
+
         return false;
     }
 

@@ -4,6 +4,7 @@
 const Character = require('./models/Character');
 const { getSceneConfig, getSpawnPosition, getNextScene, isPlayerInZone } = require('./config/scenes');
 const enemiesData = require('./models/enemies');
+const structuresData = require('./models/structures');
 const archetypes = require('./models/archetypes');
 const CollisionSystem = require('./utils/CollisionSystem');
 
@@ -16,7 +17,8 @@ class LobbyManager {
         this.lobbyScenes = new Map(); // code -> sceneId
         this.playersInZone = new Map(); // code -> Set of characterIds
         this.sceneChangeTimers = new Map(); // code -> timer
-        this.enemyStates = new Map(); // code -> Map<enemyId, { type, position, rotation, animation, health, maxHealth }>
+        this.enemyStates = new Map(); // code -> Map<enemyId, ...>
+        this.structureStates = new Map(); // code -> Map<structureId, ...>
     }
 
     init() {
@@ -158,8 +160,9 @@ class LobbyManager {
                 })
             });
 
-            // Initialize enemies for the first scene
+            // Initialize enemies and structures for the first scene
             this.loadEnemiesForScene(code, 'scene_01');
+            this.loadStructuresForScene(code, 'scene_01');
         }
     }
 
@@ -260,6 +263,14 @@ class LobbyManager {
                 if (enemies.length > 0) {
                     console.log(`[LobbyManager] Sending ${enemies.length} enemies to socket ${socket.id}`);
                     socket.emit('enemy_states', { enemies });
+                }
+            }
+
+            // Send structure states
+            if (this.structureStates.has(lobbyCode)) {
+                const structures = Array.from(this.structureStates.get(lobbyCode).values());
+                if (structures.length > 0) {
+                    socket.emit('structure_states', { structures });
                 }
             }
 
@@ -515,16 +526,19 @@ class LobbyManager {
         this.playersInZone.delete(code); // Clear zone tracking
         this.sceneChangeTimers.delete(code);
 
-        // Load enemies for the new scene
+        // Load enemies and structures for the new scene
         this.loadEnemiesForScene(code, nextScene);
+        this.loadStructuresForScene(code, nextScene);
         const currentEnemies = this.enemyStates.get(code) ? Array.from(this.enemyStates.get(code).values()) : [];
+        const currentStructures = this.structureStates.get(code) ? Array.from(this.structureStates.get(code).values()) : [];
 
         // Notify clients with spawn positions AND new scene config
         this.io.to(code).emit('scene_changed', {
             sceneId: nextScene,
             spawns: spawnPositions,
             config: sceneConfig, // Include full scene config (teleport zones, etc.)
-            enemies: currentEnemies
+            enemies: currentEnemies,
+            structures: currentStructures
         });
     }
 
@@ -538,6 +552,38 @@ class LobbyManager {
             }
         } while (this.lobbies.has(code));
         return code;
+    }
+
+    loadStructuresForScene(code, sceneId) {
+        const sceneConfig = getSceneConfig(sceneId);
+        if (!sceneConfig || !sceneConfig.structures) {
+            this.structureStates.delete(code);
+            return;
+        }
+
+        const lobbyStructures = new Map();
+
+        sceneConfig.structures.forEach(def => {
+            const structureData = structuresData.structures[def.type];
+            if (structureData) {
+                lobbyStructures.set(def.id, {
+                    id: def.id,
+                    type: def.type,
+                    name: structureData.name,
+                    position: { x: def.x, y: def.y, z: def.z },
+                    rotation: def.rotation || { x: 0, y: 0, z: 0 },
+                    scale: structureData.scale || 1,
+                    radius: structureData.radius || 3,
+                    modelPath: `/structures/${structureData.glb}`,
+                    stats: structureData.stats
+                });
+            } else {
+                console.warn(`[LobbyManager] Unknown structure type ${def.type}`);
+            }
+        });
+
+        this.structureStates.set(code, lobbyStructures);
+        console.log(`[LobbyManager] Loaded ${lobbyStructures.size} structures for ${sceneId}`);
     }
 
     loadEnemiesForScene(code, sceneId) {

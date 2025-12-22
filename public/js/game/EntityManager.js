@@ -13,6 +13,7 @@ export class EntityManager {
 
         // Enemies
         this.enemies = new Map(); // id -> { model, mixer, actions, stats }
+        this.structures = new Map(); // id -> { model, stats, radius }
     }
 
     async loadPlayers(players, localCharacterId) {
@@ -218,6 +219,60 @@ export class EntityManager {
                 const cube = new THREE.Mesh(geom, mat);
                 cube.position.set(enemyState.position.x, 1, enemyState.position.z);
                 this.game.sceneManager.scene.add(cube);
+            }
+        }
+    }
+
+    async loadStructures(structureList) {
+        console.log(`[EntityManager] Loading ${structureList.length} structures...`);
+        const loader = new FBXLoader();
+
+        // Clear existing structures
+        this.structures.forEach(s => {
+            if (s.model) this.game.sceneManager.scene.remove(s.model);
+        });
+        this.structures.clear();
+
+        for (const structDef of structureList) {
+            const modelPath = structDef.modelPath || `/structures/${structDef.type}.fbx`;
+
+            try {
+                const fbx = await new Promise((resolve, reject) => {
+                    loader.load(modelPath, resolve, undefined, reject);
+                });
+
+                const finalScale = structDef.scale || 1;
+                fbx.scale.setScalar(finalScale); // Removed 0.01 factor
+                fbx.position.set(structDef.position.x, structDef.position.y, structDef.position.z);
+
+                // Apply rotation if provided
+                if (structDef.rotation) {
+                    fbx.rotation.set(
+                        THREE.MathUtils.degToRad(structDef.rotation.x),
+                        THREE.MathUtils.degToRad(structDef.rotation.y),
+                        THREE.MathUtils.degToRad(structDef.rotation.z)
+                    );
+                }
+
+                fbx.traverse(child => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                });
+
+                this.game.sceneManager.scene.add(fbx);
+
+                this.structures.set(structDef.id, {
+                    id: structDef.id,
+                    model: fbx,
+                    stats: structDef.stats,
+                    radius: structDef.radius || 3
+                });
+                console.log(`[EntityManager] Loaded structure ${structDef.id} at (${structDef.position.x}, ${structDef.position.y}, ${structDef.position.z}) with scale ${finalScale}`);
+
+            } catch (err) {
+                console.error(`Failed to load structure ${structDef.id}:`, err);
             }
         }
     }
