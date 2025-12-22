@@ -13,6 +13,9 @@
             margin: 0;
             overflow: hidden;
             font-family: 'Open Sans', sans-serif;
+            --gold-primary: #ffc107;
+            --gold-secondary: #ffca28;
+            --gold-light: #ffe082;
         }
 
         #editor-container {
@@ -24,10 +27,17 @@
         #viewport {
             flex-grow: 1;
             position: relative;
+            overflow: hidden;
+            min-width: 0;
+            /* Ensure canvas doesn't overflow */
         }
 
         #sidebar {
             width: 300px;
+            min-width: 300px;
+            /* Force minimum width */
+            flex-shrink: 0;
+            /* Prevent shrinking */
             background: rgba(20, 20, 30, 0.95);
             border-left: 1px solid rgba(255, 255, 255, 0.1);
             padding: 20px;
@@ -36,6 +46,8 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
+            z-index: 10;
+            /* Ensure on top */
         }
 
         h2 {

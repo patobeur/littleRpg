@@ -128,10 +128,26 @@ app.post('/api/maps', requireLocalhost, express.json(), (req, res) => {
     if (!name || !data) return res.status(400).json({ error: 'Missing name or data' });
 
     const safeName = name.replace(/[^a-zA-Z0-9_-]/g, '');
-    const filePath = path.join(__dirname, 'data/maps', `${safeName}.json`);
+    const mapDir = path.join(__dirname, 'data/maps');
+
+    // Ensure directory exists
+    if (!fs.existsSync(mapDir)) {
+        try {
+            fs.mkdirSync(mapDir, { recursive: true });
+        } catch (e) {
+            console.error('Failed to create map directory:', e);
+            return res.status(500).json({ error: 'Failed to create system directory' });
+        }
+    }
+
+    const filePath = path.join(mapDir, `${safeName}.json`);
 
     fs.writeFile(filePath, JSON.stringify(data, null, 2), (err) => {
-        if (err) return res.status(500).json({ error: 'Failed to save map' });
+        if (err) {
+            console.error('Error saving map:', err);
+            return res.status(500).json({ error: 'Failed to save map file' });
+        }
+        console.log(`Map saved: ${filePath}`);
         res.json({ success: true, message: 'Map saved' });
     });
 });

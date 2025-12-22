@@ -30,9 +30,18 @@ export class TransformGizmo {
     }
 
     initVisuals() {
+        // Common Material Props for Gizmo "Always On Top"
+        const matProps = { depthTest: false, depthWrite: false, transparent: true, opacity: 0.8 };
+
         // X Axis (Red)
         const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), 4, 0xff0000, 1, 0.5);
+        // ArrowHelper sub-materials need traversal to apply depthTest
+        arrowX.line.material.depthTest = false;
+        arrowX.cone.material.depthTest = false;
+        arrowX.line.material.depthWrite = false;
+        arrowX.cone.material.depthWrite = false;
         arrowX.userData = { axis: 'X', isGizmo: true };
+
         const colliderX = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 4), new THREE.MeshBasicMaterial({ visible: false }));
         colliderX.rotation.z = -Math.PI / 2;
         colliderX.position.x = 2;
@@ -41,6 +50,11 @@ export class TransformGizmo {
 
         // Z Axis (Blue)
         const arrowZ = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), 4, 0x0000ff, 1, 0.5);
+        arrowZ.line.material.depthTest = false;
+        arrowZ.cone.material.depthTest = false;
+        arrowZ.line.material.depthWrite = false;
+        arrowZ.cone.material.depthWrite = false;
+
         arrowZ.userData = { axis: 'Z', isGizmo: true };
         const colliderZ = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 4), new THREE.MeshBasicMaterial({ visible: false }));
         colliderZ.rotation.x = Math.PI / 2;
@@ -50,11 +64,14 @@ export class TransformGizmo {
 
         // Y Axis (Green) - Rotation
         const ringGeo = new THREE.TorusGeometry(3, 0.1, 16, 32);
-        const ringMat = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const ringMat = new THREE.MeshBasicMaterial({ color: 0x00ff00, ...matProps });
         const ringY = new THREE.Mesh(ringGeo, ringMat);
         ringY.rotation.x = Math.PI / 2;
         ringY.userData = { axis: 'rotateY', isGizmo: true };
         this.gizmoGroup.add(ringY);
+
+        // Ensure render order is last
+        this.gizmoGroup.renderOrder = 999;
     }
 
     setupEvents() {

@@ -33,7 +33,8 @@ function init() {
 
     // 3. Renderer
     state.renderer = new THREE.WebGLRenderer({ antialias: true });
-    state.renderer.setSize(window.innerWidth, window.innerHeight);
+    const viewport = document.getElementById('viewport');
+    state.renderer.setSize(viewport.offsetWidth, viewport.offsetHeight);
     state.renderer.shadowMap.enabled = true;
     document.getElementById('viewport').appendChild(state.renderer.domElement);
 
@@ -95,9 +96,10 @@ function animate() {
 }
 
 function onWindowResize() {
-    state.camera.aspect = window.innerWidth / window.innerHeight;
+    const viewport = document.getElementById('viewport');
+    state.camera.aspect = viewport.offsetWidth / viewport.offsetHeight;
     state.camera.updateProjectionMatrix();
-    state.renderer.setSize(window.innerWidth, window.innerHeight);
+    state.renderer.setSize(viewport.offsetWidth, viewport.offsetHeight);
 }
 
 // ------------------------------------------------------------------
