@@ -19,7 +19,8 @@ export class NetworkManager {
 
         this.socket.on('player_updated', (data) => this.handlePlayerUpdated(data));
         this.socket.on('initial_states', (data) => this.handleInitialStates(data));
-        this.socket.on('enemy_states', (data) => this.handleEnemyStates(data)); // New listener
+        this.socket.on('enemy_states', (data) => this.handleEnemyStates(data));
+        this.socket.on('entity_update', (data) => this.handleEntityUpdate(data)); // New listener
         this.socket.on('player_disconnected', (data) => this.handlePlayerDisconnected(data));
         this.socket.on('player_reconnected', (data) => this.handlePlayerReconnected(data));
 
@@ -200,5 +201,15 @@ export class NetworkManager {
 
     emitLeftZone(characterId) {
         if (this.socket) this.socket.emit('player_left_zone', { characterId });
+    }
+
+    emitPlayerAttack(targetId) {
+        if (this.socket) this.socket.emit('player_attack', { targetId });
+    }
+
+    // Handlers
+    handleEntityUpdate(data) {
+        // data = { id, stats: { hp, maxHp }, ... }
+        this.game.entityManager.updateEnemyStats(data.id, data.stats);
     }
 }

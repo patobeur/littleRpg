@@ -7,6 +7,15 @@
 const SCENES = {
     scene_01: {
         name: 'Training Grounds',
+        scene: {
+            background: 0x1a1a2e,
+            fog: { color: 0x1a1a2e, near: 10, far: 50 },
+            ground: {
+                color: 0x242444,
+                roughness: 0.8,
+                metalness: 0.2
+            }
+        },
         spawns: [
             { x: 0, y: 0, z: 5, class: 'Warrior' },   // Top of triangle
             { x: -4, y: 0, z: -2, class: 'Mage' },    // Left bottom
@@ -19,10 +28,23 @@ const SCENES = {
         ],
         enemies: [
             { type: 'Alistar', x: 0, y: 0, z: -10, id: 'alistar_01' }
+        ],
+        structures: [
+            { type: 'house', x: 10, y: 0, z: 20, id: 'house_01', rotation: { x: 0, y: 45, z: 0 } },
+            { type: 'house', x: 15, y: 0, z: 20, id: 'house_02', rotation: { x: 0, y: 90, z: 0 } }
         ]
     },
     scene_02: {
         name: 'Dark Forest',
+        scene: {
+            background: 0x050510,
+            fog: { color: 0x050510, near: 5, far: 30 },
+            ground: {
+                color: 0x0a0a1a,
+                roughness: 0.9,
+                metalness: 0.1
+            }
+        },
         spawns: [
             { x: -3, y: 0, z: 0, class: 'Warrior' },
             { x: 0, y: 0, z: 0, class: 'Mage' },
@@ -36,6 +58,15 @@ const SCENES = {
     },
     scene_03: {
         name: 'Dragon Lair',
+        scene: {
+            background: 0x2e0505,
+            fog: { color: 0x2e0505, near: 8, far: 40 },
+            ground: {
+                color: 0x331111,
+                roughness: 0.6,
+                metalness: 0.4
+            }
+        },
         spawns: [
             { x: 0, y: 0, z: -5, class: 'Warrior' },
             { x: -4, y: 0, z: 2, class: 'Mage' },

@@ -107,10 +107,13 @@ class GameEngine {
                     this.entityManager.playerData.get(this.localCharacterId)?.currentTimeScale || 1
                 );
             }
-
-            // Check Teleport Zones
-            this.checkTeleportZones();
         }
+
+        // Update HUDs
+        this.entityManager.updateHUDPositions(this.sceneManager.camera);
+
+        // Teleport Logic
+        this.checkTeleportZones();
 
         this.sceneManager.renderer.render(this.sceneManager.scene, this.sceneManager.camera);
     }
@@ -118,6 +121,11 @@ class GameEngine {
     updateSceneConfig(data) {
         this.currentSceneId = data.sceneId;
         this.currentSceneConfig = data.config;
+
+        // Apply Ambiance
+        if (data.config.scene) {
+            this.sceneManager.updateAmbiance(data.config.scene);
+        }
 
         this.sceneManager.createSpawnMarkers(data.config.spawns);
         this.sceneManager.createTeleportZones(data.config.teleportZones);

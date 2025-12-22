@@ -32,6 +32,13 @@ export class InputManager {
             this.game.container.requestPointerLock();
         });
 
+        // Attack Listener
+        document.addEventListener('mousedown', (e) => {
+            if (document.pointerLockElement === this.game.container && e.button === 0) {
+                this.handleAttack();
+            }
+        });
+
         document.addEventListener('mousemove', (e) => {
             if (document.pointerLockElement === this.game.container) {
                 this.cameraRotation.yaw -= e.movementX * 0.003;
@@ -134,5 +141,41 @@ export class InputManager {
         }
 
         return isMoving;
+    }
+
+    handleAttack() {
+        // Raycast from center of screen
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(new THREE.Vector2(0, 0), this.game.sceneManager.camera);
+
+        // Check intersections with Enemies
+        const enemies = Array.from(this.game.entityManager.enemies.values()).map(e => e.model).filter(m => m);
+        const intersects = raycaster.intersectObjects(enemies, true);
+
+        if (intersects.length > 0) {
+            // Find which enemy holds this mesh
+            let hitObject = intersects[0].object;
+            // Traverse up to find root
+            while (hitObject.parent && hitObject.parent.type !== 'Scene') {
+                hitObject = hitObject.parent;
+            }
+
+            // Find enemy ID
+            for (const [id, enemy] of this.game.entityManager.enemies) {
+                if (enemy.model === hitObject) {
+                    console.log('Attacking enemy:', enemy.name);
+
+                    // Client-Side Range Check (Optional but good feedback)
+                    const playerPos = this.game.entityManager.targetModel.position;
+                    const dist = playerPos.distanceTo(enemy.model.position);
+
+                    // Simple animation trigger (if exists)
+                    // this.game.entityManager.playAction(this.game.localCharacterId, 'attack');
+
+                    this.game.networkManager.emitPlayerAttack(id);
+                    break;
+                }
+            }
+        }
     }
 }

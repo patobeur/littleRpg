@@ -32,6 +32,7 @@ class LobbyManager {
             socket.on('player_update', (data) => this.handlePlayerUpdate(socket, data));
             socket.on('player_entered_zone', (data) => this.handlePlayerEnteredZone(socket, data));
             socket.on('player_left_zone', (data) => this.handlePlayerLeftZone(socket, data));
+            socket.on('player_attack', (data) => this.handlePlayerAttack(socket, data));
             socket.on('disconnect', () => this.handleDisconnect(socket));
         });
     }
@@ -573,6 +574,58 @@ class LobbyManager {
 
         this.enemyStates.set(code, lobbyEnemies);
         console.log(`[LobbyManager] Loaded ${lobbyEnemies.size} enemies for lobby ${code} in ${sceneId}`);
+    }
+
+    handlePlayerAttack(socket, data) {
+        const code = this.playerToLobby.get(socket.id);
+        if (!code) return;
+
+        const lobby = this.lobbies.get(code);
+        const enemies = this.enemyStates.get(code);
+        if (!lobby || !enemies) return;
+
+        // Find Player
+        const player = lobby.players.find(p => p.id === socket.id);
+        if (!player) return;
+
+        const playerState = this.playerStates.get(player.characterId);
+        if (!playerState) return;
+
+        // Find Target
+        const target = enemies.get(data.targetId);
+        if (!target) return;
+
+        // Validate Distance
+        const playerPos = playerState.position;
+        const targetPos = target.position;
+        const dist = Math.hypot(playerPos.x - targetPos.x, playerPos.z - targetPos.z);
+
+        // Get Stats
+        const archetype = archetypes.chars[player.class] || archetypes.chars['Warrior'];
+        const range = archetype.stats.hitDistance || 2.0;
+
+        // Simple range check tolerance
+        if (dist > range + 2.0) { // +2.0 tolerance for sync/lag and radius
+            console.warn(`[Combat] Attack out of range: ${dist.toFixed(2)} > ${range}`);
+            // return; // Disable strict range check for now to test
+        }
+
+        // Apply Damage
+        const dmg = archetype.stats.autoAttackDamage || 10;
+        target.hp -= dmg;
+        console.log(`[Combat] ${player.name} hit ${target.name} for ${dmg} dmg. HP: ${target.hp}/${target.maxHp}`);
+
+        // Broadcast stats update
+        this.io.to(code).emit('entity_update', {
+            id: target.id,
+            stats: { hp: target.hp, maxHp: target.maxHp }
+        });
+
+        if (target.hp <= 0) {
+            // Handle Death
+            this.io.to(code).emit('entity_defeated', { id: target.id }); // Client needs to handle this
+            enemies.delete(target.id);
+        }
     }
 }
 

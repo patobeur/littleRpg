@@ -1,0 +1,54 @@
+/* Floating HUD */
+.entity-hud {
+    position: absolute;
+    transform: translate(-50%, -100%);
+    /* Center above point */
+    width: 120px;
+    pointer-events: none;
+    /* Don't block clicks */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-shadow: 1px 1px 2px black;
+    font-family: 'Cinzel', serif;
+    z-index: 9999;
+}
+
+.entity-name {
+    color: #e0e0e0;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.stat-bar-container {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid #333;
+    margin-bottom: 2px;
+    position: relative;
+    border-radius: 2px;
+}
+
+.stat-bar-fill {
+    height: 100%;
+    width: 100%;
+    /* Dynamic */
+    transition: width 0.2s ease-out;
+}
+
+.hp-fill {
+    background: #d32f2f;
+    box-shadow: 0 0 5px #d32f2f;
+}
+
+.mana-fill {
+    background: #1976d2;
+    box-shadow: 0 0 5px #1976d2;
+}
+
+.entity-level {
+    font-size: 12px;
+    color: #ffd700;
+}

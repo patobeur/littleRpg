@@ -188,14 +188,24 @@ export class EntityManager {
                 const calculatedRadius = enemyState.radius || 0.4;
                 console.log(`[EntityManager] Radius for enemy ${enemyState.type}: ${calculatedRadius}`);
 
+                // Create HUD
+                const hud = this.createEnemyHUD({
+                    id: enemyState.id,
+                    name: enemyState.name,
+                    level: enemyState.lv || 4,
+                    stats: { hp: enemyState.hp, maxHp: enemyState.maxHp }
+                });
+
                 this.enemies.set(enemyState.id, {
                     id: enemyState.id,
+                    name: enemyState.name, // Added name
                     model: fbx,
                     mixer: mixer,
                     actions: actions,
                     currentActionName: 'idle',
                     stats: { hp: enemyState.hp, maxHp: enemyState.maxHp },
-                    radius: calculatedRadius // Store radius
+                    radius: calculatedRadius,
+                    hud: hud
                 });
 
                 if (actions['idle']) actions['idle'].play();
@@ -256,5 +266,74 @@ export class EntityManager {
 
         data.currentActionName = name;
         data.currentTimeScale = timeScale;
+    }
+
+    // --- HUD Management ---
+
+    // --- HUD Management ---
+
+    createEnemyHUD(enemy) {
+        const hud = document.createElement('div');
+        hud.className = 'entity-hud';
+        hud.id = `hud-${enemy.id}`;
+
+        // Calculate HP %
+        const resultHp = enemy.stats.hp !== undefined ? enemy.stats.hp : 100;
+        const resultMaxHp = enemy.stats.maxHp !== undefined ? enemy.stats.maxHp : 100;
+        const hpPercent = (resultHp / resultMaxHp) * 100;
+
+        hud.innerHTML = `
+            <div class="entity-name">${enemy.name} <span class="entity-level">Lv.${enemy.level || 4}</span></div>
+            <div class="stat-bar-container"><div class="stat-bar-fill hp-fill" style="width: ${hpPercent}%"></div></div>
+            <div class="stat-bar-container"><div class="stat-bar-fill mana-fill" style="width: 100%"></div></div>
+        `;
+
+        document.body.appendChild(hud);
+        return hud;
+    }
+
+    removeEnemyHUD(id) {
+        const hud = document.getElementById(`hud-${id}`);
+        if (hud) hud.remove();
+    }
+
+    updateHUDPositions(camera) {
+        for (const [id, enemy] of this.enemies) {
+            if (!enemy.model || !enemy.hud) continue;
+
+            const headPos = enemy.model.position.clone();
+            // Use stored radius to estimate height, or default
+            const heightOffset = (enemy.radius || 0.5) * 4;
+            headPos.y += heightOffset;
+
+            // Project 3D to 2D
+            headPos.project(camera);
+
+            const x = (headPos.x * .5 + .5) * window.innerWidth;
+            const y = (-(headPos.y * .5) + .5) * window.innerHeight;
+
+            // Only show if in front of camera and reasonably close
+            if (headPos.z < 1 && headPos.z > -1) {
+                enemy.hud.style.display = 'flex';
+                enemy.hud.style.left = `${x}px`;
+                enemy.hud.style.top = `${y}px`;
+            } else {
+                enemy.hud.style.display = 'none';
+            }
+        }
+    }
+
+    updateEnemyStats(id, stats) {
+        const enemy = this.enemies.get(id);
+        if (!enemy || !enemy.hud) return;
+
+        // Update local stats
+        if (stats.hp !== undefined) enemy.stats.hp = stats.hp;
+        if (stats.maxHp !== undefined) enemy.stats.maxHp = stats.maxHp;
+
+        // Update UI
+        const hpFill = enemy.hud.querySelector('.hp-fill');
+        const hpPercent = (enemy.stats.hp / enemy.stats.maxHp) * 100;
+        if (hpFill) hpFill.style.width = `${Math.max(0, hpPercent)}%`;
     }
 }

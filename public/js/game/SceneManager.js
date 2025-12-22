@@ -55,10 +55,10 @@ export class SceneManager {
             roughness: 0.8,
             metalness: 0.2
         });
-        const ground = new THREE.Mesh(geometry, material);
-        ground.rotation.x = -Math.PI / 2;
-        ground.receiveShadow = true;
-        this.scene.add(ground);
+        this.groundMesh = new THREE.Mesh(geometry, material);
+        this.groundMesh.rotation.x = -Math.PI / 2;
+        this.groundMesh.receiveShadow = true;
+        this.scene.add(this.groundMesh);
 
         const grid = new THREE.GridHelper(100, 50, 0x444466, 0x222233);
         grid.position.y = 0.01;
@@ -169,6 +169,30 @@ export class SceneManager {
             this.camera.aspect = window.innerWidth / window.innerHeight;
             this.camera.updateProjectionMatrix();
             this.renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+    }
+
+    updateAmbiance(config) {
+        if (!config || !this.scene) return;
+
+        // Background
+        if (config.background) {
+            this.scene.background = new THREE.Color(config.background);
+        }
+
+        // Fog
+        if (config.fog) {
+            this.scene.fog = new THREE.Fog(config.fog.color, config.fog.near, config.fog.far);
+        } else {
+            this.scene.fog = null;
+        }
+
+        // Ground Material
+        if (config.ground && this.groundMesh) {
+            this.groundMesh.material.color.setHex(config.ground.color);
+            this.groundMesh.material.roughness = config.ground.roughness;
+            this.groundMesh.material.metalness = config.ground.metalness;
+            this.groundMesh.material.needsUpdate = true;
         }
     }
 }
