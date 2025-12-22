@@ -52,6 +52,7 @@ class Character {
                 class: charClass,
                 level: 1,
                 experience: 0,
+                inventory: [],
                 ...baseStats
             };
         } catch (error) {
