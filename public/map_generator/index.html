@@ -55,6 +55,10 @@
                 <div class="ribbon-group-content">
                     <div class="ribbon-column">
                         <input type="text" id="mapName" class="ribbon-input" value="new_village" placeholder="Map Name">
+                        <label
+                            style="font-size: 0.8rem; color: #ccc; display:flex; align-items:center; gap:5px; margin-top:2px;">
+                            <input type="checkbox" id="isLastMap"> Last Map
+                        </label>
                         <button class="ribbon-btn small" onclick="saveMap()">
                             <i class="fas fa-save"></i> Save Map
                         </button>
@@ -128,6 +132,10 @@
                     <button class="ribbon-btn" onclick="addSpawn()">
                         <i class="fas fa-flag"></i>
                         Spawn
+                    </button>
+                    <button class="ribbon-btn" onclick="addExit()">
+                        <i class="fas fa-door-open"></i>
+                        Exit
                     </button>
                     <button class="ribbon-btn" onclick="addEnemy('Alistar')">
                         <i class="fas fa-skull"></i>

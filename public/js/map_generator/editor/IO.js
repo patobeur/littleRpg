@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { state } from './State.js';
-import { addStructureResult, addSpawnAt, addEnemyAt, addPlaceholder, addRoad } from './Objects.js';
+import { addStructureResult, addSpawnAt, addExitAt, addEnemyAt, addPlaceholder, addRoad } from './Objects.js';
 
 export function refreshMapList() {
     const selector = document.getElementById('mapList');
@@ -27,10 +27,14 @@ export function refreshMapList() {
 
 export function saveMap() {
     const name = document.getElementById('mapName').value || 'untitled';
+    const isLastMap = document.getElementById('isLastMap').checked;
+
     const data = {
         name: name,
+        isLastMap: isLastMap,
         structures: [],
         spawns: [],
+        exits: [],
         enemies: [],
         roads: [],
         trees: []
@@ -50,7 +54,9 @@ export function saveMap() {
                 rotation: { z: THREE.MathUtils.radToDeg(rot.y) } // Save Y rot as Z for legacy compat or simplified
             });
         } else if (type === 'spawn') {
-            data.spawns.push({ x: pos.x, z: pos.z, scale: scale });
+            data.spawns.push({ x: pos.x, z: pos.z, scale: scale, color: obj.userData.color });
+        } else if (type === 'exit') {
+            data.exits.push({ x: pos.x, z: pos.z, scale: scale, color: obj.userData.color });
         } else if (type === 'enemy') {
             data.enemies.push({ type: obj.userData.enemyType, x: pos.x, z: pos.z, scale: scale });
         } else if (type === 'road') {
@@ -98,6 +104,9 @@ function loadMapData(mapData) {
     state.gizmo.detach();
     document.getElementById('mapName').value = mapData.name || 'loaded_map';
 
+    const cb = document.getElementById('isLastMap');
+    if (cb) cb.checked = !!mapData.isLastMap;
+
     if (mapData.structures) {
         mapData.structures.forEach(s => {
             // "Legacy" format stored type 'house' and rot in s.rotation.z (actually Y angle)
@@ -119,8 +128,25 @@ function loadMapData(mapData) {
 
     if (mapData.spawns) {
         mapData.spawns.forEach(s => {
-            const obj = addSpawnAt(s.x, s.z);
+            const obj = addSpawnAt(s.x, s.z, s.color);
             if (s.scale) obj.scale.setScalar(s.scale);
+        });
+    }
+
+    if (mapData.exits) {
+        mapData.exits.forEach(e => {
+            // Need to import addExitAt or it is available via Objects? 
+            // We need to import it. IO.js imports addSpawnAt, let's update imports too if needed.
+            // Actually replace_file_content replaces the block, so assuming imports are at top.
+            // Wait, I need to check if addExitAt is imported.
+            // It is NOT imported in the original file. 
+            // I should update imports first or use window.addExitAt if exposed? No, imports are better.
+            // Since I am replacing this block, I can't easily add import at top without replacing top too.
+            // But verify: IO.js imports `addSpawnAt` on line 3.
+            // I should have updated imports in IO.js as well.
+            // For now, I'll use the imported function assuming I update the import line too.
+            const obj = addExitAt(e.x, e.z, e.color);
+            if (e.scale) obj.scale.setScalar(e.scale);
         });
     }
 

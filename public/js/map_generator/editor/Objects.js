@@ -40,12 +40,12 @@ export async function addStructure(type, x = 0, z = 0) {
     return addStructureResult(type, x, z);
 }
 
-export function addSpawnAt(x, z) {
+export function addSpawnAt(x, z, color = 0x00ff00) {
     const mesh = new THREE.Mesh(
         new THREE.CylinderGeometry(0.5, 0.5, 2, 8),
-        new THREE.MeshStandardMaterial({ color: 0x00ff00 })
+        new THREE.MeshStandardMaterial({ color: color })
     );
-    mesh.userData = { type: 'spawn', id: `spawn_${Date.now()}`, isRoot: true };
+    mesh.userData = { type: 'spawn', color: color, id: `spawn_${Date.now()}`, isRoot: true };
     mesh.position.set(x, 1, z);
     state.scene.add(mesh);
     state.objects.push(mesh);
@@ -65,7 +65,7 @@ export function addEnemyAt(type, x, z) {
 }
 
 export function addSpawn() {
-    addSpawnAt(0, 0);
+    addSpawnAt(0, 0); // Default green
 }
 
 export function addEnemy(type) {
@@ -104,4 +104,50 @@ export function addRoad(len, x, z, rot) {
     state.scene.add(mesh);
     state.objects.push(mesh);
     return mesh;
+}
+
+export function addExitAt(x, z, color = 0x00ffff) {
+    const geometry = new THREE.TorusGeometry(1, 0.1, 8, 24);
+    geometry.rotateX(Math.PI / 2); // Lay flat
+    const material = new THREE.MeshStandardMaterial({ color: color, emissive: 0x000000 });
+    // Emissive might be too bright if not careful, keeping standard material, maybe slight emissive? 
+    // User asked for specific colors.
+
+    // Adjust emissive based on color? Simple standard material is fine.
+    material.emissive = new THREE.Color(color).multiplyScalar(0.2);
+
+    const mesh = new THREE.Mesh(geometry, material);
+
+    mesh.userData = { type: 'exit', color: color, id: `exit_${Date.now()}_${Math.random()}`, isRoot: true };
+    mesh.position.set(x, 0.1, z);
+
+    state.scene.add(mesh);
+    state.objects.push(mesh);
+    return mesh;
+}
+
+export function addExit() {
+    addExitAt(0, 0); // Default Cyan? Or maybe White? Default 0x00ffff
+}
+
+export function addDefaultSpawnsAndExits() {
+    const colors = [0xff0000, 0x00ff00, 0x0000ff]; // Red, Green, Blue
+
+    // 3 Spawns in a triangle (Radius 3)
+    const spawnRadius = 3;
+    for (let i = 0; i < 3; i++) {
+        const angle = (i * 120) * (Math.PI / 180);
+        const x = Math.sin(angle) * spawnRadius;
+        const z = Math.cos(angle) * spawnRadius;
+        addSpawnAt(x, z, colors[i]);
+    }
+
+    // 3 Exits in a triangle (Radius 8)
+    const exitRadius = 8;
+    for (let i = 0; i < 3; i++) {
+        const angle = (i * 120 + 60) * (Math.PI / 180); // Offset by 60 deg
+        const x = Math.sin(angle) * exitRadius;
+        const z = Math.cos(angle) * exitRadius;
+        addExitAt(x, z, colors[i]);
+    }
 }

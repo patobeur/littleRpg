@@ -4,7 +4,7 @@ import { initThree, onWindowResize, updateEnvironment } from './Scene.js';
 import { initEvents } from './Input.js';
 import { state } from './State.js';
 import { TransformGizmo } from '../tools/Gizmo.js';
-import { addStructure, addSpawn, addEnemy, deleteSelected } from './Objects.js';
+import { addStructure, addSpawn, addEnemy, deleteSelected, addExit, addDefaultSpawnsAndExits } from './Objects.js';
 import { refreshMapList, saveMap, loadSelectedMap } from './IO.js';
 import { generateOrganicVillage } from '../procedural/index.js';
 
@@ -41,6 +41,7 @@ function init() {
     window.addStructure = addStructure;
     window.addSpawn = addSpawn;
     window.addEnemy = addEnemy;
+    window.addExit = addExit;
     window.deleteSelected = deleteSelected;
     window.refreshMapList = refreshMapList;
     window.loadSelectedMap = loadSelectedMap;
@@ -70,6 +71,9 @@ function generateMap() {
     state.objects = [];
     state.selectedObject = null;
     state.gizmo.detach();
+
+    // Add Defaults
+    addDefaultSpawnsAndExits();
 
     if (type === 'village') {
         const data = generateOrganicVillage(Date.now(), size * 5);
