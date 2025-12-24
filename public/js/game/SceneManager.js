@@ -28,19 +28,18 @@ export class SceneManager {
 
         roadsList.forEach(r => {
             const len = r.len || 6;
-            const geo = new THREE.PlaneGeometry(4, len);
+            const geo = new THREE.PlaneGeometry(6, len); // Changed from 4 to 6 to match generator
             const mesh = new THREE.Mesh(geo, mat);
 
             mesh.rotation.x = -Math.PI / 2;
             // Apply Y rotation (which is Z rotation in the local plane space after X rotation)
-            mesh.rotation.z = -r.rot;
+            mesh.rotation.z = r.rot; // FIXED: Removed negative sign
 
             mesh.position.set(r.x, 0.02, r.z);
             if (r.scale) mesh.scale.setScalar(r.scale);
 
             mesh.receiveShadow = true;
             mesh.name = "road";
-            console.log(mesh);
             this.scene.add(mesh);
             this.roads.push(mesh);
         });

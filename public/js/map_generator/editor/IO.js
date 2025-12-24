@@ -76,9 +76,29 @@ export function saveMap() {
         const scale = obj.scale.x; // Assume uniform
 
         // Calculate distance from center
-        const distance = Math.sqrt(pos.x * pos.x + pos.z * pos.z);
+        let distance = Math.sqrt(pos.x * pos.x + pos.z * pos.z);
+
+        // For roads, calculate the endpoint positions considering rotation
+        if (type === 'road') {
+            const len = obj.userData.len || 6;
+            const halfLen = (len * scale) / 2;
+
+            // Road extends along Z axis locally, then rotated by rot.y
+            // Calculate both endpoints
+            const endpoint1X = pos.x + Math.sin(rot.y) * halfLen;
+            const endpoint1Z = pos.z + Math.cos(rot.y) * halfLen;
+            const endpoint2X = pos.x - Math.sin(rot.y) * halfLen;
+            const endpoint2Z = pos.z - Math.cos(rot.y) * halfLen;
+
+            const dist1 = Math.sqrt(endpoint1X * endpoint1X + endpoint1Z * endpoint1Z);
+            const dist2 = Math.sqrt(endpoint2X * endpoint2X + endpoint2Z * endpoint2Z);
+
+            distance = Math.max(dist1, dist2);
+        }
+
         // Add some margin for object size/collision
-        const margin = (type === 'structure' || type === 'house') ? 5 : 2;
+        const margin = (type === 'structure' || type === 'house') ? 5 :
+            (type === 'road') ? 3 : 2;
         maxDistance = Math.max(maxDistance, distance + margin);
 
         if (type === 'house' || type === 'structure') {
