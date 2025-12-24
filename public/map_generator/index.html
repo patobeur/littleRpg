@@ -23,11 +23,11 @@
     <div id="ribbon-container">
         <!-- Tabs -->
         <div class="ribbon-tabs">
-            <button class="ribbon-tab" onclick="UI.switchTab('file')">File</button>
+            <button class="ribbon-tab" onclick="UI.switchTab('scenario')">Scenario</button>
+            <button class="ribbon-tab" onclick="UI.switchTab('file')">Map</button>
             <button class="ribbon-tab active" onclick="UI.switchTab('home')">Home</button>
             <button class="ribbon-tab" onclick="UI.switchTab('insert')">Insert</button>
             <button class="ribbon-tab" onclick="UI.switchTab('edit')">Edit</button>
-            <button class="ribbon-tab" onclick="UI.switchTab('scenario')">Scenario</button>
             <button class="ribbon-tab" onclick="UI.switchTab('view')">View</button>
         </div>
 
@@ -70,16 +70,6 @@
                     </div>
                 </div>
                 <div class="ribbon-group-title">Save</div>
-            </div>
-
-            <div class="ribbon-group">
-                <div class="ribbon-group-content">
-                    <button class="ribbon-btn" onclick="window.location.href='/dashboard.html'">
-                        <i class="fas fa-sign-out-alt"></i>
-                        Exit
-                    </button>
-                </div>
-                <div class="ribbon-group-title">Exit</div>
             </div>
         </div>
 
@@ -140,16 +130,7 @@
 
             <div class="ribbon-group">
                 <div class="ribbon-group-content">
-                    <button class="ribbon-btn" onclick="addSpawn()">
-                        <i class="fas fa-flag"></i>
-                        Spawn
-                    </button>
-                    <button class="ribbon-btn" onclick="addExit()">
-                        <i class="fas fa-door-open"></i>
-                        Exit
-                    </button>
-                    <div class="ribbon-column"
-                        style="margin-left: 5px; padding-left: 5px; border-left: 1px solid #444;">
+                    <div class="ribbon-column">
                         <select id="enemyType" class="ribbon-input" style="width: 80px;">
                             <option value="Alistar">Alistar</option>
                         </select>
@@ -158,7 +139,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="ribbon-group-title">Gameplay</div>
+                <div class="ribbon-group-title">Enemies</div>
             </div>
         </div>
 
@@ -263,6 +244,16 @@
                     </div>
                 </div>
                 <div class="ribbon-group-title">Sequence</div>
+            </div>
+
+            <div class="ribbon-group">
+                <div class="ribbon-group-content">
+                    <button class="ribbon-btn" onclick="window.location.href='/dashboard.html'">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Exit
+                    </button>
+                </div>
+                <div class="ribbon-group-title">Exit</div>
             </div>
         </div>
 
