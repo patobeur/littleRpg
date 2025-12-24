@@ -66,11 +66,20 @@ export function saveMap() {
         }
     };
 
+    // Calculate map size based on object positions
+    let maxDistance = 25; // Minimum default
+
     state.objects.forEach(obj => {
         const type = obj.userData.type;
         const pos = obj.position;
         const rot = obj.rotation;
         const scale = obj.scale.x; // Assume uniform
+
+        // Calculate distance from center
+        const distance = Math.sqrt(pos.x * pos.x + pos.z * pos.z);
+        // Add some margin for object size/collision
+        const margin = (type === 'structure' || type === 'house') ? 5 : 2;
+        maxDistance = Math.max(maxDistance, distance + margin);
 
         if (type === 'house' || type === 'structure') {
             data.structures.push({
@@ -106,6 +115,11 @@ export function saveMap() {
             data.trees.push({ x: pos.x, z: pos.z, scale: scale });
         }
     });
+
+    // Round up to nearest 5 and add safety margin
+    data.mapSize = Math.ceil(maxDistance / 5) * 5 + 10;
+
+    console.log(`Map size calculated: ${data.mapSize} (based on max distance: ${maxDistance.toFixed(2)})`);
 
     fetch('/api/maps', {
         method: 'POST',

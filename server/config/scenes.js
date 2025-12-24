@@ -59,6 +59,7 @@ try {
                         name: mapData.name || sceneId,
                         isLastMap: !!mapData.isLastMap,
                         scene: sceneConfig,
+                        mapSize: mapData.mapSize || 50, // Map bounds for collision
                         spawns: mapData.spawns || [],
                         teleportZones: mapData.teleportZones || [],
                         enemies: (mapData.enemies || []).map((e, i) => ({

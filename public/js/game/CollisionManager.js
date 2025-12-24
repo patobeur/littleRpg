@@ -7,7 +7,16 @@ import * as THREE from 'three';
 export class CollisionManager {
     constructor(game) {
         this.game = game;
-        this.mapBounds = 50; // Simple square map limit
+        this.mapBounds = 50; // Simple square map limit (default)
+    }
+
+    /**
+     * Update map bounds dynamically based on scene config
+     * @param {number} size - New map bounds
+     */
+    setMapBounds(size) {
+        this.mapBounds = size || 50;
+        console.log(`Map bounds updated to: ${this.mapBounds}`);
     }
 
     /**

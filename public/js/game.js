@@ -135,6 +135,11 @@ class GameEngine {
             this.sceneManager.updateAmbiance(data.config.scene);
         }
 
+        // Update map bounds for collision
+        if (data.config.mapSize) {
+            this.collisionManager.setMapBounds(data.config.mapSize);
+        }
+
         this.sceneManager.createSpawnMarkers(data.config.spawns);
         this.sceneManager.createTeleportZones(data.config.teleportZones);
         this.sceneManager.createRoads(data.config.roads);
