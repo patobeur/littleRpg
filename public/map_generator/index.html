@@ -46,14 +46,20 @@
                             <button class="ribbon-btn small" onclick="loadSelectedMap()">
                                 <i class="fas fa-folder-open"></i> Load
                             </button>
-                            <button class="ribbon-btn small"
-                                onclick="window.generateMap(); /* abuse generateMap to clear? No better specific function */ location.reload(); /* Simple clear */ ">
-                                <i class="fas fa-eraser"></i> Clear
-                            </button>
                         </div>
                     </div>
                 </div>
-                <div class="ribbon-group-title">Load</div>
+                <div class="ribbon-group-title">Load Map</div>
+            </div>
+
+            <div class="ribbon-group">
+                <div class="ribbon-group-content">
+                    <button class="ribbon-btn" onclick="location.reload();">
+                        <i class="fas fa-file"></i>
+                        New Map
+                    </button>
+                </div>
+                <div class="ribbon-group-title">New Map</div>
             </div>
 
             <div class="ribbon-group">
@@ -65,11 +71,21 @@
                             <input type="checkbox" id="isLastMap"> Last Map
                         </label>
                         <button class="ribbon-btn small" onclick="saveMap()">
-                            <i class="fas fa-save"></i> Save Map
+                            <i class="fas fa-save"></i> Save
                         </button>
                     </div>
                 </div>
                 <div class="ribbon-group-title">Save</div>
+            </div>
+
+            <div class="ribbon-group">
+                <div class="ribbon-group-content">
+                    <button class="ribbon-btn" onclick="checkAndAddDefaultSpawnsAndExits()">
+                        <i class="fas fa-check-circle"></i>
+                        Check
+                    </button>
+                </div>
+                <div class="ribbon-group-title">Spawns & Exits</div>
             </div>
         </div>
 

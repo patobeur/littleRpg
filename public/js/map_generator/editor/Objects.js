@@ -165,3 +165,42 @@ export function addDefaultSpawnsAndExits() {
         addExitAt(x, z, colors[i]);
     }
 }
+
+export function checkAndAddDefaultSpawnsAndExits() {
+    // Vérifier si des spawns ou exits existent déjà
+    const hasSpawns = state.objects.some(obj => obj.userData.type === 'spawn');
+    const hasExits = state.objects.some(obj => obj.userData.type === 'exit');
+
+    if (hasSpawns && hasExits) {
+        alert('Spawns and exits already exist in this map.');
+        return;
+    }
+
+    if (!hasSpawns && !hasExits) {
+        // Ajouter tous les spawns et exits par défaut
+        addDefaultSpawnsAndExits();
+        alert('Default spawns and exits have been added to the map.');
+    } else if (!hasSpawns) {
+        // Ajouter seulement les spawns
+        const colors = [0xff0000, 0x00ff00, 0x0000ff];
+        const spawnRadius = 3;
+        for (let i = 0; i < 3; i++) {
+            const angle = (i * 120) * (Math.PI / 180);
+            const x = Math.sin(angle) * spawnRadius;
+            const z = Math.cos(angle) * spawnRadius;
+            addSpawnAt(x, z, colors[i]);
+        }
+        alert('Default spawns have been added to the map.');
+    } else if (!hasExits) {
+        // Ajouter seulement les exits
+        const colors = [0xff0000, 0x00ff00, 0x0000ff];
+        const exitRadius = 8;
+        for (let i = 0; i < 3; i++) {
+            const angle = (i * 120 + 60) * (Math.PI / 180);
+            const x = Math.sin(angle) * exitRadius;
+            const z = Math.cos(angle) * exitRadius;
+            addExitAt(x, z, colors[i]);
+        }
+        alert('Default exits have been added to the map.');
+    }
+}
