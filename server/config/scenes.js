@@ -27,20 +27,38 @@ try {
                     // The generator now saves "structures", "spawns", "teleportZones", etc.
                     // We might need to wrap them or just use them directly.
                     // The map generator saves: 
-                    // { name, isLastMap, structures: [], spawns: [], teleportZones: [], enemies: [], ... }
+                    // { name, isLastMap, structures: [], spawns: [], teleportZones: [], enemies: [], sceneSettings: {...} }
 
                     // The server expects SCENES[id] = { name: ..., scene: {...}, spawns: [], ... }
                     // We can map mapData directly or wrap it.
 
+                    // Convert sceneSettings to scene format if available
+                    let sceneConfig = {
+                        background: 0x1a1a2e,
+                        fog: { color: 0x1a1a2e, near: 10, far: 50 },
+                        ground: { color: 0x242444, roughness: 0.8, metalness: 0.2 }
+                    };
+
+                    if (mapData.sceneSettings) {
+                        const settings = mapData.sceneSettings;
+                        // Convert hex color strings to numbers
+                        if (settings.bgColor) {
+                            sceneConfig.background = parseInt(settings.bgColor.replace('#', '0x'));
+                        }
+                        if (settings.fogColor || settings.fogNear !== undefined || settings.fogFar !== undefined) {
+                            sceneConfig.fog = {
+                                color: settings.fogColor ? parseInt(settings.fogColor.replace('#', '0x')) : 0x1a1a2e,
+                                near: settings.fogNear !== undefined ? settings.fogNear : 10,
+                                far: settings.fogFar !== undefined ? settings.fogFar : 50
+                            };
+                        }
+                        // Keep ground default for now, or add to generator later
+                    }
+
                     SCENES[sceneId] = {
                         name: mapData.name || sceneId,
                         isLastMap: !!mapData.isLastMap,
-                        scene: {
-                            // Default scene env for now, or load from mapData if we add env settings to generator
-                            background: 0x1a1a2e,
-                            fog: { color: 0x1a1a2e, near: 10, far: 50 },
-                            ground: { color: 0x242444, roughness: 0.8, metalness: 0.2 }
-                        },
+                        scene: sceneConfig,
                         spawns: mapData.spawns || [],
                         teleportZones: mapData.teleportZones || [],
                         enemies: (mapData.enemies || []).map((e, i) => ({

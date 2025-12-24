@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { state } from './State.js';
 import { addStructureResult, addSpawnAt, addExitAt, addEnemyAt, addPlaceholder, addRoad } from './Objects.js';
+import { updateEnvironment } from './Scene.js';
 
 export function refreshMapList() {
     const selector = document.getElementById('mapList');
@@ -54,7 +55,15 @@ export function saveMap() {
         teleportZones: [],
         enemies: [],
         roads: [],
-        trees: []
+        trees: [],
+        sceneSettings: {
+            bgColor: document.getElementById('bgColor')?.value || '#111111',
+            fogColor: document.getElementById('fogColor')?.value || '#111111',
+            fogNear: parseFloat(document.getElementById('fogNear')?.value) || 20,
+            fogFar: parseFloat(document.getElementById('fogFar')?.value) || 100,
+            ambColor: document.getElementById('ambColor')?.value || '#ffffff',
+            ambInt: parseFloat(document.getElementById('ambInt')?.value) || 0.6
+        }
     };
 
     state.objects.forEach(obj => {
@@ -202,5 +211,21 @@ function loadMapData(mapData) {
             const obj = state.objects[state.objects.length - 1];
             if (obj && t.scale) obj.scale.setScalar(t.scale);
         });
+    }
+
+    // Apply scene settings if present
+    if (mapData.sceneSettings) {
+        const settings = mapData.sceneSettings;
+
+        // Update VIEW tab inputs
+        if (document.getElementById('bgColor')) document.getElementById('bgColor').value = settings.bgColor || '#111111';
+        if (document.getElementById('fogColor')) document.getElementById('fogColor').value = settings.fogColor || '#111111';
+        if (document.getElementById('fogNear')) document.getElementById('fogNear').value = settings.fogNear || 20;
+        if (document.getElementById('fogFar')) document.getElementById('fogFar').value = settings.fogFar || 100;
+        if (document.getElementById('ambColor')) document.getElementById('ambColor').value = settings.ambColor || '#ffffff';
+        if (document.getElementById('ambInt')) document.getElementById('ambInt').value = settings.ambInt || 0.6;
+
+        // Apply to scene
+        updateEnvironment(settings);
     }
 }
