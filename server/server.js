@@ -58,8 +58,8 @@ if (config.server.env === 'production') {
 
 
 // Body parsing middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Session middleware
 app.use(session(config.session));
@@ -165,6 +165,53 @@ app.post('/api/maps', requireLocalhost, express.json(), (req, res) => {
         res.json({ success: true, message: 'Map saved' });
     });
 });
+
+// SCENARIO ROUTES
+app.get('/api/scenarios', requireLocalhost, (req, res) => {
+    const dir = path.join(__dirname, 'data/scenarios');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+    fs.readdir(dir, (err, files) => {
+        if (err) return res.status(500).json({ error: 'Failed to list scenarios' });
+
+        const scenarios = [];
+        files.filter(f => f.endsWith('.json')).forEach(file => {
+            try {
+                const content = fs.readFileSync(path.join(dir, file), 'utf8');
+                scenarios.push(JSON.parse(content));
+            } catch (e) { }
+        });
+        res.json(scenarios);
+    });
+});
+
+app.get('/api/scenarios/:id', requireLocalhost, (req, res) => {
+    const safeId = req.params.id.replace(/[^a-zA-Z0-9_-]/g, '');
+    const filePath = path.join(__dirname, 'data/scenarios', `${safeId}.json`);
+
+    if (fs.existsSync(filePath)) {
+        res.sendFile(filePath);
+    } else {
+        res.status(404).json({ error: 'Scenario not found' });
+    }
+});
+
+app.post('/api/scenarios', requireLocalhost, express.json(), (req, res) => {
+    const scenario = req.body;
+    if (!scenario.id || !scenario.name) return res.status(400).json({ error: 'Invalid scenario data' });
+
+    const safeId = scenario.id.replace(/[^a-zA-Z0-9_-]/g, '');
+    const dir = path.join(__dirname, 'data/scenarios');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+    const filePath = path.join(dir, `${safeId}.json`);
+
+    fs.writeFile(filePath, JSON.stringify(scenario, null, 2), (err) => {
+        if (err) return res.status(500).json({ error: 'Failed to save scenario' });
+        res.json({ success: true, message: 'Scenario saved' });
+    });
+});
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {

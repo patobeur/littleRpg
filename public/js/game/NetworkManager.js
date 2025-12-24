@@ -89,6 +89,7 @@ export class NetworkManager {
 
     handleStructureStates(data) {
         if (data.structures) {
+            console.log(`[NetworkManager] Received ${data.structures.length} structures`);
             this.game.entityManager.loadStructures(data.structures);
         }
     }

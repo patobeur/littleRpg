@@ -7,6 +7,7 @@ import { TransformGizmo } from '../tools/Gizmo.js';
 import { addStructure, addSpawn, addEnemy, deleteSelected, addExit, addDefaultSpawnsAndExits } from './Objects.js';
 import { refreshMapList, saveMap, loadSelectedMap } from './IO.js';
 import { generateOrganicVillage } from '../procedural/index.js';
+import { refreshScenarioList, refreshScenarioMapSelect } from './Scenario.js';
 
 function init() {
     initThree();
@@ -51,8 +52,10 @@ function init() {
     console.log('Map Generator Initialized (Refactored)');
 
     // Initial Gen
-    generateVillage(10);
+    // generateVillage(10); // Start empty as requested
     refreshMapList();
+    refreshScenarioList();
+    refreshScenarioMapSelect();
 }
 
 function animate() {

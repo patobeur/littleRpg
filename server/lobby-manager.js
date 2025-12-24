@@ -3,6 +3,7 @@
  */
 const Character = require('./models/Character');
 const { getSceneConfig, getSpawnPosition, getNextScene, isPlayerInZone } = require('./config/scenes');
+const { SCENARIOS } = require('./config/scenarios');
 const enemiesData = require('./models/enemies');
 const structuresData = require('./models/structures');
 const archetypes = require('./models/archetypes');
@@ -39,11 +40,16 @@ class LobbyManager {
         });
     }
 
-    handleCreateLobby(socket, { character }) {
+    handleCreateLobby(socket, { character, scenarioId }) {
         const code = this.generateCode();
+        const scId = scenarioId || 'default';
+        const scenarioName = (SCENARIOS[scId] && SCENARIOS[scId].name) ? SCENARIOS[scId].name : scId;
+
         const lobby = {
             code,
             host: socket.id,
+            scenarioId: scId,
+            scenarioName: scenarioName,
             players: [{
                 id: socket.id,
                 name: character.name,
@@ -60,7 +66,7 @@ class LobbyManager {
 
         socket.join(code);
         socket.emit('lobby_created', lobby);
-        console.log(`Lobby ${code} created by ${character.name}`);
+        console.log(`Lobby ${code} created by ${character.name} (Scenario: ${lobby.scenarioId})`);
     }
 
     handleJoinLobby(socket, { code, character }) {
@@ -133,13 +139,17 @@ class LobbyManager {
 
         const allReady = lobby.players.every(p => p.ready);
         if (allReady && lobby.players.length > 0) {
-            lobby.started = true; // Mark lobby as started to prevent immediate closure on refresh
+            lobby.started = true;
             console.log(`Lobby ${code} starting game...`);
 
-            // Clear all player positions - new game starts at spawn points
+            // Determine starting scene based on scenario
+            const { getFirstScene } = require('./config/scenes');
+            const startScene = getFirstScene(lobby.scenarioId);
+            this.lobbyScenes.set(code, startScene);
+
+            // Clear all player positions
             for (const player of lobby.players) {
                 await Character.clearPosition(player.characterId);
-                // Also clear from memory
                 this.playerStates.delete(player.characterId);
             }
             console.log(`[LobbyManager] Cleared all positions for new game in lobby ${code}`);
@@ -155,14 +165,14 @@ class LobbyManager {
                         characterId: p.characterId,
                         class: p.class,
                         scale: baseScale,
-                        radius: baseRadius * baseScale // Scaled radius
+                        radius: baseRadius * baseScale
                     };
                 })
             });
 
-            // Initialize enemies and structures for the first scene
-            this.loadEnemiesForScene(code, 'scene_01');
-            this.loadStructuresForScene(code, 'scene_01');
+            // Initialize entities for the first scene
+            this.loadEnemiesForScene(code, startScene);
+            this.loadStructuresForScene(code, startScene);
         }
     }
 
@@ -196,8 +206,13 @@ class LobbyManager {
 
             console.log(`[LobbyManager] Found lobby ${lobbyCode}, players count: ${lobby.players.length}`);
 
-            // Get current scene for spawn positions
-            const currentScene = this.lobbyScenes.get(lobbyCode) || 'scene_01';
+            // Get current scene
+            const { getFirstScene } = require('./config/scenes');
+            const currentScene = this.lobbyScenes.get(lobbyCode) || getFirstScene(lobby.scenarioId);
+            // Ensure we set it back if not set
+            if (!this.lobbyScenes.has(lobbyCode)) {
+                this.lobbyScenes.set(lobbyCode, currentScene);
+            }
 
             const states = [];
             for (const p of lobby.players) {
@@ -211,7 +226,7 @@ class LobbyManager {
                         if (char && char.pos_x !== null && char.pos_x !== undefined) {
                             console.log(`[LobbyManager] Loaded from DB for char ${p.characterId}: x=${char.pos_x}, y=${char.pos_y}, z=${char.pos_z}`);
                             state = {
-                                position: { x: char.pos_x, y: char.pos_y, z: char.pos_z },
+                                position: { x: char.pos_x, y: 0, z: char.pos_z }, // FORCE Y=0
                                 rotation: char.rotation_y || 0,
                                 animation: 'idle',
                                 timeScale: 1,
@@ -224,7 +239,7 @@ class LobbyManager {
                             const spawnPos = getSpawnPosition(currentScene, p.class);
                             if (spawnPos) {
                                 state = {
-                                    position: { x: spawnPos.x, y: spawnPos.y, z: spawnPos.z },
+                                    position: { x: spawnPos.x, y: 0, z: spawnPos.z }, // FORCE Y=0
                                     rotation: 0,
                                     animation: 'idle',
                                     timeScale: 1,
@@ -233,7 +248,15 @@ class LobbyManager {
                                 this.playerStates.set(p.characterId, state);
                                 console.log(`[LobbyManager] Spawning ${p.class} at x=${spawnPos.x}, z=${spawnPos.z}`);
                             } else {
-                                console.warn(`[LobbyManager] No spawn position found for ${p.class} in ${currentScene}`);
+                                state = {
+                                    position: { x: 0, y: 0, z: 0 },
+                                    rotation: 0,
+                                    animation: 'idle',
+                                    timeScale: 1,
+                                    lastDBSave: 0
+                                };
+                                console.warn(`[LobbyManager] No spawn position found for ${p.class} in ${currentScene}, defaulting to 0,0,0`);
+                                this.playerStates.set(p.characterId, state);
                             }
                         }
                     } catch (err) {
@@ -470,10 +493,10 @@ class LobbyManager {
         if (!lobby) return;
 
         // Get current scene
-        const currentScene = this.lobbyScenes.get(code) || 'scene_01';
+        const currentScene = this.lobbyScenes.get(code) || 'scene_01'; // Fallback
 
         // Calculate next scene using centralized config
-        const nextScene = getNextScene(currentScene);
+        const nextScene = getNextScene(currentScene, lobby.scenarioId);
 
         if (!nextScene) {
             console.log(`[LobbyManager] No more scenes! End of game.`);
@@ -505,13 +528,13 @@ class LobbyManager {
             if (spawn) {
                 spawnPositions[player.characterId] = {
                     x: spawn.x,
-                    y: spawn.y,
+                    y: 0, // Force Y=0
                     z: spawn.z
                 };
 
                 // Update playerStates with new spawn
                 this.playerStates.set(player.characterId, {
-                    position: { x: spawn.x, y: spawn.y, z: spawn.z },
+                    position: { x: spawn.x, y: 0, z: spawn.z }, // Force Y=0
                     rotation: 0,
                     animation: 'idle',
                     timeScale: 1

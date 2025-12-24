@@ -28,6 +28,8 @@
 
             // Enable create game button if user has at least one character
             document.getElementById('create-game-btn').disabled = characters.length === 0;
+
+            loadScenarios(); // Load scenarios for the modal
         } catch (error) {
             console.error('Failed to load dashboard:', error);
         }
@@ -277,10 +279,46 @@
         document.getElementById('lobby-selection-modal').classList.add('hidden');
     });
 
-    document.getElementById('create-game-action').addEventListener('click', () => {
+    // Load scenarios
+    async function loadScenarios() {
+        try {
+            const response = await fetch('/api/scenarios');
+            const scenarios = await response.json();
+
+            const select = document.getElementById('scenario-select');
+            select.innerHTML = '';
+
+            scenarios.forEach(sc => {
+                const opt = document.createElement('option');
+                opt.value = sc.id;
+                opt.innerText = sc.name;
+                select.appendChild(opt);
+            });
+
+            if (scenarios.length === 0) {
+                const opt = document.createElement('option');
+                opt.innerText = "No scenarios found";
+                select.appendChild(opt);
+            }
+        } catch (e) {
+            console.error("Failed to load scenarios", e);
+            document.getElementById('scenario-select').innerHTML = '<option>Error loading scenarios</option>';
+        }
+    }
+
+    // ... (rest of code)
+
+    document.getElementById('create-game-btn-confirm').addEventListener('click', () => {
+        const scenarioId = document.getElementById('scenario-select').value;
+        if (!scenarioId) {
+            alert("Please select a scenario");
+            return;
+        }
+
         sessionStorage.setItem('selectedCharacter', JSON.stringify(selectedCharacter));
         sessionStorage.setItem('isLobbyOwner', 'true');
-        sessionStorage.setItem('currentLobby', JSON.stringify({ code: '......', players: [] })); // Placeholder
+        // Store scenarioId so lobby.js can use it
+        sessionStorage.setItem('currentLobby', JSON.stringify({ code: '......', players: [], scenarioId: scenarioId }));
         window.location.href = '/lobby.html';
     });
 

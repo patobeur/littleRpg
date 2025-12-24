@@ -27,6 +27,7 @@
             <button class="ribbon-tab active" onclick="UI.switchTab('home')">Home</button>
             <button class="ribbon-tab" onclick="UI.switchTab('insert')">Insert</button>
             <button class="ribbon-tab" onclick="UI.switchTab('edit')">Edit</button>
+            <button class="ribbon-tab" onclick="UI.switchTab('scenario')">Scenario</button>
             <button class="ribbon-tab" onclick="UI.switchTab('view')">View</button>
         </div>
 
@@ -44,6 +45,10 @@
                             </button>
                             <button class="ribbon-btn small" onclick="loadSelectedMap()">
                                 <i class="fas fa-folder-open"></i> Load
+                            </button>
+                            <button class="ribbon-btn small"
+                                onclick="window.generateMap(); /* abuse generateMap to clear? No better specific function */ location.reload(); /* Simple clear */ ">
+                                <i class="fas fa-eraser"></i> Clear
                             </button>
                         </div>
                     </div>
@@ -119,10 +124,16 @@
         <div id="ribbon-insert" class="ribbon-panel">
             <div class="ribbon-group">
                 <div class="ribbon-group-content">
-                    <button class="ribbon-btn" onclick="addStructure('house')">
-                        <i class="fas fa-home"></i>
-                        House
-                    </button>
+                    <div class="ribbon-column">
+                        <select id="structureType" class="ribbon-input" style="width: 100px;">
+                            <option value="house">House</option>
+                            <option value="rock">Rock</option>
+                        </select>
+                        <button class="ribbon-btn small"
+                            onclick="addStructure(document.getElementById('structureType').value)">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
                 </div>
                 <div class="ribbon-group-title">Structures</div>
             </div>
@@ -137,10 +148,15 @@
                         <i class="fas fa-door-open"></i>
                         Exit
                     </button>
-                    <button class="ribbon-btn" onclick="addEnemy('Alistar')">
-                        <i class="fas fa-skull"></i>
-                        Enemy
-                    </button>
+                    <div class="ribbon-column"
+                        style="margin-left: 5px; padding-left: 5px; border-left: 1px solid #444;">
+                        <select id="enemyType" class="ribbon-input" style="width: 80px;">
+                            <option value="Alistar">Alistar</option>
+                        </select>
+                        <button class="ribbon-btn small" onclick="addEnemy(document.getElementById('enemyType').value)">
+                            <i class="fas fa-skull"></i> Add
+                        </button>
+                    </div>
                 </div>
                 <div class="ribbon-group-title">Gameplay</div>
             </div>
@@ -194,6 +210,62 @@
             </div>
         </div>
 
+        <!-- SCENARIO TAB -->
+        <div id="ribbon-scenario" class="ribbon-panel">
+            <div class="ribbon-group">
+                <div class="ribbon-group-content">
+                    <div class="ribbon-column">
+                        <select id="scenarioList" class="ribbon-input" style="width: 150px;"></select>
+                        <div style="display:flex; gap:2px;">
+                            <button class="ribbon-btn small" onclick="Scenario.refreshScenarioList()">
+                                <i class="fas fa-sync"></i>
+                            </button>
+                            <button class="ribbon-btn small" onclick="Scenario.loadSelectedScenario()">
+                                Load
+                            </button>
+                            <button class="ribbon-btn small" onclick="Scenario.createNewScenario()">
+                                New
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="ribbon-group-title">Selection</div>
+            </div>
+
+            <div class="ribbon-group">
+                <div class="ribbon-group-content">
+                    <div class="ribbon-column">
+                        <input type="text" id="scenarioName" class="ribbon-input" placeholder="Name"
+                            style="width: 120px;">
+                        <button class="ribbon-btn small" onclick="Scenario.saveScenario()">
+                            <i class="fas fa-save"></i> Save
+                        </button>
+                    </div>
+                </div>
+                <div class="ribbon-group-title">Settings</div>
+            </div>
+
+            <div class="ribbon-group" style="flex-grow: 1;">
+                <div class="ribbon-group-content" style="width: 100%;">
+
+                    <!-- Map List (Left Side) -->
+                    <div id="scenarioMapList"
+                        style="width: 200px; height: 60px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 4px; margin-right: 5px;">
+                        <!-- Items populated by JS -->
+                    </div>
+
+                    <!-- Map Controls (Right Side) -->
+                    <div class="ribbon-column">
+                        <select id="scenarioMapSelect" class="ribbon-input" style="width: 140px;"></select>
+                        <button class="ribbon-btn small" onclick="Scenario.addCurrentMapToScenario()">
+                            <i class="fas fa-plus"></i> Add Map
+                        </button>
+                    </div>
+                </div>
+                <div class="ribbon-group-title">Sequence</div>
+            </div>
+        </div>
+
         <!-- VIEW TAB -->
         <div id="ribbon-view" class="ribbon-panel">
             <div class="ribbon-group">
@@ -223,6 +295,7 @@
                 </div>
                 <div class="ribbon-group-title">Atmosphere</div>
             </div>
+
 
             <div class="ribbon-group">
                 <div class="ribbon-group-content">

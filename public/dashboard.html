@@ -140,9 +140,18 @@
             <p class="text-muted mb-4">Select an action to continue</p>
 
             <div class="lobby-actions">
-                <div class="card p-4 text-center cursor-pointer mb-3" id="create-game-action">
+                <div class="card p-4 text-center mb-3">
                     <h3>👑 Create New Game</h3>
-                    <p>Start a new adventure and invite friends.</p>
+                    <p class="mb-3">Start a new adventure and invite friends.</p>
+
+                    <div style="text-align: left; margin-bottom: 10px;">
+                        <label class="form-label">Select Scenario</label>
+                        <select id="scenario-select" class="form-input text-center">
+                            <option value="">Loading...</option>
+                        </select>
+                    </div>
+
+                    <button id="create-game-btn-confirm" class="btn btn-primary w-full">Create & Play</button>
                 </div>
 
                 <div class="card p-4 mb-3">

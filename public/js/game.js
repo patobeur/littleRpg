@@ -62,6 +62,14 @@ class GameEngine {
         const lobbyCode = sessionStorage.getItem('lobbyCode');
         this.networkManager.joinGame(lobbyCode, this.localCharacterId);
 
+        // Initial Location UI Update
+        const lobbyData = JSON.parse(sessionStorage.getItem('currentLobby'));
+        const scenarioName = lobbyData ? lobbyData.scenarioName : 'Unknown Adventure';
+        const startSceneId = sessionStorage.getItem('currentScene') || 'scene_01'; // Fallback
+        // Typically scene config comes via network, but we might have initial one
+        // We'll update map name when scene_config event arrives preferably
+        this.uiManager.updateLocation(scenarioName, 'Loading...');
+
         this.uiManager.hideLoading();
 
         // Resize handler
@@ -129,6 +137,14 @@ class GameEngine {
 
         this.sceneManager.createSpawnMarkers(data.config.spawns);
         this.sceneManager.createTeleportZones(data.config.teleportZones);
+        this.sceneManager.createRoads(data.config.roads);
+        this.sceneManager.createRoads(data.config.roads);
+        this.sceneManager.createTrees(data.config.trees);
+
+        // Update UI
+        const lobbyData = JSON.parse(sessionStorage.getItem('currentLobby'));
+        const scenarioName = lobbyData ? lobbyData.scenarioName : '';
+        this.uiManager.updateLocation(scenarioName, data.config.name);
     }
 
     handleSceneChange(data) {
@@ -167,6 +183,11 @@ class GameEngine {
             // Load enemies for the new scene
             if (data.enemies) {
                 this.entityManager.loadEnemies(data.enemies);
+            }
+
+            // Load structures for the new scene
+            if (data.structures) {
+                this.entityManager.loadStructures(data.structures);
             }
 
             // Clear my zone state

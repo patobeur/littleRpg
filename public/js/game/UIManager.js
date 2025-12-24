@@ -19,6 +19,25 @@ export class UIManager {
                 </div>
             `).join('')}
         `;
+
+        // Create Location Info Container if not exists
+        if (!document.getElementById('location-info')) {
+            const locInfo = document.createElement('div');
+            locInfo.id = 'location-info';
+            locInfo.style.cssText = 'position: absolute; top: 10px; right: 10px; text-align: right; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.8); pointer-events: none; z-index: 100; font-family: var(--font-primary);';
+            locInfo.innerHTML = `
+                <div id="scenario-name" style="font-size: 1.2rem; font-weight: bold; color: var(--color-accent-primary);"></div>
+                <div id="map-name" style="font-size: 1rem; color: #ddd;"></div>
+            `;
+            document.body.appendChild(locInfo);
+        }
+    }
+
+    updateLocation(scenarioName, mapName) {
+        const scenEl = document.getElementById('scenario-name');
+        const mapEl = document.getElementById('map-name');
+        if (scenEl) scenEl.textContent = scenarioName || '';
+        if (mapEl) mapEl.textContent = mapName || '';
     }
 
     hideLoading() {

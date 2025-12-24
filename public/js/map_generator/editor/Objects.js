@@ -17,21 +17,19 @@ export function addStructureResult(type, x, z) {
             resolve(group); // Resolve after load
         }, undefined, (err) => {
             console.error(err);
+            const geom = new THREE.BoxGeometry(2, 2, 2);
+            geom.translate(0, 1, 0); // Pivot at bottom
             const mesh = new THREE.Mesh(
-                new THREE.BoxGeometry(2, 2, 2),
+                geom,
                 new THREE.MeshStandardMaterial({ color: 0x885522 })
             );
-            mesh.position.y = 1;
             group.add(mesh);
             resolve(group);
         });
 
-        group.position.set(x, 0, z);
+        group.position.set(x, 0, z); // Always 0
         state.scene.add(group);
         state.objects.push(group);
-        // DO NOT resolve here if we wait for load, but logically group is added immediately.
-        // If caller needs dimensions, wait for load. 
-        // Current usage: caller rotates. Group rotation is fine.
         resolve(group);
     });
 }
@@ -41,45 +39,51 @@ export async function addStructure(type, x = 0, z = 0) {
 }
 
 export function addSpawnAt(x, z, color = 0x00ff00) {
+    const geo = new THREE.CylinderGeometry(0.5, 0.5, 2, 8);
+    geo.translate(0, 1, 0); // Pivot at bottom
     const mesh = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.5, 0.5, 2, 8),
+        geo,
         new THREE.MeshStandardMaterial({ color: color })
     );
     mesh.userData = { type: 'spawn', color: color, id: `spawn_${Date.now()}`, isRoot: true };
-    mesh.position.set(x, 1, z);
+    mesh.position.set(x, 0, z);
     state.scene.add(mesh);
     state.objects.push(mesh);
     return mesh;
 }
 
 export function addEnemyAt(type, x, z) {
+    const geo = new THREE.CapsuleGeometry(0.5, 2, 4);
+    geo.translate(0, 1.5, 0); // Pivot at bottom (2/2 + 0.5 = 1.5)
     const mesh = new THREE.Mesh(
-        new THREE.CapsuleGeometry(0.5, 2, 4),
+        geo,
         new THREE.MeshStandardMaterial({ color: 0xff0000 })
     );
     mesh.userData = { type: 'enemy', enemyType: type, id: `${type}_${Date.now()}`, isRoot: true };
-    mesh.position.set(x, 1, z);
+    mesh.position.set(x, 0, z);
     state.scene.add(mesh);
     state.objects.push(mesh);
     return mesh;
 }
 
 export function addSpawn() {
-    addSpawnAt(0, 0); // Default green
+    addSpawnAt(0, 0);
 }
 
 export function addEnemy(type) {
-    addEnemyAt(type, 2, 2);
+    addEnemyAt(type || 'Alistar', 2, 2);
 }
 
 export function addPlaceholder(type, x, z, color) {
+    const geo = new THREE.ConeGeometry(0.5, 2, 8);
+    geo.translate(0, 1, 0); // Pivot at bottom
     const mesh = new THREE.Mesh(
-        new THREE.ConeGeometry(0.5, 2, 8),
+        geo,
         new THREE.MeshStandardMaterial({ color: color })
     );
 
     mesh.userData = { type: type, id: `${type}_${Date.now()}_${Math.random()}`, isRoot: true };
-    mesh.position.set(x, 1, z);
+    mesh.position.set(x, 0, z);
     state.scene.add(mesh);
     state.objects.push(mesh);
 }
@@ -96,8 +100,10 @@ export function deleteSelected() {
 
 export function addRoad(len, x, z, rot) {
     const material = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.9 });
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(6, 0.1, len), material);
-    mesh.position.set(x, 0.05, z);
+    const geo = new THREE.BoxGeometry(6, 0.1, len);
+    geo.translate(0, 0.05, 0); // Pivot at bottom
+    const mesh = new THREE.Mesh(geo, material);
+    mesh.position.set(x, 0, z);
     mesh.rotation.y = rot;
     mesh.userData = { type: 'road', len: len, id: `road_${Date.now()}_${Math.random()}`, isRoot: true };
 
@@ -109,17 +115,18 @@ export function addRoad(len, x, z, rot) {
 export function addExitAt(x, z, color = 0x00ffff) {
     const geometry = new THREE.TorusGeometry(1, 0.1, 8, 24);
     geometry.rotateX(Math.PI / 2); // Lay flat
-    const material = new THREE.MeshStandardMaterial({ color: color, emissive: 0x000000 });
-    // Emissive might be too bright if not careful, keeping standard material, maybe slight emissive? 
-    // User asked for specific colors.
+    // Pivot is center of torus (0,0,0). With rotateX, it is flat on ground.
+    // Tube is 0.1. So it goes from -0.1 to 0.1 in Y?
+    // If I want it ON ground, I should lift it by 0.05?
+    // Or just set pos.y = 0.
 
-    // Adjust emissive based on color? Simple standard material is fine.
+    const material = new THREE.MeshStandardMaterial({ color: color, emissive: 0x000000 });
     material.emissive = new THREE.Color(color).multiplyScalar(0.2);
 
     const mesh = new THREE.Mesh(geometry, material);
 
     mesh.userData = { type: 'exit', color: color, id: `exit_${Date.now()}_${Math.random()}`, isRoot: true };
-    mesh.position.set(x, 0.1, z);
+    mesh.position.set(x, 0, z);
 
     state.scene.add(mesh);
     state.objects.push(mesh);

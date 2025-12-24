@@ -12,6 +12,77 @@ export class SceneManager {
         // Environment elements
         this.spawnMarkers = [];
         this.teleportZones = [];
+        this.roads = [];
+        this.trees = [];
+    }
+
+
+
+    createRoads(roadsList) {
+        if (this.roads) this.roads.forEach(m => this.scene.remove(m));
+        this.roads = [];
+
+        if (!roadsList) return;
+
+        const mat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.9, side: THREE.DoubleSide });
+
+        roadsList.forEach(r => {
+            const len = r.len || 6;
+            const geo = new THREE.PlaneGeometry(4, len);
+            const mesh = new THREE.Mesh(geo, mat);
+
+            mesh.rotation.x = -Math.PI / 2;
+            // Apply Y rotation (which is Z rotation in the local plane space after X rotation)
+            mesh.rotation.z = -r.rot;
+
+            mesh.position.set(r.x, 0.02, r.z);
+            if (r.scale) mesh.scale.setScalar(r.scale);
+
+            mesh.receiveShadow = true;
+            mesh.name = "road";
+            console.log(mesh);
+            this.scene.add(mesh);
+            this.roads.push(mesh);
+        });
+        console.log(`[SceneManager] Created ${this.roads.length} roads`);
+    }
+
+    createTrees(treeList) {
+        if (this.trees) this.trees.forEach(m => this.scene.remove(m));
+        this.trees = [];
+
+        if (!treeList) return;
+
+        // Re-use geometries for performance
+        const trunkGeo = new THREE.CylinderGeometry(0.2, 0.3, 1.5, 6);
+        const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5c4033 });
+        const leavesGeo = new THREE.ConeGeometry(1.5, 3, 6);
+        const leavesMat = new THREE.MeshStandardMaterial({ color: 0x228b22 });
+
+        treeList.forEach(t => {
+            const group = new THREE.Group();
+
+            const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+            trunk.position.y = 0.75;
+            trunk.castShadow = true;
+            trunk.receiveShadow = true;
+            group.add(trunk);
+
+            const leaves = new THREE.Mesh(leavesGeo, leavesMat);
+            leaves.position.y = 2.5;
+            leaves.castShadow = true;
+            leaves.receiveShadow = true;
+            group.add(leaves);
+
+            group.position.set(t.x, 0, t.z);
+            if (t.scale) group.scale.setScalar(t.scale);
+
+            group.name = "tree";
+            console.log(group);
+            this.scene.add(group);
+            this.trees.push(group);
+        });
+        console.log(`[SceneManager] Created ${this.trees.length} trees`);
     }
 
     init() {

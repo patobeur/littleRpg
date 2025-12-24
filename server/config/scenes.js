@@ -4,104 +4,74 @@
  * This is the single source of truth - client receives this data from server
  */
 
-const SCENES = {
-    scene_01: {
-        name: 'Training Grounds',
-        scene: {
-            background: 0x1a1a2e,
-            fog: { color: 0x1a1a2e, near: 10, far: 50 },
-            ground: {
-                color: 0x242444,
-                roughness: 0.8,
-                metalness: 0.2
+const fs = require('fs');
+const path = require('path');
+const { SCENARIOS } = require('./scenarios');
+
+const SCENES = {};
+
+// Load scenes dynamically from data/maps
+const mapsDir = path.join(__dirname, '../data/maps');
+
+try {
+    if (fs.existsSync(mapsDir)) {
+        const files = fs.readdirSync(mapsDir);
+        files.forEach(file => {
+            if (file.endsWith('.json')) {
+                const sceneId = file.replace('.json', '');
+                try {
+                    const data = fs.readFileSync(path.join(mapsDir, file), 'utf8');
+                    const mapData = JSON.parse(data);
+
+                    // Transform map data to scene config format if needed
+                    // The generator now saves "structures", "spawns", "teleportZones", etc.
+                    // We might need to wrap them or just use them directly.
+                    // The map generator saves: 
+                    // { name, isLastMap, structures: [], spawns: [], teleportZones: [], enemies: [], ... }
+
+                    // The server expects SCENES[id] = { name: ..., scene: {...}, spawns: [], ... }
+                    // We can map mapData directly or wrap it.
+
+                    SCENES[sceneId] = {
+                        name: mapData.name || sceneId,
+                        isLastMap: !!mapData.isLastMap,
+                        scene: {
+                            // Default scene env for now, or load from mapData if we add env settings to generator
+                            background: 0x1a1a2e,
+                            fog: { color: 0x1a1a2e, near: 10, far: 50 },
+                            ground: { color: 0x242444, roughness: 0.8, metalness: 0.2 }
+                        },
+                        spawns: mapData.spawns || [],
+                        teleportZones: mapData.teleportZones || [],
+                        enemies: (mapData.enemies || []).map((e, i) => ({
+                            ...e,
+                            id: e.id || `enemy_${sceneId}_${i}`
+                        })),
+                        structures: (mapData.structures || []).map((s, i) => ({
+                            ...s,
+                            id: s.id || `struct_${sceneId}_${i}`
+                        })),
+                        roads: mapData.roads || [],
+                        trees: mapData.trees || []
+                    };
+
+                    console.log(`Loaded scene: ${sceneId}`);
+                } catch (e) {
+                    console.error(`Error loading map ${file}:`, e);
+                }
             }
-        },
-        spawns: [
-            { x: 0, y: 0, z: 5, class: 'Warrior' },   // Top of triangle
-            { x: -4, y: 0, z: -2, class: 'Mage' },    // Left bottom
-            { x: 4, y: 0, z: -2, class: 'Healer' }    // Right bottom
-        ],
-        teleportZones: [
-            { x: 0, y: 0.1, z: 8, radius: 1.5, class: 'Warrior', color: 0xff4444 },
-            { x: -6, y: 0.1, z: -5, radius: 1.5, class: 'Mage', color: 0x4444ff },
-            { x: 6, y: 0.1, z: -5, radius: 1.5, class: 'Healer', color: 0x44ff44 }
-        ],
-        enemies: [
-            { type: 'Alistar', x: 0, y: 0, z: -10, id: 'alistar_01' }
-        ],
-        structures: [
-            // Left Side
-            { type: 'house', x: -10, y: 0, z: 10, id: 'h_l_1', rotation: { x: -90, y: 0, z: -90 } },
-            { type: 'house', x: -10, y: 0, z: 20, id: 'h_l_2', rotation: { x: -90, y: 0, z: -90 } },
-            { type: 'house', x: -10, y: 0, z: 30, id: 'h_l_3', rotation: { x: -90, y: 0, z: -90 } },
-            { type: 'house', x: -10, y: 0, z: 40, id: 'h_l_4', rotation: { x: -90, y: 0, z: -90 } },
-            { type: 'house', x: -10, y: 0, z: 50, id: 'h_l_5', rotation: { x: -90, y: 0, z: -90 } },
-            { type: 'house', x: -10, y: 0, z: 60, id: 'h_l_6', rotation: { x: -90, y: 0, z: -90 } },
-            { type: 'house', x: -10, y: 0, z: 70, id: 'h_l_7', rotation: { x: -90, y: 0, z: -90 } },
-            { type: 'house', x: -10, y: 0, z: 80, id: 'h_l_8', rotation: { x: -90, y: 0, z: -90 } },
-            { type: 'house', x: -10, y: 0, z: 90, id: 'h_l_9', rotation: { x: -90, y: 0, z: -90 } },
-            { type: 'house', x: -10, y: 0, z: 100, id: 'h_l_10', rotation: { x: -90, y: 0, z: -90 } },
-            // Right Side
-            { type: 'house', x: 10, y: 0, z: 10, id: 'h_r_1', rotation: { x: -90, y: 0, z: 90 } },
-            { type: 'house', x: 10, y: 0, z: 20, id: 'h_r_2', rotation: { x: -90, y: 0, z: 90 } },
-            { type: 'house', x: 10, y: 0, z: 30, id: 'h_r_3', rotation: { x: -90, y: 0, z: 90 } },
-            { type: 'house', x: 10, y: 0, z: 40, id: 'h_r_4', rotation: { x: -90, y: 0, z: 90 } },
-            { type: 'house', x: 10, y: 0, z: 50, id: 'h_r_5', rotation: { x: -90, y: 0, z: 90 } },
-            { type: 'house', x: 10, y: 0, z: 60, id: 'h_r_6', rotation: { x: -90, y: 0, z: 90 } },
-            { type: 'house', x: 10, y: 0, z: 70, id: 'h_r_7', rotation: { x: -90, y: 0, z: 90 } },
-            { type: 'house', x: 10, y: 0, z: 80, id: 'h_r_8', rotation: { x: -90, y: 0, z: 90 } },
-            { type: 'house', x: 10, y: 0, z: 90, id: 'h_r_9', rotation: { x: -90, y: 0, z: 90 } },
-            { type: 'house', x: 10, y: 0, z: 100, id: 'h_r_10', rotation: { x: -90, y: 0, z: 90 } }
-        ]
-    },
-    scene_02: {
-        name: 'Dark Forest',
-        scene: {
-            background: 0x050510,
-            fog: { color: 0x050510, near: 5, far: 30 },
-            ground: {
-                color: 0x0a0a1a,
-                roughness: 0.9,
-                metalness: 0.1
-            }
-        },
-        spawns: [
-            { x: -3, y: 0, z: 0, class: 'Warrior' },
-            { x: 0, y: 0, z: 0, class: 'Mage' },
-            { x: 3, y: 0, z: 0, class: 'Healer' }
-        ],
-        teleportZones: [
-            { x: -3, y: 0.1, z: 10, radius: 1.5, class: 'Warrior', color: 0xff4444 },
-            { x: 0, y: 0.1, z: 10, radius: 1.5, class: 'Mage', color: 0x4444ff },
-            { x: 3, y: 0.1, z: 10, radius: 1.5, class: 'Healer', color: 0x44ff44 }
-        ]
-    },
-    scene_03: {
-        name: 'Dragon Lair',
-        scene: {
-            background: 0xffffff,
-            fog: { color: 0xffffff, near: 8, far: 40 },
-            ground: {
-                color: 0xffffff,
-                roughness: 0.6,
-                metalness: 0.4
-            }
-        },
-        spawns: [
-            { x: 0, y: 0, z: -5, class: 'Warrior' },
-            { x: -4, y: 0, z: 2, class: 'Mage' },
-            { x: 4, y: 0, z: 2, class: 'Healer' }
-        ],
-        teleportZones: [
-            { x: 0, y: 0.1, z: 10, radius: 2, class: 'Warrior', color: 0xff4444 },
-            { x: -7, y: 0.1, z: 10, radius: 2, class: 'Mage', color: 0x4444ff },
-            { x: 7, y: 0.1, z: 10, radius: 2, class: 'Healer', color: 0x44ff44 }
-        ]
+        });
+    } else {
+        console.warn('Maps directory not found:', mapsDir);
     }
-};
+} catch (err) {
+    console.error('Failed to load maps:', err);
+}
 
 // Scene progression order
-const SCENE_ORDER = ['scene_01', 'scene_02', 'scene_03'];
+// Sort keys to ensure deterministic order, or rely on file naming (scene_01, scene_02...)
+const SCENE_ORDER = Object.keys(SCENES).sort();
+
 
 /**
  * Get scene configuration by ID
@@ -109,70 +79,83 @@ const SCENE_ORDER = ['scene_01', 'scene_02', 'scene_03'];
  * @returns {object|null} Scene configuration or null if not found
  */
 function getSceneConfig(sceneId) {
-    return SCENES[sceneId] || null;
+    return SCENES[sceneId] || SCENES['scene_01']; // Fallback to first scene
 }
 
 /**
- * Get spawn position for a specific class in a scene
+ * Get spawn position for a class in a scene
  * @param {string} sceneId - Scene identifier
- * @param {string} playerClass - Player class (Warrior, Mage, Healer)
- * @returns {object|null} Spawn position {x, y, z} or null
+ * @param {string} className - Player class (Warrior, Mage, Healer)
+ * @returns {object|null} Spawn position object or null if not found
  */
-function getSpawnPosition(sceneId, playerClass) {
+function getSpawnPosition(sceneId, className) {
     const scene = SCENES[sceneId];
-    if (!scene) return null;
+    if (!scene || !scene.spawns) return null;
 
-    const spawn = scene.spawns.find(s => s.class === playerClass);
-    return spawn || scene.spawns[0]; // Fallback to first spawn
-}
+    // Try to find specific class spawn
+    let spawn = scene.spawns.find(s => s.class === className);
 
-/**
- * Get teleport zone for a specific class in a scene
- * @param {string} sceneId - Scene identifier
- * @param {string} playerClass - Player class
- * @returns {object|null} Teleport zone config or null
- */
-function getTeleportZone(sceneId, playerClass) {
-    const scene = SCENES[sceneId];
-    if (!scene) return null;
-
-    return scene.teleportZones.find(z => z.class === playerClass) || null;
-}
-
-/**
- * Get next scene ID in progression
- * @param {string} currentSceneId - Current scene identifier
- * @returns {string|null} Next scene ID or null if at the end
- */
-function getNextScene(currentSceneId) {
-    const currentIndex = SCENE_ORDER.indexOf(currentSceneId);
-
-    if (currentIndex === -1 || currentIndex === SCENE_ORDER.length - 1) {
-        return null; // Invalid scene or end of game
+    // Initial fallback: any spawn
+    if (!spawn && scene.spawns.length > 0) {
+        spawn = scene.spawns[0];
     }
 
-    return SCENE_ORDER[currentIndex + 1];
+    // Last resort fallback: default list logic (if no spawns defined in file)
+    if (!spawn) {
+        // ... (existing helper logic if you want to keep it, otherwise return null)
+        return null;
+    }
+
+    return spawn;
 }
 
 /**
- * Check if a position is within a teleport zone
- * @param {object} position - Player position {x, y, z}
- * @param {string} sceneId - Scene identifier
- * @param {string} playerClass - Player class
- * @param {number} tolerance - Extra radius tolerance for latency (default: 0.5)
- * @returns {boolean} True if player is in their assigned zone
+ * Get the next scene ID based on current scene and scenario
  */
-function isPlayerInZone(position, sceneId, playerClass, tolerance = 0.5) {
-    const zone = getTeleportZone(sceneId, playerClass);
+function getNextScene(currentSceneId, scenarioId) {
+    let order = SCENE_ORDER;
+
+    if (scenarioId && SCENARIOS[scenarioId] && SCENARIOS[scenarioId].maps) {
+        order = SCENARIOS[scenarioId].maps;
+    }
+
+    const currentIndex = order.indexOf(currentSceneId);
+    if (currentIndex === -1 || currentIndex >= order.length - 1) {
+        return null; // No next scene (end of game)
+    }
+    return order[currentIndex + 1];
+}
+
+/**
+ * Get the first scene for a scenario
+ */
+function getFirstScene(scenarioId) {
+    if (scenarioId && SCENARIOS[scenarioId] && SCENARIOS[scenarioId].maps && SCENARIOS[scenarioId].maps.length > 0) {
+        return SCENARIOS[scenarioId].maps[0];
+    }
+    return 'scene_01'; // Backup default
+}
+
+/**
+ * Check if player is within a teleport zone
+ */
+function isPlayerInZone(playerPos, sceneId, playerClass, tolerance = 1.0) {
+    const scene = SCENES[sceneId];
+    if (!scene || !scene.teleportZones) return false;
+
+    // Find zone for this class
+    const zone = scene.teleportZones.find(z => z.class === playerClass);
     if (!zone) return false;
 
-    // Calculate 2D distance (ignore Y axis)
-    const dx = position.x - zone.x;
-    const dz = position.z - zone.z;
-    const distance = Math.sqrt(dx * dx + dz * dz);
+    // Check distance (zone.x/z vs playerPos.x/z)
+    // Map generator saves radius.
+    const dist = Math.sqrt(
+        Math.pow(playerPos.x - zone.x, 2) +
+        Math.pow(playerPos.z - zone.z, 2)
+    );
 
-    // Add tolerance for network latency and position updates
-    return distance < (zone.radius + tolerance);
+    const radius = zone.radius || 1.5;
+    return dist <= (radius + tolerance);
 }
 
 module.exports = {
@@ -180,7 +163,7 @@ module.exports = {
     SCENE_ORDER,
     getSceneConfig,
     getSpawnPosition,
-    getTeleportZone,
     getNextScene,
+    getFirstScene,
     isPlayerInZone
 };

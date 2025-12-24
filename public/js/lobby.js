@@ -29,7 +29,7 @@
             // but we need to tell the server our socket ID is linked to this character
             const isCreation = sessionStorage.getItem('isLobbyOwner') === 'true';
             if (isCreation) {
-                socket.emit('create_lobby', { character: myCharacter });
+                socket.emit('create_lobby', { character: myCharacter, scenarioId: currentLobby.scenarioId });
             } else {
                 socket.emit('join_lobby', { code: currentLobby.code, character: myCharacter });
             }

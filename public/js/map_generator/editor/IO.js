@@ -25,6 +25,23 @@ export function refreshMapList() {
         });
 }
 
+// Helpers for Class/Color Mapping
+function getClassFromColor(color) {
+    // Exact or approximate matching
+    // Red -> Warrior, Green -> Healer, Blue -> Mage
+    if (color === 0xff0000 || color === 0xff4444) return 'Warrior';
+    if (color === 0x00ff00 || color === 0x44ff44) return 'Healer';
+    if (color === 0x0000ff || color === 0x4444ff || color === 0x00ffff) return 'Mage';
+    return 'Warrior'; // Default
+}
+
+function getColorFromClass(className) {
+    if (className === 'Warrior') return 0xff0000;
+    if (className === 'Healer') return 0x00ff00;
+    if (className === 'Mage') return 0x0000ff;
+    return 0xffffff;
+}
+
 export function saveMap() {
     const name = document.getElementById('mapName').value || 'untitled';
     const isLastMap = document.getElementById('isLastMap').checked;
@@ -34,7 +51,7 @@ export function saveMap() {
         isLastMap: isLastMap,
         structures: [],
         spawns: [],
-        exits: [],
+        teleportZones: [],
         enemies: [],
         roads: [],
         trees: []
@@ -49,16 +66,26 @@ export function saveMap() {
         if (type === 'house' || type === 'structure') {
             data.structures.push({
                 type: type,
-                x: pos.x, z: pos.z,
+                x: pos.x, y: pos.y, z: pos.z,
                 scale: scale,
                 rotation: { z: THREE.MathUtils.radToDeg(rot.y) } // Save Y rot as Z for legacy compat or simplified
             });
         } else if (type === 'spawn') {
-            data.spawns.push({ x: pos.x, z: pos.z, scale: scale, color: obj.userData.color });
+            data.spawns.push({
+                x: pos.x, y: pos.y, z: pos.z,
+                scale: scale,
+                class: getClassFromColor(obj.userData.color),
+                color: obj.userData.color
+            });
         } else if (type === 'exit') {
-            data.exits.push({ x: pos.x, z: pos.z, scale: scale, color: obj.userData.color });
+            data.teleportZones.push({
+                x: pos.x, y: pos.y, z: pos.z,
+                radius: 1.5 * scale, // Exit torus radius approx
+                class: getClassFromColor(obj.userData.color),
+                color: obj.userData.color
+            });
         } else if (type === 'enemy') {
-            data.enemies.push({ type: obj.userData.enemyType, x: pos.x, z: pos.z, scale: scale });
+            data.enemies.push({ type: obj.userData.enemyType, x: pos.x, y: pos.y, z: pos.z, scale: scale });
         } else if (type === 'road') {
             data.roads.push({
                 x: pos.x, z: pos.z,
@@ -128,25 +155,22 @@ function loadMapData(mapData) {
 
     if (mapData.spawns) {
         mapData.spawns.forEach(s => {
-            const obj = addSpawnAt(s.x, s.z, s.color);
+            const color = s.color || getColorFromClass(s.class);
+            const obj = addSpawnAt(s.x, s.z, color);
             if (s.scale) obj.scale.setScalar(s.scale);
         });
     }
 
-    if (mapData.exits) {
-        mapData.exits.forEach(e => {
-            // Need to import addExitAt or it is available via Objects? 
-            // We need to import it. IO.js imports addSpawnAt, let's update imports too if needed.
-            // Actually replace_file_content replaces the block, so assuming imports are at top.
-            // Wait, I need to check if addExitAt is imported.
-            // It is NOT imported in the original file. 
-            // I should update imports first or use window.addExitAt if exposed? No, imports are better.
-            // Since I am replacing this block, I can't easily add import at top without replacing top too.
-            // But verify: IO.js imports `addSpawnAt` on line 3.
-            // I should have updated imports in IO.js as well.
-            // For now, I'll use the imported function assuming I update the import line too.
-            const obj = addExitAt(e.x, e.z, e.color);
-            if (e.scale) obj.scale.setScalar(e.scale);
+    // Support both 'exits' (old) and 'teleportZones' (new)
+    const zones = mapData.teleportZones || mapData.exits;
+    if (zones) {
+        zones.forEach(e => {
+            const color = e.color || getColorFromClass(e.class);
+            const obj = addExitAt(e.x, e.z, color);
+            // If radius is present, derive scale? Default exit radius is ~1.5 at scale 1 (Torus radius 1 + tube 0.1? No, logic above says radius 1.5 * scale)
+            // So scale = radius / 1.5
+            if (e.radius) obj.scale.setScalar(e.radius / 1.5);
+            else if (e.scale) obj.scale.setScalar(e.scale);
         });
     }
 
