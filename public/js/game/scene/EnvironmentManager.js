@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { meshCache } from '../MeshCache.js';
 
 /**
  * Manages environment elements like roads and trees
@@ -42,7 +43,7 @@ export class EnvironmentManager {
     }
 
     /**
-     * Create trees on the scene by loading FBX models
+     * Create trees on the scene by loading FBX models (using cache)
      * @param {Array} treeList - List of tree configurations
      */
     async createTrees(treeList) {
@@ -50,9 +51,6 @@ export class EnvironmentManager {
         this.trees = [];
 
         if (!treeList) return;
-
-        const { FBXLoader } = await import('three/addons/loaders/FBXLoader.js');
-        const loader = new FBXLoader();
 
         for (const t of treeList) {
             const group = new THREE.Group();
@@ -65,10 +63,8 @@ export class EnvironmentManager {
                 const fbxFile = t.fbx || (t.type ? `${t.type}.fbx` : 'tree.fbx');
                 const fbxPath = `/natures/${fbxFile}`;
 
-                // Load actual FBX tree model
-                const fbx = await new Promise((resolve, reject) => {
-                    loader.load(fbxPath, resolve, undefined, reject);
-                });
+                // Use mesh cache to get a clone of the tree model
+                const fbx = await meshCache.clone(fbxPath);
 
                 fbx.traverse(child => {
                     if (child.isMesh) {

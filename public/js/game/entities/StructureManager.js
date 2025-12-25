@@ -1,16 +1,14 @@
 import * as THREE from 'three';
-import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { meshCache } from '../MeshCache.js';
 
 export class StructureManager {
     constructor(game) {
         this.game = game;
         this.structures = new Map(); // id -> { model, stats, radius }
-        this.modelCache = new Map(); // modelPath -> loaded FBX (cache pour éviter de recharger)
     }
 
     async loadStructures(structureList) {
         console.log(`[StructureManager] Loading ${structureList.length} structures...`);
-        const loader = new FBXLoader();
 
         // Clear existing structures
         this.structures.forEach(s => {
@@ -22,39 +20,9 @@ export class StructureManager {
             const modelPath = structDef.modelPath || `/structures/${structDef.type}.fbx`;
 
             try {
-                let fbx;
-
-                // Vérifier si le modèle est déjà dans le cache
-                if (this.modelCache.has(modelPath)) {
-                    console.log(`[StructureManager] ♻️ Using cached model for ${structDef.id} (${structDef.type})`);
-                    // Cloner le modèle depuis le cache
-                    const cachedModel = this.modelCache.get(modelPath);
-                    fbx = cachedModel.clone();
-
-                    // Cloner aussi les matériaux pour éviter les conflits
-                    fbx.traverse(child => {
-                        if (child.isMesh && child.material) {
-                            if (Array.isArray(child.material)) {
-                                child.material = child.material.map(mat => mat.clone());
-                            } else {
-                                child.material = child.material.clone();
-                            }
-                        }
-                    });
-                } else {
-                    console.log(`[StructureManager] 📦 Loading NEW model ${structDef.id} (${structDef.type}) from ${modelPath}`);
-
-                    // Charger le modèle depuis le serveur
-                    fbx = await new Promise((resolve, reject) => {
-                        loader.load(modelPath, resolve, undefined, reject);
-                    });
-
-                    // Stocker dans le cache
-                    this.modelCache.set(modelPath, fbx.clone());
-                    console.log(`[StructureManager] ✓ Cached model for future use: ${modelPath}`);
-                }
-
-                console.log(`[StructureManager] ✓ Model ready for ${structDef.id}`);
+                // Use centralized mesh cache to get a clone
+                const fbx = await meshCache.clone(modelPath);
+                console.log(`[StructureManager] ✓ Model ready for ${structDef.id} (${structDef.type})`);
 
                 // Create a container group to match Editor logic
                 const group = new THREE.Group();
