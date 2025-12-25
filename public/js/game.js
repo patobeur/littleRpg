@@ -32,7 +32,7 @@ class GameEngine {
         // Performance optimization: Throttle timers (INP improvement)
         this.lastNetworkUpdate = 0;
         this.networkUpdateInterval = 50; // 20 updates/second instead of 60
-        this.lastHUDUpdate = 0;
+        this.lastHUDUpdate = -1000; // Force immediate first update
         this.hudUpdateInterval = 100; // 10 updates/second instead of 60
 
         this.init();

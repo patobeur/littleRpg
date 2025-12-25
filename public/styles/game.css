@@ -1,6 +1,7 @@
 /* Floating HUD */
 .entity-hud {
-    position: absolute;
+    position: fixed !important;
+    /* Force fixed positioning for HUDs overlaying 3D scene */
     transform: translate(-50%, -100%);
     /* Center above point */
     width: 120px;
