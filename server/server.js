@@ -99,14 +99,25 @@ app.get('/login', (req, res) => {
 
 
 // Map Generator Routes
-// Middleware to restrict access to localhost
+// Middleware to restrict access to localhost and local network
 const requireLocalhost = (req, res, next) => {
     const ip = req.ip || req.connection.remoteAddress;
-    if (ip === '::1' || ip === '127.0.0.1' || ip === '::ffff:127.0.0.1') {
-        next();
-    } else {
-        res.status(403).send('Access denied. Localhost only.');
+
+    // Extract the actual IP address (remove IPv6 prefix if present)
+    const cleanIp = ip.replace('::ffff:', '');
+
+    // Allow localhost
+    if (ip === '::1' || cleanIp === '127.0.0.1') {
+        return next();
     }
+
+    // Allow local network IPs (192.168.x.x and 10.x.x.x)
+    if (cleanIp.startsWith('192.168.') || cleanIp.startsWith('10.')) {
+        return next();
+    }
+
+    // Deny all other IPs
+    res.status(403).send('Access denied. Local network only.');
 };
 
 app.get('/map_generator.html', requireLocalhost, (req, res) => {
@@ -252,7 +263,9 @@ app.get('/api/natures', requireLocalhost, (req, res) => {
 });
 
 // SCENARIO ROUTES
-app.get('/api/scenarios', requireLocalhost, (req, res) => {
+// Note: These routes are publicly accessible for game use (dashboard)
+// Only POST is protected since it's for map generator editing
+app.get('/api/scenarios', (req, res) => {
     const dir = path.join(__dirname, 'data/scenarios');
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
@@ -270,7 +283,7 @@ app.get('/api/scenarios', requireLocalhost, (req, res) => {
     });
 });
 
-app.get('/api/scenarios/:id', requireLocalhost, (req, res) => {
+app.get('/api/scenarios/:id', (req, res) => {
     const safeId = req.params.id.replace(/[^a-zA-Z0-9_-]/g, '');
     const filePath = path.join(__dirname, 'data/scenarios', `${safeId}.json`);
 
@@ -281,6 +294,7 @@ app.get('/api/scenarios/:id', requireLocalhost, (req, res) => {
     }
 });
 
+// POST is still protected - only for map generator
 app.post('/api/scenarios', requireLocalhost, express.json(), (req, res) => {
     const scenario = req.body;
     if (!scenario.id || !scenario.name) return res.status(400).json({ error: 'Invalid scenario data' });
