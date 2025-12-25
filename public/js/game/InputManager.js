@@ -9,7 +9,7 @@ export class InputManager {
         // Camera control params
         this.cameraRotation = { yaw: 0, pitch: 0.5 }; // radians
         this.cameraDistance = 8;
-        this.invertY = false;
+        this.invertY = true;
 
         this.init();
     }
