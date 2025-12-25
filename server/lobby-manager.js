@@ -11,6 +11,7 @@ const CollisionSystem = require('./utils/CollisionSystem');
 const NetworkOptimizer = require('./utils/NetworkOptimizer');
 const MessageBatcher = require('./utils/MessageBatcher');
 const SpatialGrid = require('./utils/SpatialGrid');
+const ChatHandler = require('./chat/ChatHandler');
 
 class LobbyManager {
     constructor(io) {
@@ -30,6 +31,9 @@ class LobbyManager {
         // Area of Interest: Spatial grids per lobby
         this.spatialGrids = new Map(); // code -> SpatialGrid
         this.AOI_RADIUS = 50; // 50 units visibility radius
+
+        // Initialize chat handler
+        this.chatHandler = new ChatHandler(this);
     }
 
     init() {
@@ -39,7 +43,8 @@ class LobbyManager {
             socket.on('create_lobby', (data) => this.handleCreateLobby(socket, data));
             socket.on('join_lobby', (data) => this.handleJoinLobby(socket, data));
             socket.on('ready_status', (data) => this.handleReadyStatus(socket, data));
-            socket.on('send_message', (data) => this.handleSendMessage(socket, data));
+            socket.on('send_message', (data) => this.handleSendMessage(socket, data)); // Chat lobby
+            socket.on('chat_message', (data) => this.chatHandler.handleChatMessage(socket, data)); // Chat en jeu
             socket.on('start_game', () => this.handleStartGame(socket));
             socket.on('join_game', (data) => this.handleJoinGame(socket, data));
             socket.on('player_update', (data) => this.handlePlayerUpdate(socket, data));

@@ -5,6 +5,7 @@ import { EntityManager } from './game/EntityManager.js';
 import { InputManager } from './game/InputManager.js';
 import { UIManager } from './game/UIManager.js';
 import { CollisionManager } from './game/CollisionManager.js';
+import { ChatManager } from './game/chat/ChatManager.js';
 import { fadeModel } from './game/Utils.js';
 
 class GameEngine {
@@ -19,6 +20,7 @@ class GameEngine {
         this.collisionManager = new CollisionManager(this); // Init Collision
         this.inputManager = new InputManager(this);
         this.uiManager = new UIManager(this);
+        this.chatManager = new ChatManager(this); // Init Chat
 
         // State
         this.currentSceneId = 'scene_01';
@@ -77,6 +79,9 @@ class GameEngine {
         this.uiManager.updateLocation(scenarioName, 'Loading...');
 
         this.uiManager.hideLoading();
+
+        // Initialiser le chat en jeu
+        this.chatManager.init();
 
         // Resize handler
         window.addEventListener('resize', () => this.sceneManager.onWindowResize());

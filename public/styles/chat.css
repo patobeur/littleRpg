@@ -1,0 +1,307 @@
+/**
+ * Styles pour le système de chat en jeu
+ * Design: Glassmorphism avec fond transparent flou
+ * Position: Bas à droite de l'écran
+ */
+
+/* ===================================
+   CONTENEUR PRINCIPAL
+   =================================== */
+
+.game-chat-container {
+    position: fixed;
+    bottom: 5px;
+    Left: 5px;
+    width: 400px;
+    max-height: 450px;
+
+    /* Glassmorphism */
+    background: rgba(10, 10, 15, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+
+    display: flex;
+    flex-direction: column;
+
+    z-index: 900;
+
+    transition: all var(--transition-normal);
+}
+
+/* État réduit */
+.game-chat-container.collapsed {
+    max-height: 50px;
+}
+
+.game-chat-container.collapsed .game-chat-messages,
+.game-chat-container.collapsed .game-chat-input-wrapper {
+    display: none;
+}
+
+/* Indicateur de nouveau message */
+.game-chat-container.has-new-message .game-chat-header {
+    background: rgba(139, 92, 246, 0.2);
+    animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* ===================================
+   EN-TÊTE
+   =================================== */
+
+.game-chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+    background: rgba(15, 15, 20, 0.5);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+/* ===================================
+   ONGLETS
+   =================================== */
+
+.game-chat-tabs {
+    display: flex;
+    gap: var(--spacing-xs);
+    flex: 1;
+}
+
+.game-chat-tab {
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid transparent;
+}
+
+.game-chat-tab:hover {
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--color-text-primary);
+}
+
+.game-chat-tab.active {
+    background: rgba(139, 92, 246, 0.2);
+    color: var(--color-accent-primary);
+    border-color: rgba(139, 92, 246, 0.4);
+    font-weight: 600;
+}
+
+.game-chat-tab span {
+    display: inline-block;
+}
+
+/* Masquer le texte sur petits écrans, garder juste l'icône */
+@media (max-width: 500px) {
+    .game-chat-tab span {
+        display: none;
+    }
+}
+
+/* ===================================
+   BOUTON TOGGLE
+   =================================== */
+
+.game-chat-toggle {
+    background: transparent;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: var(--color-text-primary);
+    font-size: 0.9rem;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    line-height: 1;
+}
+
+.game-chat-toggle:hover {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+/* ===================================
+   ZONE DES MESSAGES
+   =================================== */
+
+.game-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    min-height: 250px;
+    max-height: 320px;
+}
+
+/* Scrollbar personnalisée */
+.game-chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.game-chat-messages::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-sm);
+}
+
+.game-chat-messages::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.4);
+    border-radius: var(--radius-sm);
+}
+
+.game-chat-messages::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 92, 246, 0.6);
+}
+
+/* ===================================
+   MESSAGE INDIVIDUEL
+   =================================== */
+
+.game-chat-message {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: rgba(0, 0, 0, 0.3);
+    border-left: 3px solid var(--color-accent-primary);
+    border-radius: var(--radius-sm);
+    word-wrap: break-word;
+    animation: slideInMessage 0.2s ease-out;
+}
+
+@keyframes slideInMessage {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Message système */
+.game-chat-message.system {
+    background: rgba(245, 158, 11, 0.1);
+    border-left-color: var(--color-warning);
+    font-style: italic;
+}
+
+/* ===================================
+   CONTENU DU MESSAGE
+   =================================== */
+
+.game-chat-time {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    margin-right: var(--spacing-xs);
+}
+
+.game-chat-player {
+    font-weight: 600;
+    margin-right: var(--spacing-xs);
+}
+
+.game-chat-text {
+    color: var(--color-text-primary);
+    line-height: 1.4;
+}
+
+.game-chat-system {
+    color: var(--color-warning);
+    font-size: 0.85rem;
+}
+
+/* ===================================
+   ZONE D'INPUT
+   =================================== */
+
+.game-chat-input-wrapper {
+    padding: var(--spacing-md);
+    border-top: 1px solid rgba(139, 92, 246, 0.2);
+    background: rgba(15, 15, 20, 0.5);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.game-chat-input {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: var(--radius-md);
+    color: var(--color-text-primary);
+    font-family: var(--font-secondary);
+    font-size: 0.9rem;
+    outline: none;
+    transition: all var(--transition-fast);
+}
+
+.game-chat-input::placeholder {
+    color: var(--color-text-muted);
+}
+
+.game-chat-input:focus {
+    border-color: var(--color-accent-primary);
+    background: rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.game-chat-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===================================
+   RESPONSIVE
+   =================================== */
+
+@media (max-width: 768px) {
+    .game-chat-container {
+        width: 320px;
+        max-height: 350px;
+        bottom: 10px;
+        right: 10px;
+    }
+
+    .game-chat-messages {
+        min-height: 180px;
+        max-height: 220px;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-chat-container {
+        width: calc(100vw - 20px);
+        left: 10px;
+        right: 10px;
+        max-height: 300px;
+    }
+
+    .game-chat-messages {
+        min-height: 150px;
+        max-height: 180px;
+    }
+}

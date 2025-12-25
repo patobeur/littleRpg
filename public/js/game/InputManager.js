@@ -14,6 +14,9 @@ export class InputManager {
         // Performance optimization: Cache player radius (INP improvement)
         this.cachedPlayerRadius = 0.3;
 
+        // Chat state - désactive les contrôles quand le joueur tape dans le chat
+        this.chatActive = false;
+
         this.init();
     }
 
@@ -38,6 +41,9 @@ export class InputManager {
 
         // Attack Listener
         document.addEventListener('mousedown', (e) => {
+            // Ne pas attaquer si le chat est actif
+            if (this.chatActive) return;
+
             if (document.pointerLockElement === this.game.container && e.button === 0) {
                 this.handleAttack();
             }
@@ -91,6 +97,9 @@ export class InputManager {
     }
 
     handlePlayerMovement(delta, targetModel) {
+        // Ne pas bouger si le chat est actif
+        if (this.chatActive) return false;
+
         if (!targetModel) return false;
 
         const moveSpeed = 6 * delta; // Increased speed for better feeling
