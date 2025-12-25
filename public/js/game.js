@@ -6,6 +6,7 @@ import { InputManager } from './game/InputManager.js';
 import { UIManager } from './game/UIManager.js';
 import { CollisionManager } from './game/CollisionManager.js';
 import { ChatManager } from './game/chat/ChatManager.js';
+import { SettingsModal } from './game/settings/SettingsModal.js';
 import { fadeModel } from './game/Utils.js';
 
 class GameEngine {
@@ -21,6 +22,7 @@ class GameEngine {
         this.inputManager = new InputManager(this);
         this.uiManager = new UIManager(this);
         this.chatManager = new ChatManager(this); // Init Chat
+        this.settingsModal = new SettingsModal(this); // Init Settings
 
         // State
         this.currentSceneId = 'scene_01';
@@ -82,6 +84,11 @@ class GameEngine {
 
         // Initialiser le chat en jeu
         this.chatManager.init();
+
+        // Initialiser la modal de paramètres
+        this.settingsModal.init();
+        // Appliquer les paramètres sauvegardés
+        this.settingsModal.applySettings();
 
         // Resize handler
         window.addEventListener('resize', () => this.sceneManager.onWindowResize());

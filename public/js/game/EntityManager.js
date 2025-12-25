@@ -9,7 +9,10 @@ export class EntityManager {
         this.playerManager = new PlayerManager(game);
         this.enemyManager = new EnemyManager(game);
         this.structureManager = new StructureManager(game);
-        // this.models = new Map(); // Deprecated?
+
+        // Options d'affichage (modifiables par les paramètres)
+        this.showEnemyHUD = true;
+        this.showPlayerNames = true;
     }
 
     // --- Getters to maintain facade ---
@@ -43,7 +46,8 @@ export class EntityManager {
     }
 
     updateHUDPositions(camera) {
-        this.enemyManager.updateHUDPositions(camera);
+        // Passer l'option d'affichage au manager
+        this.enemyManager.updateHUDPositions(camera, this.showEnemyHUD);
     }
 
     updateEnemyStats(id, stats) {

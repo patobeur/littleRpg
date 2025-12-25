@@ -143,9 +143,15 @@ export class EnemyManager {
         if (hud) hud.remove();
     }
 
-    updateHUDPositions(camera) {
+    updateHUDPositions(camera, showEnemyHUD = true) {
         for (const [id, enemy] of this.enemies) {
             if (!enemy.model || !enemy.hud) continue;
+
+            // Si les HUD ennemis sont désactivés, les masquer
+            if (!showEnemyHUD) {
+                enemy.hud.style.display = 'none';
+                continue;
+            }
 
             const headPos = enemy.model.position.clone();
             // Use stored radius to estimate height, or default
