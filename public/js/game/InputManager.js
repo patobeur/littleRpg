@@ -6,11 +6,6 @@ export class InputManager {
         this.keys = {};
         this.mouse = { x: 0, y: 0 };
 
-        // Camera control params
-        this.cameraRotation = { yaw: 0, pitch: 0.5 }; // radians
-        this.cameraDistance = 8;
-        this.invertY = true;
-
         // Performance optimization: Cache player radius (INP improvement)
         this.cachedPlayerRadius = 0.3;
 
@@ -22,7 +17,8 @@ export class InputManager {
 
     init() {
         this.setupKeyboard();
-        this.setupMouseLook();
+        this.setupAttackListener();
+        this.setupCameraSwitch();
     }
 
     setupKeyboard() {
@@ -31,14 +27,7 @@ export class InputManager {
         window.addEventListener('keyup', (e) => this.keys[e.key.toLowerCase()] = false, { passive: true });
     }
 
-    setupMouseLook() {
-        // We need the container to exist
-        if (!this.game.container) return;
-
-        this.game.container.addEventListener('click', () => {
-            this.game.container.requestPointerLock();
-        });
-
+    setupAttackListener() {
         // Attack Listener
         document.addEventListener('mousedown', (e) => {
             // Ne pas attaquer si le chat est actif
@@ -48,116 +37,19 @@ export class InputManager {
                 this.handleAttack();
             }
         });
+    }
 
-        document.addEventListener('mousemove', (e) => {
-            if (document.pointerLockElement === this.game.container) {
-                this.cameraRotation.yaw -= e.movementX * 0.003;
-
-                const pitchDelta = e.movementY * 0.003;
-                this.cameraRotation.pitch += this.invertY ? pitchDelta : -pitchDelta;
-
-                // Limit pitch
-                this.cameraRotation.pitch = Math.max(-0.4, Math.min(Math.PI / 2.1, this.cameraRotation.pitch));
+    /**
+     * Configure le switch entre modes de caméra (touche C)
+     */
+    setupCameraSwitch() {
+        document.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'c' && !this.chatActive) {
+                if (this.game.cameraManager) {
+                    this.game.cameraManager.switchToNextMode();
+                }
             }
         });
-
-        // Add zoom functionality
-        window.addEventListener('wheel', (e) => {
-            if (document.pointerLockElement === this.game.container) {
-                const zoomSpeed = 0.5;
-                if (e.deltaY > 0) {
-                    this.cameraDistance += zoomSpeed;
-                } else {
-                    this.cameraDistance -= zoomSpeed;
-                }
-
-                // Limit distance
-                this.cameraDistance = Math.max(2, Math.min(25, this.cameraDistance));
-            }
-        }, { passive: true });
-    }
-
-    updateCamera(targetModel, camera) {
-        if (!targetModel || !camera) return;
-
-        // Calculate camera position based on yaw, pitch and distance
-        const x = targetModel.position.x + this.cameraDistance * Math.sin(this.cameraRotation.yaw) * Math.cos(this.cameraRotation.pitch);
-        const y = targetModel.position.y + this.cameraDistance * Math.sin(this.cameraRotation.pitch) + 1.5; // Look slightly above ground
-        const z = targetModel.position.z + this.cameraDistance * Math.cos(this.cameraRotation.yaw) * Math.cos(this.cameraRotation.pitch);
-
-        camera.position.set(x, y, z);
-
-        // Target is slightly above character center
-        const targetPoint = new THREE.Vector3(
-            targetModel.position.x,
-            targetModel.position.y + 1.2,
-            targetModel.position.z
-        );
-        camera.lookAt(targetPoint);
-    }
-
-    handlePlayerMovement(delta, targetModel) {
-        // Ne pas bouger si le chat est actif
-        if (this.chatActive) return false;
-
-        if (!targetModel) return false;
-
-        const moveSpeed = 6 * delta; // Increased speed for better feeling
-        // const rotateSpeed = 0.1;
-
-        // Move relative to camera yaw
-        const forward = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.cameraRotation.yaw);
-        const right = new THREE.Vector3(1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.cameraRotation.yaw);
-
-        let moveX = 0;
-        let moveZ = 0;
-
-        if (this.keys['z'] || this.keys['w']) { moveX += forward.x; moveZ += forward.z; }
-        if (this.keys['s']) { moveX -= forward.x; moveZ -= forward.z; }
-        if (this.keys['q'] || this.keys['a']) { moveX -= right.x; moveZ -= right.z; }
-        if (this.keys['d']) { moveX += right.x; moveZ += right.z; }
-
-        let isMoving = false;
-
-        if (moveX !== 0 || moveZ !== 0) {
-            const moveVec = new THREE.Vector3(moveX, 0, moveZ).normalize().multiplyScalar(moveSpeed);
-
-            // Propose new position
-            const proposedPosition = targetModel.position.clone().add(moveVec);
-
-            // Use cached player radius (INP optimization)
-            // Update cache occasionally from playerData
-            const myData = this.game.entityManager.playerData.get(this.game.localCharacterId);
-            if (myData && myData.radius) {
-                this.cachedPlayerRadius = myData.radius;
-            }
-            const myRadius = this.cachedPlayerRadius;
-
-            // Check Collision
-            if (this.game.collisionManager.isValidPosition(proposedPosition, myRadius)) {
-                targetModel.position.copy(proposedPosition);
-            } else {
-                // Sliding Logic (Simplified): Try moving in X only, then Z only
-                const proposedX = targetModel.position.clone().add(new THREE.Vector3(moveVec.x, 0, 0));
-                if (this.game.collisionManager.isValidPosition(proposedX, myRadius)) {
-                    targetModel.position.copy(proposedX);
-                } else {
-                    const proposedZ = targetModel.position.clone().add(new THREE.Vector3(0, 0, moveVec.z));
-                    if (this.game.collisionManager.isValidPosition(proposedZ, myRadius)) {
-                        targetModel.position.copy(proposedZ);
-                    }
-                }
-            }
-
-            // Character faces the camera direction (MMORPG style) usually acts differently if moving backwards?
-            // Simple approach: face movement direction if desired, or face camera yaw if strafing?
-            // Current code in game.js: targetModel.rotation.y = this.cameraRotation.yaw + Math.PI;
-            // It forces character to look away from camera (forward).
-            targetModel.rotation.y = this.cameraRotation.yaw + Math.PI;
-            isMoving = true;
-        }
-
-        return isMoving;
     }
 
     handleAttack() {

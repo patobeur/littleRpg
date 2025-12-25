@@ -7,6 +7,8 @@ import { UIManager } from './game/UIManager.js';
 import { CollisionManager } from './game/CollisionManager.js';
 import { ChatManager } from './game/chat/ChatManager.js';
 import { SettingsModal } from './game/settings/SettingsModal.js';
+import { CameraManager } from './game/camera/CameraManager.js';
+import { ThirdPersonCameraMode } from './game/camera/ThirdPersonCameraMode.js';
 import { fadeModel } from './game/Utils.js';
 
 class GameEngine {
@@ -23,6 +25,11 @@ class GameEngine {
         this.uiManager = new UIManager(this);
         this.chatManager = new ChatManager(this); // Init Chat
         this.settingsModal = new SettingsModal(this); // Init Settings
+
+        // Camera System
+        this.cameraManager = new CameraManager(this);
+        this.cameraManager.registerMode(new ThirdPersonCameraMode(this));
+        this.cameraManager.setMode('third-person'); // Mode par défaut
 
         // State
         this.currentSceneId = 'scene_01';
@@ -109,33 +116,31 @@ class GameEngine {
         // Local Player Logic
         const targetModel = this.entityManager.targetModel;
         if (targetModel) {
-            // Movement
-            if (document.pointerLockElement === this.container) {
-                const isMoving = this.inputManager.handlePlayerMovement(delta, targetModel);
+            // Movement géré par le mode de caméra actif
+            const isMoving = this.cameraManager.handlePlayerMovement(delta, targetModel);
 
-                // Animation update
-                const data = this.entityManager.playerData.get(this.localCharacterId);
-                if (data) {
-                    const isBackward = (this.inputManager.keys['s']) && !(this.inputManager.keys['z'] || this.inputManager.keys['w']);
-                    const nextAction = isMoving ? 'walk' : 'idle';
-                    const timeScale = isBackward ? -1 : 1;
-                    this.entityManager.fadeToAction(this.localCharacterId, nextAction, 0.2, timeScale);
-                }
+            // Animation update
+            const data = this.entityManager.playerData.get(this.localCharacterId);
+            if (data) {
+                const isBackward = (this.inputManager.keys['s']) && !(this.inputManager.keys['z'] || this.inputManager.keys['w']);
+                const nextAction = isMoving ? 'walk' : 'idle';
+                const timeScale = isBackward ? -1 : 1;
+                this.entityManager.fadeToAction(this.localCharacterId, nextAction, 0.2, timeScale);
+            }
 
-                // Camera update (always smooth)
-                this.inputManager.updateCamera(targetModel, this.sceneManager.camera);
+            // Camera update via CameraManager
+            this.cameraManager.update(delta, targetModel, this.sceneManager.camera);
 
-                // Throttled network update (INP optimization: 20 FPS instead of 60)
-                if (now - this.lastNetworkUpdate >= this.networkUpdateInterval) {
-                    this.networkManager.emitPlayerUpdate(
-                        this.localCharacterId,
-                        targetModel.position,
-                        targetModel.rotation.y,
-                        this.entityManager.playerData.get(this.localCharacterId)?.currentActionName || 'idle',
-                        this.entityManager.playerData.get(this.localCharacterId)?.currentTimeScale || 1
-                    );
-                    this.lastNetworkUpdate = now;
-                }
+            // Throttled network update (INP optimization: 20 FPS instead of 60)
+            if (now - this.lastNetworkUpdate >= this.networkUpdateInterval) {
+                this.networkManager.emitPlayerUpdate(
+                    this.localCharacterId,
+                    targetModel.position,
+                    targetModel.rotation.y,
+                    this.entityManager.playerData.get(this.localCharacterId)?.currentActionName || 'idle',
+                    this.entityManager.playerData.get(this.localCharacterId)?.currentTimeScale || 1
+                );
+                this.lastNetworkUpdate = now;
             }
         }
 
