@@ -11,6 +11,9 @@ export class InputManager {
         this.cameraDistance = 8;
         this.invertY = true;
 
+        // Performance optimization: Cache player radius (INP improvement)
+        this.cachedPlayerRadius = 0.3;
+
         this.init();
     }
 
@@ -20,8 +23,9 @@ export class InputManager {
     }
 
     setupKeyboard() {
-        window.addEventListener('keydown', (e) => this.keys[e.key.toLowerCase()] = true);
-        window.addEventListener('keyup', (e) => this.keys[e.key.toLowerCase()] = false);
+        // Passive event listeners for better INP performance
+        window.addEventListener('keydown', (e) => this.keys[e.key.toLowerCase()] = true, { passive: true });
+        window.addEventListener('keyup', (e) => this.keys[e.key.toLowerCase()] = false, { passive: true });
     }
 
     setupMouseLook() {
@@ -112,9 +116,13 @@ export class InputManager {
             // Propose new position
             const proposedPosition = targetModel.position.clone().add(moveVec);
 
-            // Get local player radius
+            // Use cached player radius (INP optimization)
+            // Update cache occasionally from playerData
             const myData = this.game.entityManager.playerData.get(this.game.localCharacterId);
-            const myRadius = myData ? (myData.radius || 0.3) : 0.3;
+            if (myData && myData.radius) {
+                this.cachedPlayerRadius = myData.radius;
+            }
+            const myRadius = this.cachedPlayerRadius;
 
             // Check Collision
             if (this.game.collisionManager.isValidPosition(proposedPosition, myRadius)) {

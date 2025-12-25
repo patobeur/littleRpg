@@ -29,6 +29,12 @@ class GameEngine {
         this.myTeleportZone = null;
         this.inMyZone = false;
 
+        // Performance optimization: Throttle timers (INP improvement)
+        this.lastNetworkUpdate = 0;
+        this.networkUpdateInterval = 50; // 20 updates/second instead of 60
+        this.lastHUDUpdate = 0;
+        this.hudUpdateInterval = 100; // 10 updates/second instead of 60
+
         this.init();
     }
 
@@ -83,6 +89,7 @@ class GameEngine {
         requestAnimationFrame(() => this.animate());
 
         const delta = this.clock.getDelta();
+        const now = performance.now();
 
         // Update Entities (Animations, Interpolation)
         this.entityManager.update(delta);
@@ -103,22 +110,28 @@ class GameEngine {
                     this.entityManager.fadeToAction(this.localCharacterId, nextAction, 0.2, timeScale);
                 }
 
-                // Camera update
+                // Camera update (always smooth)
                 this.inputManager.updateCamera(targetModel, this.sceneManager.camera);
 
-                // Emit update
-                this.networkManager.emitPlayerUpdate(
-                    this.localCharacterId,
-                    targetModel.position,
-                    targetModel.rotation.y,
-                    this.entityManager.playerData.get(this.localCharacterId)?.currentActionName || 'idle',
-                    this.entityManager.playerData.get(this.localCharacterId)?.currentTimeScale || 1
-                );
+                // Throttled network update (INP optimization: 20 FPS instead of 60)
+                if (now - this.lastNetworkUpdate >= this.networkUpdateInterval) {
+                    this.networkManager.emitPlayerUpdate(
+                        this.localCharacterId,
+                        targetModel.position,
+                        targetModel.rotation.y,
+                        this.entityManager.playerData.get(this.localCharacterId)?.currentActionName || 'idle',
+                        this.entityManager.playerData.get(this.localCharacterId)?.currentTimeScale || 1
+                    );
+                    this.lastNetworkUpdate = now;
+                }
             }
         }
 
-        // Update HUDs
-        this.entityManager.updateHUDPositions(this.sceneManager.camera);
+        // Throttled HUD updates (INP optimization: 10 FPS instead of 60)
+        if (now - this.lastHUDUpdate >= this.hudUpdateInterval) {
+            this.entityManager.updateHUDPositions(this.sceneManager.camera);
+            this.lastHUDUpdate = now;
+        }
 
         // Teleport Logic
         this.checkTeleportZones();
