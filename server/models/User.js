@@ -7,7 +7,7 @@ const SALT_ROUNDS = 10;
 
 class User {
     // Create a new user
-    static async create(username, email, password) {
+    static async create(username, email, password, role = 'user') {
         try {
             // Validate username
             if (!this.validateUsername(username)) {
@@ -29,14 +29,15 @@ class User {
 
             // Insert user
             const result = await database.run(
-                'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
-                [username, email, passwordHash]
+                'INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)',
+                [username, email, passwordHash, role]
             );
 
             return {
                 id: result.lastID,
                 username,
                 email,
+                role,
             };
         } catch (error) {
             if (error.message.includes('UNIQUE constraint failed')) {
@@ -53,7 +54,7 @@ class User {
     // Find user by ID
     static async findById(id) {
         const user = await database.get(
-            'SELECT id, username, avatar_url, created_at FROM users WHERE id = ?',
+            'SELECT id, username, email, role, avatar_url, created_at FROM users WHERE id = ?',
             [id]
         );
         return user;
@@ -62,7 +63,7 @@ class User {
     // Find user by username
     static async findByUsername(username) {
         const user = await database.get(
-            'SELECT id, username, email, password_hash, avatar_url, created_at FROM users WHERE username = ?',
+            'SELECT id, username, email, role, password_hash, avatar_url, created_at FROM users WHERE username = ?',
             [username]
         );
         return user;
@@ -71,7 +72,7 @@ class User {
     // Find user by email
     static async findByEmail(email) {
         const user = await database.get(
-            'SELECT id, username, email, password_hash, avatar_url, created_at FROM users WHERE email = ?',
+            'SELECT id, username, email, role, password_hash, avatar_url, created_at FROM users WHERE email = ?',
             [email]
         );
         return user;

@@ -117,7 +117,52 @@ const migrations = [
             console.log('Migration 5: Added current_scene_id to characters table');
         },
     },
+    {
+        version: 6,
+        name: 'Add role to users',
+        up: async () => {
+            await database.run(`ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'`);
+            console.log('Migration 6: Added role column to users table');
+        },
+    },
 ];
+
+// Seed default admin account
+async function seedDefaultAdmin() {
+    try {
+        const bcrypt = require('bcrypt');
+        const SALT_ROUNDS = 10;
+
+        // Check if admin already exists
+        const adminExists = await database.get(
+            'SELECT id FROM users WHERE email = ?',
+            ['patobeuradmin@patobeur.pat']
+        );
+
+        if (!adminExists) {
+            console.log('Creating default superAdmin account...');
+
+            // Hash the password
+            const passwordHash = await bcrypt.hash('patobeuradmin', SALT_ROUNDS);
+
+            // Create the admin account
+            await database.run(
+                'INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)',
+                ['Patobeur', 'patobeuradmin@patobeur.pat', passwordHash, 'superAdmin']
+            );
+
+            console.log('✅ Default superAdmin account created successfully!');
+            console.log('   Username: Patobeur');
+            console.log('   Email: patobeuradmin@patobeur.pat');
+            console.log('   Password: patobeuradmin');
+        } else {
+            console.log('Default superAdmin account already exists');
+        }
+    } catch (error) {
+        console.error('Error creating default admin account:', error);
+        // Don't throw - this shouldn't prevent server startup
+    }
+}
 
 async function runMigrations() {
     try {
@@ -162,4 +207,4 @@ async function runMigrations() {
     }
 }
 
-module.exports = { runMigrations };
+module.exports = { runMigrations, seedDefaultAdmin };

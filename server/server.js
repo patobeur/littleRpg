@@ -7,7 +7,7 @@ const helmet = require('helmet');
 const path = require('path');
 const config = require('./config');
 const database = require('./database/database');
-const { runMigrations } = require('./database/migrations');
+const { runMigrations, seedDefaultAdmin } = require('./database/migrations');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -314,6 +314,9 @@ async function start() {
         // Run migrations
         await runMigrations();
         console.log('Database migrations completed');
+
+        // Seed default admin account
+        await seedDefaultAdmin();
 
         // Start server
         server.listen(config.server.port, () => {
