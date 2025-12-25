@@ -17,7 +17,7 @@ export class ThirdPersonCameraMode extends CameraMode {
         this.invertY = true; // Inverser l'axe Y de la souris
 
         // Limites
-        this.minDistance = 2;
+        this.minDistance = 0.2; // Zoom très proche
         this.maxDistance = 25;
         this.minPitch = -0.4;
         this.maxPitch = Math.PI / 2.1;
