@@ -145,7 +145,7 @@ class Character {
 
     // Update character position in DB
     static async updatePosition(id, x, y, z, rotation) {
-        console.log(`[Character DB] Updating char ${id} to x=${x.toFixed(2)}, z=${z.toFixed(2)}`);
+        //console.log(`[Character DB] Updating char ${id} to x=${x.toFixed(2)}, z=${z.toFixed(2)}`);
         await database.run(
             'UPDATE characters SET pos_x = ?, pos_y = ?, pos_z = ?, rotation_y = ? WHERE id = ?',
             [x, y, z, rotation, id]

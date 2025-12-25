@@ -350,7 +350,7 @@ class LobbyManager {
                 // Throttle DB save: once every 3 seconds per player
                 if (now - newState.lastDBSave > 3000) {
                     newState.lastDBSave = now;
-                    console.log(`[LobbyManager] Persisting char ${data.characterId} to DB: x=${data.position.x.toFixed(2)}, z=${data.position.z.toFixed(2)}`);
+                    // console.log(`[LobbyManager] Persisting char ${data.characterId} to DB: x=${data.position.x.toFixed(2)}, z=${data.position.z.toFixed(2)}`);
                     Character.updatePosition(
                         data.characterId,
                         data.position.x,
