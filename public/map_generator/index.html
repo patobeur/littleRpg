@@ -132,8 +132,7 @@
                 <div class="ribbon-group-content">
                     <div class="ribbon-column">
                         <select id="structureType" class="ribbon-input" style="width: 100px;">
-                            <option value="house">House</option>
-                            <option value="rock">Rock</option>
+                            <!-- Populated dynamically from /api/structures -->
                         </select>
                         <button class="ribbon-btn small"
                             onclick="addStructure(document.getElementById('structureType').value)">
@@ -148,7 +147,7 @@
                 <div class="ribbon-group-content">
                     <div class="ribbon-column">
                         <select id="enemyType" class="ribbon-input" style="width: 80px;">
-                            <option value="Alistar">Alistar</option>
+                            <!-- Populated dynamically from /api/enemies -->
                         </select>
                         <button class="ribbon-btn small" onclick="addEnemy(document.getElementById('enemyType').value)">
                             <i class="fas fa-skull"></i> Add
@@ -156,6 +155,21 @@
                     </div>
                 </div>
                 <div class="ribbon-group-title">Enemies</div>
+            </div>
+
+            <div class="ribbon-group">
+                <div class="ribbon-group-content">
+                    <div class="ribbon-column">
+                        <select id="natureType" class="ribbon-input" style="width: 80px;">
+                            <!-- Populated dynamically from /api/natures -->
+                        </select>
+                        <button class="ribbon-btn small"
+                            onclick="addNature(document.getElementById('natureType').value)">
+                            <i class="fas fa-tree"></i> Add
+                        </button>
+                    </div>
+                </div>
+                <div class="ribbon-group-title">Natures</div>
             </div>
         </div>
 

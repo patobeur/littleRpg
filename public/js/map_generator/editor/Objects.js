@@ -3,12 +3,17 @@ import { state } from './State.js';
 
 export function addStructureResult(type, x, z) {
     return new Promise((resolve) => {
-        const modelPath = `/structures/${type}.fbx`;
+        // Get metadata from cache
+        const metadata = window.structureMetadata?.get(type);
+        const fbxFile = metadata?.fbx || `${type}.fbx`; // Fallback to type.fbx
+        const scale = metadata?.scale || 1;
+
+        const modelPath = `/structures/${fbxFile}`;
         const group = new THREE.Group();
         group.userData = { type: type, id: `${type}_${Date.now()}`, isRoot: true };
 
         state.loader.load(modelPath, (fbx) => {
-            fbx.scale.setScalar(1);
+            fbx.scale.setScalar(scale);
             if (type === 'house') {
                 fbx.rotation.x = -Math.PI / 2;
             }
@@ -16,7 +21,7 @@ export function addStructureResult(type, x, z) {
             group.add(fbx);
             resolve(group); // Resolve after load
         }, undefined, (err) => {
-            console.error(err);
+            console.error(`Failed to load ${modelPath}:`, err);
             const geom = new THREE.BoxGeometry(2, 2, 2);
             geom.translate(0, 1, 0); // Pivot at bottom
             const mesh = new THREE.Mesh(
@@ -30,7 +35,6 @@ export function addStructureResult(type, x, z) {
         group.position.set(x, 0, z); // Always 0
         state.scene.add(group);
         state.objects.push(group);
-        resolve(group);
     });
 }
 
@@ -53,17 +57,39 @@ export function addSpawnAt(x, z, color = 0x00ff00) {
 }
 
 export function addEnemyAt(type, x, z) {
-    const geo = new THREE.CapsuleGeometry(0.5, 2, 4);
-    geo.translate(0, 1.5, 0); // Pivot at bottom (2/2 + 0.5 = 1.5)
-    const mesh = new THREE.Mesh(
-        geo,
-        new THREE.MeshStandardMaterial({ color: 0xff0000 })
-    );
-    mesh.userData = { type: 'enemy', enemyType: type, id: `${type}_${Date.now()}`, isRoot: true };
-    mesh.position.set(x, 0, z);
-    state.scene.add(mesh);
-    state.objects.push(mesh);
-    return mesh;
+    // Get metadata from cache
+    const metadata = window.enemyMetadata?.get(type);
+    const fbxFile = metadata?.fbx || `${type}.fbx`;
+    const scale = metadata?.scale || 1;
+
+    const group = new THREE.Group();
+    group.userData = { type: 'enemy', enemyType: type, id: `${type}_${Date.now()}`, isRoot: true };
+    group.position.set(x, 0, z);
+
+    // Try to load the actual enemy FBX model
+    const modelPath = `/enemies/${fbxFile}`;
+
+    state.loader.load(modelPath, (fbx) => {
+        // Apply same scale as game: 0.01 * metadata.scale
+        fbx.scale.setScalar(0.01 * scale);
+        fbx.traverse(c => { if (c.isMesh) c.castShadow = true; });
+        group.add(fbx);
+        console.log(`Loaded enemy: ${type} from ${fbxFile} with scale ${0.01 * scale}`);
+    }, undefined, (err) => {
+        console.warn(`Could not load ${modelPath}, using placeholder`);
+        // Fallback to red capsule
+        const geo = new THREE.CapsuleGeometry(0.5, 2, 4);
+        geo.translate(0, 1.5, 0);
+        const mesh = new THREE.Mesh(
+            geo,
+            new THREE.MeshStandardMaterial({ color: 0xff0000 })
+        );
+        group.add(mesh);
+    });
+
+    state.scene.add(group);
+    state.objects.push(group);
+    return group;
 }
 
 export function addSpawn() {
@@ -75,17 +101,98 @@ export function addEnemy(type) {
 }
 
 export function addPlaceholder(type, x, z, color) {
-    const geo = new THREE.ConeGeometry(0.5, 2, 8);
-    geo.translate(0, 1, 0); // Pivot at bottom
-    const mesh = new THREE.Mesh(
-        geo,
-        new THREE.MeshStandardMaterial({ color: color })
-    );
+    const group = new THREE.Group();
+    group.userData = { type: type, id: `${type}_${Date.now()}_${Math.random()}`, isRoot: true };
+    group.position.set(x, 0, z);
 
-    mesh.userData = { type: type, id: `${type}_${Date.now()}_${Math.random()}`, isRoot: true };
-    mesh.position.set(x, 0, z);
-    state.scene.add(mesh);
-    state.objects.push(mesh);
+    if (type === 'tree') {
+        // Add temporary placeholder cone while loading
+        const tempGeo = new THREE.ConeGeometry(0.5, 2, 8);
+        tempGeo.translate(0, 1, 0);
+        const tempMesh = new THREE.Mesh(
+            tempGeo,
+            new THREE.MeshStandardMaterial({ color: 0x228b22, transparent: true, opacity: 0.5 })
+        );
+        group.add(tempMesh);
+
+        // Choose a random tree model
+        const treeModels = ['CommonTree_1', 'CommonTree_2', 'CommonTree_3', 'CommonTree_4', 'CommonTree_5'];
+        const randomTree = treeModels[Math.floor(Math.random() * treeModels.length)];
+        const modelPath = `/natures/${randomTree}.fbx`; // Changed from /structures/ to /natures/
+
+        state.loader.load(modelPath, (fbx) => {
+            // Remove temporary placeholder
+            group.remove(tempMesh);
+
+            fbx.scale.setScalar(1);
+            fbx.traverse(c => {
+                if (c.isMesh) {
+                    c.castShadow = true;
+                    c.receiveShadow = true;
+                }
+            });
+            group.add(fbx);
+            console.log(`Loaded tree: ${randomTree}`);
+        }, undefined, (err) => {
+            console.error(`Could not load ${modelPath}:`, err);
+            // Keep the green cone as fallback
+            tempMesh.material.opacity = 1.0; // Make it fully visible
+        });
+    } else {
+        // For non-tree placeholders, use the cone
+        const geo = new THREE.ConeGeometry(0.5, 2, 8);
+        geo.translate(0, 1, 0);
+        const mesh = new THREE.Mesh(
+            geo,
+            new THREE.MeshStandardMaterial({ color: color })
+        );
+        group.add(mesh);
+    }
+
+    state.scene.add(group);
+    state.objects.push(group);
+    return group; // Now returns the group
+}
+
+export function addNature(type, x = 0, z = 0) {
+    // Get metadata from cache
+    const metadata = window.natureMetadata?.get(type);
+    const fbxFile = metadata?.fbx || `${type}.fbx`;
+    const scale = metadata?.scale || 1;
+
+    const group = new THREE.Group();
+    group.userData = { type: 'nature', natureType: type, id: `${type}_${Date.now()}`, isRoot: true };
+    group.position.set(x, 0, z);
+
+    // Load the nature FBX model from natures folder
+    const modelPath = `/natures/${fbxFile}`;
+
+    state.loader.load(modelPath, (fbx) => {
+        fbx.traverse(c => {
+            if (c.isMesh) {
+                c.castShadow = true;
+                c.receiveShadow = true;
+            }
+        });
+        group.add(fbx);
+        // Apply scale to the GROUP, not the FBX, so it affects all nested meshes
+        group.scale.setScalar(scale);
+        console.log(`Loaded nature: ${type} from ${fbxFile} with scale ${scale}`);
+    }, undefined, (err) => {
+        console.error(`Could not load ${modelPath}:`, err);
+        // Fallback to green cone
+        const geo = new THREE.ConeGeometry(0.5, 2, 8);
+        geo.translate(0, 1, 0);
+        const mesh = new THREE.Mesh(
+            geo,
+            new THREE.MeshStandardMaterial({ color: 0x228b22 })
+        );
+        group.add(mesh);
+    });
+
+    state.scene.add(group);
+    state.objects.push(group);
+    return group;
 }
 
 export function deleteSelected() {

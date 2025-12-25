@@ -131,8 +131,19 @@ export function saveMap() {
                 len: obj.userData.len || 6, // Default len if missing
                 scale: scale
             });
-        } else if (type === 'tree') {
-            data.trees.push({ x: pos.x, z: pos.z, scale: scale });
+        } else if (type === 'tree' || type === 'nature') {
+            // Get nature metadata if available
+            const natureType = obj.userData.natureType || 'tree';
+            const metadata = window.natureMetadata?.get(natureType);
+            const fbxFile = metadata?.fbx || `${natureType}.fbx`;
+
+            data.trees.push({
+                x: pos.x,
+                z: pos.z,
+                scale: scale,
+                type: natureType,  // Save the nature type
+                fbx: fbxFile       // Save the FBX filename
+            });
         }
     });
 
@@ -236,14 +247,18 @@ function loadMapData(mapData) {
 
     if (mapData.trees) {
         mapData.trees.forEach(t => {
-            // addPlaceholder returns nothing, need to modify it or find the obj?
-            // Actually Objects.js addPlaceholder adds to array.
-            // We can assume the last added object is it, or update addPlaceholder to return it.
-            // Let's trust addPlaceholder for now or update it?
-            // It's synchronous.
-            addPlaceholder('tree', t.x, t.z, 0x228b22);
-            const obj = state.objects[state.objects.length - 1];
-            if (obj && t.scale) obj.scale.setScalar(t.scale);
+            // Use addNature if type is available, otherwise fallback to addPlaceholder
+            const natureType = t.type || 'tree';
+            const obj = window.addNature ? window.addNature(natureType, t.x, t.z) : null;
+            
+            // Fallback to addPlaceholder if addNature not available
+            if (!obj) {
+                addPlaceholder('tree', t.x, t.z, 0x228b22);
+                const fallbackObj = state.objects[state.objects.length - 1];
+                if (fallbackObj && t.scale) fallbackObj.scale.setScalar(t.scale);
+            } else if (t.scale) {
+                obj.scale.setScalar(t.scale);
+            }
         });
     }
 

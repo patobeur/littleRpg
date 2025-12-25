@@ -1,268 +1,130 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EnvironmentManager } from './scene/EnvironmentManager.js';
+import { ZoneManager } from './scene/ZoneManager.js';
+import { RendererManager } from './scene/RendererManager.js';
+import { AmbianceManager } from './scene/AmbianceManager.js';
 
+/**
+ * Main scene manager that orchestrates all scene-related functionality
+ */
 export class SceneManager {
     constructor(game) {
         this.game = game;
         this.scene = null;
+
+        // Managers will be initialized after scene is created
+        this.environmentManager = null;
+        this.zoneManager = null;
+        this.rendererManager = null;
+        this.ambianceManager = null;
+
+        // Legacy properties for backward compatibility
         this.camera = null;
         this.renderer = null;
         this.controls = null;
-
-        // Environment elements
+        this.roads = [];
+        this.trees = [];
         this.spawnMarkers = [];
         this.teleportZones = [];
-        this.roads = [];
-        this.trees = [];
     }
 
-
-
-    createRoads(roadsList) {
-        if (this.roads) this.roads.forEach(m => this.scene.remove(m));
-        this.roads = [];
-
-        if (!roadsList) return;
-
-        const mat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.9, side: THREE.DoubleSide });
-
-        roadsList.forEach(r => {
-            const len = r.len || 6;
-            const geo = new THREE.PlaneGeometry(6, len); // Changed from 4 to 6 to match generator
-            const mesh = new THREE.Mesh(geo, mat);
-
-            mesh.rotation.x = -Math.PI / 2;
-            // Apply Y rotation (which is Z rotation in the local plane space after X rotation)
-            mesh.rotation.z = r.rot; // FIXED: Removed negative sign
-
-            mesh.position.set(r.x, 0.02, r.z);
-            if (r.scale) mesh.scale.setScalar(r.scale);
-
-            mesh.receiveShadow = true;
-            mesh.name = "road";
-            this.scene.add(mesh);
-            this.roads.push(mesh);
-        });
-        console.log(`[SceneManager] Created ${this.roads.length} roads`);
-    }
-
-    createTrees(treeList) {
-        if (this.trees) this.trees.forEach(m => this.scene.remove(m));
-        this.trees = [];
-
-        if (!treeList) return;
-
-        // Re-use geometries for performance
-        const trunkGeo = new THREE.CylinderGeometry(0.2, 0.3, 1.5, 6);
-        const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5c4033 });
-        const leavesGeo = new THREE.ConeGeometry(1.5, 3, 6);
-        const leavesMat = new THREE.MeshStandardMaterial({ color: 0x228b22 });
-
-        treeList.forEach(t => {
-            const group = new THREE.Group();
-
-            const trunk = new THREE.Mesh(trunkGeo, trunkMat);
-            trunk.position.y = 0.75;
-            trunk.castShadow = true;
-            trunk.receiveShadow = true;
-            group.add(trunk);
-
-            const leaves = new THREE.Mesh(leavesGeo, leavesMat);
-            leaves.position.y = 2.5;
-            leaves.castShadow = true;
-            leaves.receiveShadow = true;
-            group.add(leaves);
-
-            group.position.set(t.x, 0, t.z);
-            if (t.scale) group.scale.setScalar(t.scale);
-
-            group.name = "tree";
-            console.log(group);
-            this.scene.add(group);
-            this.trees.push(group);
-        });
-        console.log(`[SceneManager] Created ${this.trees.length} trees`);
-    }
-
+    /**
+     * Initialize the scene and all managers
+     */
     init() {
         this.setupScene();
+
+        // Initialize managers
+        this.rendererManager = new RendererManager(this.game.container);
+        this.ambianceManager = new AmbianceManager(this.scene);
+        this.environmentManager = new EnvironmentManager(this.scene);
+        this.zoneManager = new ZoneManager(this.scene);
+
+        // Setup rendering components
+        this.renderer = this.rendererManager.setupRenderer();
+        this.camera = this.rendererManager.setupCamera();
+        this.controls = this.rendererManager.setupControls();
+
+        // Setup ambiance
         this.setupLights();
         this.setupGround();
     }
 
+    /**
+     * Setup the THREE.js scene with default settings
+     */
     setupScene() {
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x1a1a2e);
         this.scene.fog = new THREE.Fog(0x1a1a2e, 10, 50);
-
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        this.camera.position.set(0, 10, 15);
-        this.camera.lookAt(0, 0, 0);
-
-        this.renderer = new THREE.WebGLRenderer({ antialias: true });
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.shadowMap.enabled = true;
-        this.game.container.appendChild(this.renderer.domElement);
-
-        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-        this.controls.enableDamping = true;
     }
 
+    /**
+     * Setup lights (delegated to AmbianceManager)
+     */
     setupLights() {
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-        this.scene.add(ambientLight);
-
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-        dirLight.position.set(5, 10, 5);
-        dirLight.castShadow = true;
-        this.scene.add(dirLight);
+        this.ambianceManager.setupLights();
     }
 
+    /**
+     * Setup ground (delegated to AmbianceManager)
+     */
     setupGround() {
-        const geometry = new THREE.PlaneGeometry(100, 100);
-        const material = new THREE.MeshStandardMaterial({
-            color: 0x242444,
-            roughness: 0.8,
-            metalness: 0.2
-        });
-        this.groundMesh = new THREE.Mesh(geometry, material);
-        this.groundMesh.rotation.x = -Math.PI / 2;
-        this.groundMesh.receiveShadow = true;
-        this.scene.add(this.groundMesh);
-
-        const grid = new THREE.GridHelper(100, 50, 0x444466, 0x222233);
-        grid.position.y = 0.01;
-        this.scene.add(grid);
-
-        // Create spawn point markers and teleport zones will be called when config is loaded
+        this.ambianceManager.setupGround();
     }
 
+    /**
+     * Create roads (delegated to EnvironmentManager)
+     * @param {Array} roadsList - List of road configurations
+     */
+    createRoads(roadsList) {
+        this.environmentManager.createRoads(roadsList);
+        // Update legacy property for backward compatibility
+        this.roads = this.environmentManager.roads;
+    }
+
+    /**
+     * Create trees (delegated to EnvironmentManager)
+     * @param {Array} treeList - List of tree configurations
+     */
+    async createTrees(treeList) {
+        await this.environmentManager.createTrees(treeList);
+        // Update legacy property for backward compatibility
+        this.trees = this.environmentManager.trees;
+    }
+
+    /**
+     * Create spawn markers (delegated to ZoneManager)
+     * @param {Array} spawnConfigList - List of spawn configurations
+     */
     createSpawnMarkers(spawnConfigList) {
-        // Clear existing spawn markers
-        if (this.spawnMarkers) {
-            this.spawnMarkers.forEach(marker => {
-                if (marker.mesh) this.scene.remove(marker.mesh);
-            });
-        }
-        this.spawnMarkers = [];
-
-        if (!spawnConfigList) {
-            console.warn('[SceneManager] No spawn config provided');
-            return;
-        }
-
-        // Color mapping for classes (same as teleport zones)
-        const colorMap = {
-            'Warrior': 0xff4444,
-            'Mage': 0x4444ff,
-            'Healer': 0x44ff44
-        };
-
-        spawnConfigList.forEach(spawnConfig => {
-            // Create small circle at spawn point
-            const geometry = new THREE.CircleGeometry(0.5, 32);
-            const material = new THREE.MeshBasicMaterial({
-                color: colorMap[spawnConfig.class] || 0xffffff,
-                side: THREE.DoubleSide,
-                transparent: true,
-                opacity: 0.4
-            });
-            const circle = new THREE.Mesh(geometry, material);
-            circle.position.set(spawnConfig.x, 0.05, spawnConfig.z); // Slightly above ground
-            circle.rotation.x = -Math.PI / 2; // Horizontal
-
-            this.scene.add(circle);
-
-            this.spawnMarkers.push({
-                config: spawnConfig,
-                mesh: circle,
-                material: material
-            });
-        });
-
-        console.log(`[SceneManager] Created ${this.spawnMarkers.length} spawn markers`);
+        this.zoneManager.createSpawnMarkers(spawnConfigList);
+        // Update legacy property for backward compatibility
+        this.spawnMarkers = this.zoneManager.spawnMarkers;
     }
 
+    /**
+     * Create teleport zones (delegated to ZoneManager)
+     * @param {Array} teleportConfigList - List of teleport zone configurations
+     */
     createTeleportZones(teleportConfigList) {
-        // Clear existing zones
-        this.teleportZones.forEach(zone => {
-            if (zone.mesh) this.scene.remove(zone.mesh);
-            if (zone.ring) this.scene.remove(zone.ring);
-        });
-        this.teleportZones = [];
-
-        if (!teleportConfigList) {
-            console.warn('[SceneManager] No teleport config provided');
-            return;
-        }
-
-        teleportConfigList.forEach(zoneConfig => {
-            // Create glowing circle
-            const geometry = new THREE.CircleGeometry(zoneConfig.radius, 32);
-            const material = new THREE.MeshBasicMaterial({
-                color: zoneConfig.color,
-                side: THREE.DoubleSide,
-                transparent: true,
-                opacity: 0.3
-            });
-            const circle = new THREE.Mesh(geometry, material);
-            circle.position.set(zoneConfig.x, zoneConfig.y, zoneConfig.z);
-            circle.rotation.x = -Math.PI / 2; // Horizontal
-
-            // Add ring outline
-            const ringGeometry = new THREE.RingGeometry(zoneConfig.radius - 0.1, zoneConfig.radius, 32);
-            const ringMaterial = new THREE.MeshBasicMaterial({
-                color: zoneConfig.color,
-                side: THREE.DoubleSide,
-                transparent: true,
-                opacity: 0.8
-            });
-            const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-            ring.position.set(zoneConfig.x, zoneConfig.y + 0.01, zoneConfig.z);
-            ring.rotation.x = -Math.PI / 2;
-
-            this.scene.add(circle);
-            this.scene.add(ring);
-
-            this.teleportZones.push({
-                config: zoneConfig,
-                mesh: circle,
-                ring: ring,
-                material: material,
-                ringMaterial: ringMaterial
-            });
-        });
+        this.zoneManager.createTeleportZones(teleportConfigList);
+        // Update legacy property for backward compatibility
+        this.teleportZones = this.zoneManager.teleportZones;
     }
 
+    /**
+     * Handle window resize (delegated to RendererManager)
+     */
     onWindowResize() {
-        if (this.camera && this.renderer) {
-            this.camera.aspect = window.innerWidth / window.innerHeight;
-            this.camera.updateProjectionMatrix();
-            this.renderer.setSize(window.innerWidth, window.innerHeight);
-        }
+        this.rendererManager.onWindowResize();
     }
 
+    /**
+     * Update scene ambiance (delegated to AmbianceManager)
+     * @param {Object} config - Ambiance configuration
+     */
     updateAmbiance(config) {
-        if (!config || !this.scene) return;
-
-        // Background
-        if (config.background) {
-            this.scene.background = new THREE.Color(config.background);
-        }
-
-        // Fog
-        if (config.fog) {
-            this.scene.fog = new THREE.Fog(config.fog.color, config.fog.near, config.fog.far);
-        } else {
-            this.scene.fog = null;
-        }
-
-        // Ground Material
-        if (config.ground && this.groundMesh) {
-            this.groundMesh.material.color.setHex(config.ground.color);
-            this.groundMesh.material.roughness = config.ground.roughness;
-            this.groundMesh.material.metalness = config.ground.metalness;
-            this.groundMesh.material.needsUpdate = true;
-        }
+        this.ambianceManager.updateAmbiance(config);
     }
 }

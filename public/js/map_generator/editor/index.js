@@ -4,7 +4,7 @@ import { initThree, onWindowResize, updateEnvironment } from './Scene.js';
 import { initEvents } from './Input.js';
 import { state } from './State.js';
 import { TransformGizmo } from '../tools/Gizmo.js';
-import { addStructure, addSpawn, addEnemy, deleteSelected, addExit, addDefaultSpawnsAndExits, checkAndAddDefaultSpawnsAndExits } from './Objects.js';
+import { addStructure, addSpawn, addEnemy, addNature, deleteSelected, addExit, addDefaultSpawnsAndExits, checkAndAddDefaultSpawnsAndExits } from './Objects.js';
 import { refreshMapList, saveMap, loadSelectedMap } from './IO.js';
 import { generateOrganicVillage } from '../procedural/index.js';
 import { refreshScenarioList, refreshScenarioMapSelect } from './Scenario.js';
@@ -42,11 +42,13 @@ function init() {
     window.addStructure = addStructure;
     window.addSpawn = addSpawn;
     window.addEnemy = addEnemy;
+    window.addNature = addNature;
     window.addExit = addExit;
     window.deleteSelected = deleteSelected;
     window.refreshMapList = refreshMapList;
     window.loadSelectedMap = loadSelectedMap;
     window.checkAndAddDefaultSpawnsAndExits = checkAndAddDefaultSpawnsAndExits;
+
 
     animate();
 
@@ -57,6 +59,111 @@ function init() {
     refreshMapList();
     refreshScenarioList();
     refreshScenarioMapSelect();
+    refreshStructureList();
+    refreshEnemyList();
+    refreshNatureList();
+}
+
+// Global cache for structure and enemy metadata
+window.structureMetadata = new Map();
+window.enemyMetadata = new Map();
+window.natureMetadata = new Map();
+
+// Load available structures from server
+function refreshStructureList() {
+    const selector = document.getElementById('structureType');
+    if (!selector) return;
+
+    selector.innerHTML = '<option>Loading...</option>';
+
+    fetch('/api/structures')
+        .then(r => r.json())
+        .then(structures => {
+            selector.innerHTML = '';
+            if (structures.length === 0) {
+                selector.innerHTML = '<option value="">No structures found</option>';
+                return;
+            }
+            structures.forEach(struct => {
+                // Cache metadata
+                window.structureMetadata.set(struct.id, struct);
+
+                const opt = document.createElement('option');
+                opt.value = struct.id; // Use ID as value
+                // Display name with scale info
+                opt.innerText = `${struct.name.charAt(0).toUpperCase() + struct.name.slice(1)} (scale: ${struct.scale})`;
+                selector.appendChild(opt);
+            });
+            console.log(`Loaded ${structures.length} structure types`);
+        })
+        .catch(err => {
+            console.error('Failed to load structures:', err);
+            selector.innerHTML = '<option value="house">House</option><option value="rock">Rock</option>';
+        });
+}
+
+// Load available enemies from server
+function refreshEnemyList() {
+    const selector = document.getElementById('enemyType');
+    if (!selector) return;
+
+    selector.innerHTML = '<option>Loading...</option>';
+
+    fetch('/api/enemies')
+        .then(r => r.json())
+        .then(enemies => {
+            selector.innerHTML = '';
+            if (enemies.length === 0) {
+                selector.innerHTML = '<option value="">No enemies found</option>';
+                return;
+            }
+            enemies.forEach(enemy => {
+                // Cache metadata
+                window.enemyMetadata.set(enemy.id, enemy);
+
+                const opt = document.createElement('option');
+                opt.value = enemy.id;
+                opt.innerText = `${enemy.name} (scale: ${enemy.scale})`;
+                selector.appendChild(opt);
+            });
+            console.log(`Loaded ${enemies.length} enemy types`);
+        })
+        .catch(err => {
+            console.error('Failed to load enemies:', err);
+            selector.innerHTML = '<option value="Alistar">Alistar</option>';
+        });
+}
+
+// Load available natures from server
+function refreshNatureList() {
+    const selector = document.getElementById('natureType');
+    if (!selector) return;
+
+    selector.innerHTML = '<option>Loading...</option>';
+
+    fetch('/api/natures')
+        .then(r => r.json())
+        .then(natures => {
+            selector.innerHTML = '';
+            if (natures.length === 0) {
+                selector.innerHTML = '<option value="">No natures found</option>';
+                return;
+            }
+            natures.forEach(nature => {
+                // Cache metadata
+                window.natureMetadata.set(nature.id, nature);
+
+                const opt = document.createElement('option');
+                opt.value = nature.id;
+                opt.innerText = `${nature.name.charAt(0).toUpperCase() + nature.name.slice(1)} (scale: ${nature.scale})`;
+                selector.appendChild(opt);
+            });
+            console.log(`Loaded ${natures.length} nature types`);
+        })
+        .catch(err => {
+            console.error('Failed to load natures:', err);
+            selector.innerHTML = '<option value="tree">Tree</option>';
+        });
 }
 
 function animate() {

@@ -166,6 +166,91 @@ app.post('/api/maps', requireLocalhost, express.json(), (req, res) => {
     });
 });
 
+// List available structure files
+app.get('/api/structures', requireLocalhost, (req, res) => {
+    try {
+        // Read structures from the configuration file
+        const structuresConfig = require('./models/structures.js');
+
+        if (!structuresConfig || !structuresConfig.structures) {
+            return res.json([]);
+        }
+
+        // Return array of structure definitions
+        const structures = Object.keys(structuresConfig.structures).map(key => {
+            const struct = structuresConfig.structures[key];
+            return {
+                id: key,
+                name: struct.name || key,
+                scale: struct.scale || 1,
+                radius: struct.radius || 2,
+                fbx: struct.glb // glb is the fbx filename
+            };
+        });
+
+        res.json(structures);
+    } catch (err) {
+        console.error('Failed to load structures:', err);
+        res.status(500).json({ error: 'Failed to load structures' });
+    }
+});
+
+// List available enemies
+app.get('/api/enemies', requireLocalhost, (req, res) => {
+    try {
+        const enemiesConfig = require('./models/enemies.js');
+
+        if (!enemiesConfig || !enemiesConfig.enemies) {
+            return res.json([]);
+        }
+
+        // Return array of enemy definitions
+        const enemies = Object.keys(enemiesConfig.enemies).map(key => {
+            const enemy = enemiesConfig.enemies[key];
+            return {
+                id: key,
+                name: enemy.name || key,
+                scale: enemy.scale || 1,
+                radius: enemy.radius || 0.5,
+                fbx: enemy.glb
+            };
+        });
+
+        res.json(enemies);
+    } catch (err) {
+        console.error('Failed to load enemies:', err);
+        res.status(500).json({ error: 'Failed to load enemies' });
+    }
+});
+
+// List available natures (trees, rocks, etc.)
+app.get('/api/natures', requireLocalhost, (req, res) => {
+    try {
+        const naturesConfig = require('./models/natures.js');
+
+        if (!naturesConfig || !naturesConfig.natures) {
+            return res.json([]);
+        }
+
+        // Return array of nature definitions
+        const natures = Object.keys(naturesConfig.natures).map(key => {
+            const nature = naturesConfig.natures[key];
+            return {
+                id: key,
+                name: nature.name || key,
+                scale: nature.scale || 1,
+                radius: nature.radius || 2,
+                fbx: nature.glb
+            };
+        });
+
+        res.json(natures);
+    } catch (err) {
+        console.error('Failed to load natures:', err);
+        res.status(500).json({ error: 'Failed to load natures' });
+    }
+});
+
 // SCENARIO ROUTES
 app.get('/api/scenarios', requireLocalhost, (req, res) => {
     const dir = path.join(__dirname, 'data/scenarios');
