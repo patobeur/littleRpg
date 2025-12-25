@@ -257,4 +257,6 @@ class GameEngine {
     }
 }
 
-new GameEngine();
+// Initialize game and expose globally for console access
+const gameInstance = new GameEngine();
+window.game = gameInstance; // Allows: game.networkManager.monitor.report()

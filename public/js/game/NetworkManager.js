@@ -1,12 +1,21 @@
 import * as THREE from 'three';
 import { fadeModel } from './Utils.js';
+import { NetworkOptimizer } from './NetworkOptimizer.js';
+import { MessageBatcher } from './MessageBatcher.js';
+import { NetworkMonitor } from './NetworkMonitor.js';
 
 export class NetworkManager {
     constructor(game) {
         this.game = game;
         this.socket = null;
         this.lastEmit = 0;
+        this.networkUpdateInterval = 50; // 20 updates/sec (20Hz)
         this.disconnectTimers = new Map();
+        this.previousStates = new Map(); // For delta compression
+        this.messageBatcher = null; // Initialized after socket connection
+
+        // Performance monitoring (disable in production for performance)
+        this.monitor = new NetworkMonitor();
     }
 
     setupSockets() {
@@ -15,13 +24,27 @@ export class NetworkManager {
             return;
         }
 
-        this.socket = io();
+        // Configure client to match server (WebSocket only)
+        this.socket = io({
+            transports: ['websocket'],
+            upgrade: false
+        });
 
+        // Initialize message batcher
+        this.messageBatcher = new MessageBatcher(this);
+
+        // Listen for batched updates (NEW - replaces individual player_updated)
+        this.socket.on('batch_update', (batch) => {
+            this.monitor.trackReceived('batch_update', batch); // Track performance
+            this.messageBatcher.processBatch(batch);
+        });
+
+        // Keep individual listeners for backward compatibility and non-batched events
         this.socket.on('player_updated', (data) => this.handlePlayerUpdated(data));
         this.socket.on('initial_states', (data) => this.handleInitialStates(data));
         this.socket.on('enemy_states', (data) => this.handleEnemyStates(data));
         this.socket.on('structure_states', (data) => this.handleStructureStates(data));
-        this.socket.on('entity_update', (data) => this.handleEntityUpdate(data)); // New listener
+        this.socket.on('entity_update', (data) => this.handleEntityUpdate(data)); // Keep for individual updates
         this.socket.on('player_disconnected', (data) => this.handlePlayerDisconnected(data));
         this.socket.on('player_reconnected', (data) => this.handlePlayerReconnected(data));
 
@@ -191,16 +214,26 @@ export class NetworkManager {
         if (!this.socket) return;
 
         const now = Date.now();
-        if (now - this.lastEmit > 50) { // 20Hz
-            this.socket.emit('player_update', {
+        if (now - this.lastEmit >= this.networkUpdateInterval) {
+            // Round position and rotation to reduce bandwidth
+            const roundedPos = NetworkOptimizer.roundPosition(position);
+            const roundedRot = NetworkOptimizer.roundRotation(rotation);
+
+            const updateData = {
                 characterId,
-                position,
-                rotation,
+                position: roundedPos,
+                rotation: roundedRot,
                 animation,
                 timeScale
-            });
+            };
+
+            this.socket.emit('player_update', updateData);
+            this.monitor.trackSent('player_update', updateData); // Track performance
             this.lastEmit = now;
         }
+
+        // Update monitor periodically
+        this.monitor.update();
     }
 
     emitEnterZone(characterId) {

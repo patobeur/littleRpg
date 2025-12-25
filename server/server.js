@@ -20,7 +20,42 @@ const LobbyManager = require('./lobby-manager');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+
+// Socket.IO with optimizations
+const io = new Server(server, {
+    // Use WebSocket only (avoid long-polling overhead)
+    transports: ['websocket'],
+
+    // Enable compression for messages > 128 bytes
+    perMessageDeflate: {
+        threshold: 128,
+        zlibDeflateOptions: {
+            chunkSize: 1024,
+            memLevel: 7,
+            level: 3 // Balance between speed and compression
+        },
+        zlibInflateOptions: {
+            chunkSize: 10 * 1024
+        },
+        clientNoContextTakeover: true,
+        serverNoContextTakeover: true,
+        serverMaxWindowBits: 10,
+        concurrencyLimit: 10
+    },
+
+    // Optimize ping/pong for better reconnection
+    pingTimeout: 60000,
+    pingInterval: 25000,
+
+    // Optimize buffer sizes
+    maxHttpBufferSize: 1e6, // 1MB max message size
+
+    // Allow credentials for secure connections
+    cors: {
+        origin: config.server.env === 'production' ? false : '*',
+        credentials: true
+    }
+});
 
 // Initialize Lobby Manager
 const lobbyManager = new LobbyManager(io);

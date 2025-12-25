@@ -3,7 +3,11 @@
     // Protect page
     await protectPage();
 
-    const socket = io();
+    // Configure Socket.IO to match server (WebSocket only)
+    const socket = io({
+        transports: ['websocket'],
+        upgrade: false
+    });
     let currentLobby = null;
     let isReady = false;
     let myCharacter = null;
