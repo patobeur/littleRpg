@@ -10,3 +10,5 @@ npm-debug.log*
 .idea/
 save_this_version.bat
 histoire.md
+server/database/migrations_old.js
+check_all_tables.js

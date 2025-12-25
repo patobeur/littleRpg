@@ -1,210 +1,161 @@
-// Database migrations
-const database = require('./database');
+// Database migrations - CONSOLIDATED VERSION
+const database = require("./database");
 
 const migrations = [
-    {
-        version: 1,
-        name: 'Initial schema',
-        up: async () => {
-            // Create users table
-            await database.run(`
-        CREATE TABLE IF NOT EXISTS users (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          username TEXT UNIQUE NOT NULL,
-          password_hash TEXT NOT NULL,
-          avatar_url TEXT,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
-
-            // Create characters table
-            await database.run(`
-        CREATE TABLE IF NOT EXISTS characters (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id INTEGER NOT NULL,
-          name TEXT NOT NULL,
-          slot_index INTEGER NOT NULL,
-          level INTEGER DEFAULT 1,
-          experience INTEGER DEFAULT 0,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-          UNIQUE(user_id, slot_index)
-        )
-      `);
-
-            // Create migration tracking table
-            await database.run(`
-        CREATE TABLE IF NOT EXISTS migrations (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          version INTEGER UNIQUE NOT NULL,
-          name TEXT NOT NULL,
-          applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
-
-            console.log('Migration 1: Initial schema created');
-        },
-    },
-    {
-        version: 2,
-        name: 'Add email to users',
-        up: async () => {
-            // SQLite doesn't support adding UNIQUE NOT NULL columns directly
-            // We need to recreate the table
-
-            // Create new table with email column
-            await database.run(`
-                CREATE TABLE users_new (
+	{
+		version: 1,
+		name: "Initial schema - Complete",
+		up: async () => {
+			// Create users table with ALL columns (email + role included)
+			await database.run(`
+                CREATE TABLE IF NOT EXISTS users (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT UNIQUE NOT NULL,
                     email TEXT UNIQUE NOT NULL,
                     password_hash TEXT NOT NULL,
+                    role TEXT DEFAULT 'user',
                     avatar_url TEXT,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             `);
 
-            // Copy existing data (if any) - set email to empty string for now
-            await database.run(`
-                INSERT INTO users_new (id, username, password_hash, avatar_url, created_at, updated_at, email)
-                SELECT id, username, password_hash, avatar_url, created_at, updated_at, 
-                       username || '@temp.local' as email
-                FROM users
+			// Create characters table with ALL columns (class, stats, position, scene)
+			await database.run(`
+                CREATE TABLE IF NOT EXISTS characters (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    name TEXT NOT NULL,
+                    slot_index INTEGER NOT NULL,
+                    class TEXT DEFAULT 'Warrior',
+                    level INTEGER DEFAULT 1,
+                    experience INTEGER DEFAULT 0,
+                    strength INTEGER DEFAULT 10,
+                    intelligence INTEGER DEFAULT 10,
+                    dexterity INTEGER DEFAULT 10,
+                    max_hp INTEGER DEFAULT 100,
+                    current_hp INTEGER DEFAULT 100,
+                    max_mana INTEGER DEFAULT 50,
+                    current_mana INTEGER DEFAULT 50,
+                    pos_x REAL DEFAULT 0,
+                    pos_y REAL DEFAULT 0,
+                    pos_z REAL DEFAULT 0,
+                    rotation_y REAL DEFAULT 0,
+                    current_scene_id TEXT DEFAULT 'scene_01',
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                    UNIQUE(user_id, slot_index)
+                )
             `);
 
-            // Drop old table
-            await database.run(`DROP TABLE users`);
+			// Create migration tracking table
+			await database.run(`
+                CREATE TABLE IF NOT EXISTS migrations (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    version INTEGER UNIQUE NOT NULL,
+                    name TEXT NOT NULL,
+                    applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            `);
 
-            // Rename new table
-            await database.run(`ALTER TABLE users_new RENAME TO users`);
-
-            console.log('Migration 2: Added email column to users table');
-        },
-    },
-    {
-        version: 3,
-        name: 'Update characters with class and stats',
-        up: async () => {
-            await database.run(`ALTER TABLE characters ADD COLUMN class TEXT DEFAULT 'Warrior'`);
-            await database.run(`ALTER TABLE characters ADD COLUMN strength INTEGER DEFAULT 10`);
-            await database.run(`ALTER TABLE characters ADD COLUMN intelligence INTEGER DEFAULT 10`);
-            await database.run(`ALTER TABLE characters ADD COLUMN dexterity INTEGER DEFAULT 10`);
-            await database.run(`ALTER TABLE characters ADD COLUMN max_hp INTEGER DEFAULT 100`);
-            await database.run(`ALTER TABLE characters ADD COLUMN current_hp INTEGER DEFAULT 100`);
-            await database.run(`ALTER TABLE characters ADD COLUMN max_mana INTEGER DEFAULT 50`);
-            await database.run(`ALTER TABLE characters ADD COLUMN current_mana INTEGER DEFAULT 50`);
-            console.log('Migration 3: Updated characters table with class and stats');
-        },
-    },
-    {
-        version: 4,
-        name: 'Add position to characters',
-        up: async () => {
-            await database.run(`ALTER TABLE characters ADD COLUMN pos_x REAL DEFAULT 0`);
-            await database.run(`ALTER TABLE characters ADD COLUMN pos_y REAL DEFAULT 0`);
-            await database.run(`ALTER TABLE characters ADD COLUMN pos_z REAL DEFAULT 0`);
-            await database.run(`ALTER TABLE characters ADD COLUMN rotation_y REAL DEFAULT 0`);
-            console.log('Migration 4: Added position columns to characters table');
-        },
-    },
-    {
-        version: 5,
-        name: 'Add scene tracking',
-        up: async () => {
-            await database.run(`ALTER TABLE characters ADD COLUMN current_scene_id TEXT DEFAULT 'scene_01'`);
-            console.log('Migration 5: Added current_scene_id to characters table');
-        },
-    },
-    {
-        version: 6,
-        name: 'Add role to users',
-        up: async () => {
-            await database.run(`ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'`);
-            console.log('Migration 6: Added role column to users table');
-        },
-    },
+			console.log("✅ Migration 1: Complete initial schema created");
+			console.log(
+				"  ✓ Users table (username, email, role, password_hash, avatar_url)"
+			);
+			console.log(
+				"  ✓ Characters table (all stats, position, scene tracking)"
+			);
+			console.log("  ✓ Migrations tracking table");
+		},
+	},
 ];
 
 // Seed default admin account
 async function seedDefaultAdmin() {
-    try {
-        const bcrypt = require('bcrypt');
-        const SALT_ROUNDS = 10;
+	try {
+		const bcrypt = require("bcrypt");
+		const SALT_ROUNDS = 10;
 
-        // Check if admin already exists
-        const adminExists = await database.get(
-            'SELECT id FROM users WHERE email = ?',
-            ['patobeuradmin@patobeur.pat']
-        );
+		// Check if admin already exists
+		const adminExists = await database.get(
+			"SELECT id FROM users WHERE email = ?",
+			["patobeuradmin@patobeur.pat"]
+		);
 
-        if (!adminExists) {
-            console.log('Creating default superAdmin account...');
+		if (!adminExists) {
+			console.log("Creating default superAdmin account...");
 
-            // Hash the password
-            const passwordHash = await bcrypt.hash('patobeuradmin', SALT_ROUNDS);
+			// Hash the password
+			const passwordHash = await bcrypt.hash("patobeur", SALT_ROUNDS);
 
-            // Create the admin account
-            await database.run(
-                'INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)',
-                ['Patobeur', 'patobeuradmin@patobeur.pat', passwordHash, 'superAdmin']
-            );
+			// Create the admin account
+			await database.run(
+				"INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)",
+				[
+					"Patobeur",
+					"patobeuradmin@patobeur.pat",
+					passwordHash,
+					"superAdmin",
+				]
+			);
 
-            console.log('✅ Default superAdmin account created successfully!');
-            console.log('   Username: Patobeur');
-            console.log('   Email: patobeuradmin@patobeur.pat');
-            console.log('   Password: patobeuradmin');
-        } else {
-            console.log('Default superAdmin account already exists');
-        }
-    } catch (error) {
-        console.error('Error creating default admin account:', error);
-        // Don't throw - this shouldn't prevent server startup
-    }
+			console.log("✅ Default superAdmin account created successfully!");
+			console.log("   Username: Patobeur");
+			console.log("   Email: patobeuradmin@patobeur.pat");
+			console.log("   Password: patobeur");
+			console.log("   Role: superAdmin");
+		} else {
+			console.log("ℹ️  Default superAdmin account already exists");
+		}
+	} catch (error) {
+		console.error("Error creating default admin account:", error);
+		// Don't throw - this shouldn't prevent server startup
+	}
 }
 
 async function runMigrations() {
-    try {
-        // Check if migrations table exists
-        const tableExists = await database.get(`
-      SELECT name FROM sqlite_master 
-      WHERE type='table' AND name='migrations'
-    `);
+	try {
+		// Check if migrations table exists
+		const tableExists = await database.get(`
+            SELECT name FROM sqlite_master 
+            WHERE type='table' AND name='migrations'
+        `);
 
-        if (!tableExists) {
-            // First time setup - run initial migration to create migrations table
-            await migrations[0].up();
-            await database.run(
-                'INSERT INTO migrations (version, name) VALUES (?, ?)',
-                [migrations[0].version, migrations[0].name]
-            );
-        }
+		if (!tableExists) {
+			// First time setup - run initial migration to create migrations table
+			await migrations[0].up();
+			await database.run(
+				"INSERT INTO migrations (version, name) VALUES (?, ?)",
+				[migrations[0].version, migrations[0].name]
+			);
+		}
 
-        // Get applied migrations
-        const appliedMigrations = await database.all(
-            'SELECT version FROM migrations ORDER BY version ASC'
-        );
-        const appliedVersions = new Set(appliedMigrations.map((m) => m.version));
+		// Get applied migrations
+		const appliedMigrations = await database.all(
+			"SELECT version FROM migrations ORDER BY version ASC"
+		);
+		const appliedVersions = new Set(appliedMigrations.map((m) => m.version));
 
-        // Run pending migrations
-        for (const migration of migrations) {
-            if (!appliedVersions.has(migration.version)) {
-                console.log(`Running migration ${migration.version}: ${migration.name}`);
-                await migration.up();
-                await database.run(
-                    'INSERT INTO migrations (version, name) VALUES (?, ?)',
-                    [migration.version, migration.name]
-                );
-                console.log(`Migration ${migration.version} completed`);
-            }
-        }
+		// Run pending migrations
+		for (const migration of migrations) {
+			if (!appliedVersions.has(migration.version)) {
+				console.log(
+					`Running migration ${migration.version}: ${migration.name}`
+				);
+				await migration.up();
+				await database.run(
+					"INSERT INTO migrations (version, name) VALUES (?, ?)",
+					[migration.version, migration.name]
+				);
+				console.log(`Migration ${migration.version} completed`);
+			}
+		}
 
-        console.log('All migrations completed');
-    } catch (error) {
-        console.error('Migration error:', error);
-        throw error;
-    }
+		console.log("All migrations completed");
+	} catch (error) {
+		console.error("Migration error:", error);
+		throw error;
+	}
 }
 
 module.exports = { runMigrations, seedDefaultAdmin };
