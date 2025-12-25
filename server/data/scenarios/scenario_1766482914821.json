@@ -1,0 +1,9 @@
+{
+  "id": "scenario_1766482914821",
+  "name": "New Scenario",
+  "maps": [
+    "test_map",
+    "Suite_Map1"
+  ],
+  "active": true
+}

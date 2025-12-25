@@ -1,0 +1,8 @@
+{
+	"id": "default",
+	"name": "Un nouveau Départ",
+	"maps": [
+		"map1"
+	],
+	"active": true
+}

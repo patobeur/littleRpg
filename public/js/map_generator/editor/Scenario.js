@@ -3,7 +3,8 @@ import { state } from './State.js';
 let currentScenario = {
     id: null,
     name: "New Scenario",
-    maps: []
+    maps: [],
+    active: true
 };
 
 export function refreshScenarioList() {
@@ -12,7 +13,8 @@ export function refreshScenarioList() {
 
     selector.innerHTML = '<option>Loading...</option>';
 
-    fetch('/api/scenarios')
+    // Load all scenarios (including inactive) for map generator
+    fetch('/api/scenarios?showAll=true')
         .then(r => r.json())
         .then(files => {
             selector.innerHTML = '';
@@ -58,7 +60,8 @@ export function createNewScenario() {
     currentScenario = {
         id: `scenario_${Date.now()}`,
         name: "New Scenario",
-        maps: []
+        maps: [],
+        active: true
     };
     updateScenarioUI();
 }
@@ -66,6 +69,10 @@ export function createNewScenario() {
 export function saveScenario() {
     const nameInput = document.getElementById('scenarioName');
     if (nameInput) currentScenario.name = nameInput.value;
+
+    // Get active status from checkbox
+    const activeCheckbox = document.getElementById('scenarioActive');
+    if (activeCheckbox) currentScenario.active = activeCheckbox.checked;
 
     // Ensure ID exists
     if (!currentScenario.id) currentScenario.id = `scenario_${Date.now()}`;
@@ -116,6 +123,12 @@ export function moveMapInScenario(index, direction) {
 
 function updateScenarioUI() {
     document.getElementById('scenarioName').value = currentScenario.name;
+
+    // Update active checkbox
+    const activeCheckbox = document.getElementById('scenarioActive');
+    if (activeCheckbox) {
+        activeCheckbox.checked = currentScenario.active !== false; // Default to true if undefined
+    }
 
     const list = document.getElementById('scenarioMapList');
     list.innerHTML = '';

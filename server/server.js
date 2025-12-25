@@ -269,6 +269,9 @@ app.get('/api/scenarios', (req, res) => {
     const dir = path.join(__dirname, 'data/scenarios');
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
+    // Check if we should show all scenarios (for map generator) or only active ones (for game)
+    const showAll = req.query.showAll === 'true';
+
     fs.readdir(dir, (err, files) => {
         if (err) return res.status(500).json({ error: 'Failed to list scenarios' });
 
@@ -276,7 +279,12 @@ app.get('/api/scenarios', (req, res) => {
         files.filter(f => f.endsWith('.json')).forEach(file => {
             try {
                 const content = fs.readFileSync(path.join(dir, file), 'utf8');
-                scenarios.push(JSON.parse(content));
+                const scenario = JSON.parse(content);
+
+                // Filter by active status unless showAll is true
+                if (showAll || scenario.active !== false) {
+                    scenarios.push(scenario);
+                }
             } catch (e) { }
         });
         res.json(scenarios);
