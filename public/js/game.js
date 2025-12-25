@@ -9,6 +9,7 @@ import { ChatManager } from './game/chat/ChatManager.js';
 import { SettingsModal } from './game/settings/SettingsModal.js';
 import { CameraManager } from './game/camera/CameraManager.js';
 import { ThirdPersonCameraMode } from './game/camera/ThirdPersonCameraMode.js';
+import { TopDownCameraMode } from './game/camera/TopDownCameraMode.js';
 import { fadeModel } from './game/Utils.js';
 
 class GameEngine {
@@ -29,6 +30,7 @@ class GameEngine {
         // Camera System
         this.cameraManager = new CameraManager(this);
         this.cameraManager.registerMode(new ThirdPersonCameraMode(this));
+        this.cameraManager.registerMode(new TopDownCameraMode(this));
         this.cameraManager.setMode('third-person'); // Mode par défaut
 
         // State
