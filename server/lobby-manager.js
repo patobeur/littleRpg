@@ -25,6 +25,9 @@ class LobbyManager {
         this.enemyStates = new Map(); // code -> Map<enemyId, ...>
         this.structureStates = new Map(); // code -> Map<structureId, ...>
 
+        // Disconnect cleanup timers: characterId -> timer (for permanent removal after 30s)
+        this.disconnectCleanupTimers = new Map();
+
         // Initialize message batcher for optimized broadcasts
         this.messageBatcher = new MessageBatcher(io);
 
@@ -477,12 +480,59 @@ class LobbyManager {
             const disconnectedPlayer = lobby.players.find(p => p.id === socket.id);
             const characterId = disconnectedPlayer ? disconnectedPlayer.characterId : null;
 
-            console.log(`[LobbyManager] Player from lobby ${code} disconnected (game in progress, keeping player slot)`);
+            console.log(`[LobbyManager] Player from lobby ${code} disconnected (game in progress, keeping player slot for 30s)`);
             this.playerToLobby.delete(socket.id);
+
+            // Emit disconnect event (client will fade player to 0.4 opacity)
             this.io.to(code).emit('player_disconnected', {
                 playerId: socket.id,
                 characterId: characterId
             });
+
+            // Start 30-second cleanup timer for permanent removal
+            if (characterId) {
+                // Cancel any existing cleanup timer for this player
+                if (this.disconnectCleanupTimers.has(characterId)) {
+                    clearTimeout(this.disconnectCleanupTimers.get(characterId));
+                }
+
+                const cleanupTimer = setTimeout(() => {
+                    console.log(`[LobbyManager] Player ${characterId} cleanup timeout - removing permanently`);
+
+                    // Remove from lobby.players
+                    const lobby = this.lobbies.get(code);
+                    if (lobby) {
+                        lobby.players = lobby.players.filter(p => p.characterId !== characterId);
+
+                        // Clean up player state
+                        this.playerStates.delete(characterId);
+
+                        // Notify clients to remove player permanently
+                        this.io.to(code).emit('player_removed_permanently', {
+                            characterId: characterId
+                        });
+
+                        // If lobby is now empty, delete it
+                        if (lobby.players.length === 0) {
+                            console.log(`[LobbyManager] Lobby ${code} is empty after cleanup - deleting`);
+                            this.cleanupLobby(code);
+                        } else {
+                            // Check if host needs reassignment
+                            const hostStillPresent = lobby.players.some(p => p.id === lobby.host);
+                            if (!hostStillPresent && lobby.players.length > 0) {
+                                lobby.host = lobby.players[0].id;
+                                lobby.players[0].isHost = true;
+                                this.io.to(code).emit('new_host', { hostId: lobby.host });
+                                console.log(`[LobbyManager] New host assigned in lobby ${code}`);
+                            }
+                        }
+                    }
+
+                    this.disconnectCleanupTimers.delete(characterId);
+                }, 30000); // 30 seconds
+
+                this.disconnectCleanupTimers.set(characterId, cleanupTimer);
+            }
             return;
         }
 
