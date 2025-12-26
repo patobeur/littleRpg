@@ -302,6 +302,18 @@ class LobbyManager {
             if (states.length > 0) {
                 console.log(`[LobbyManager] Sending ${states.length} states to socket ${socket.id}`);
                 socket.emit('initial_states', { states });
+
+                // IMPORTANT: Broadcast the joining player's state to all OTHER players
+                // This fixes the bug where existing players don't see newly joining players
+                if (characterId) {
+                    const joiningPlayerState = states.find(s => s.characterId === characterId);
+                    if (joiningPlayerState) {
+                        socket.broadcast.to(lobbyCode).emit('player_joined_game', {
+                            state: joiningPlayerState
+                        });
+                        console.log(`[LobbyManager] Broadcasting joining player ${characterId} to other players in ${lobbyCode}`);
+                    }
+                }
             } else {
                 console.log(`[LobbyManager] No states to send for lobby ${code}`);
             }

@@ -42,6 +42,7 @@ export class NetworkManager {
         // Keep individual listeners for backward compatibility and non-batched events
         this.socket.on('player_updated', (data) => this.handlePlayerUpdated(data));
         this.socket.on('initial_states', (data) => this.handleInitialStates(data));
+        this.socket.on('player_joined_game', (data) => this.handlePlayerJoinedGame(data)); // Handle joining players for visibility fix
         this.socket.on('enemy_states', (data) => this.handleEnemyStates(data));
         this.socket.on('structure_states', (data) => this.handleStructureStates(data));
         this.socket.on('entity_update', (data) => this.handleEntityUpdate(data)); // Keep for individual updates
@@ -170,6 +171,35 @@ export class NetworkManager {
                 }
             });
         }, 1000);
+    }
+
+    handlePlayerJoinedGame(data) {
+        // This event is received by existing players when a new player joins the game
+        // We need to make the joining player visible to us
+        if (!data.state) return;
+
+        const state = data.state;
+        const pd = this.game.entityManager.playerData.get(state.characterId);
+
+        if (pd && state.characterId !== this.game.entityManager.localCharacterId) {
+            console.log(`[NetworkManager] Player ${state.characterId} joined the game - making visible`);
+
+            // Set position and rotation
+            pd.model.position.set(state.position.x, state.position.y, state.position.z);
+            pd.model.rotation.y = state.rotation;
+
+            // Set animation
+            pd.targetAnimation = state.animation;
+            pd.targetTimeScale = state.timeScale || 1;
+            pd.positionSet = true;
+
+            // Make visible with fade-in effect
+            pd.model.visible = true;
+            fadeModel(pd.model, 1.0, 800);
+
+            // Ensure they're not marked as disconnected
+            pd.disconnected = false;
+        }
     }
 
     handlePlayerDisconnected(data) {
