@@ -7,7 +7,7 @@ export class SettingsModal {
     constructor(gameEngine) {
         this.gameEngine = gameEngine;
         this.isOpen = false;
-        this.currentTab = 'controls'; // Onglet par défaut
+        this.currentTab = 'game'; // Onglet par défaut
 
         // Paramètres par défaut
         this.settings = {
@@ -71,7 +71,8 @@ export class SettingsModal {
         const tabs = document.createElement('div');
         tabs.className = 'settings-tabs';
         tabs.innerHTML = `
-            <button class="settings-tab active" data-tab="controls">🎮 Contrôles</button>
+            <button class="settings-tab active" data-tab="game">🎮 Jeu</button>
+            <button class="settings-tab" data-tab="controls">⌨️ Contrôles</button>
             <button class="settings-tab" data-tab="display">🖥️ Affichage</button>
             <button class="settings-tab" data-tab="audio">🔊 Audio</button>
             <button class="settings-tab" data-tab="graphics">✨ Graphismes</button>
@@ -82,6 +83,7 @@ export class SettingsModal {
         content.className = 'settings-content';
 
         // Créer les contenus pour chaque onglet
+        content.appendChild(this.createGameTab());
         content.appendChild(this.createControlsTab());
         content.appendChild(this.createDisplayTab());
         content.appendChild(this.createAudioTab());
@@ -108,11 +110,38 @@ export class SettingsModal {
     }
 
     /**
+     * Crée l'onglet Jeu
+     */
+    createGameTab() {
+        const tab = document.createElement('div');
+        tab.className = 'settings-tab-content active';
+        tab.dataset.tab = 'game';
+
+        tab.innerHTML = `
+            <div class="settings-category">
+                <h3>🎮 Session de jeu</h3>
+                
+                <div class="settings-option" style="flex-direction: column; align-items: stretch; gap: 10px;">
+                    <p class="settings-info" style="margin: 0;">
+                        Quitter la partie vous ramènera au tableau de bord. 
+                        Vous serez retiré du lobby et vos données seront sauvegardées.
+                    </p>
+                    <button class="btn btn-danger" id="quit-game-btn" style="width: 100%; padding: 12px; font-size: 16px;">
+                        🚪 Quitter la partie
+                    </button>
+                </div>
+            </div>
+        `;
+
+        return tab;
+    }
+
+    /**
      * Crée l'onglet Contrôles
      */
     createControlsTab() {
         const tab = document.createElement('div');
-        tab.className = 'settings-tab-content active';
+        tab.className = 'settings-tab-content'; // Removed 'active' - now Game tab is default
         tab.dataset.tab = 'controls';
 
         tab.innerHTML = `
@@ -352,6 +381,12 @@ export class SettingsModal {
             this.close();
         });
 
+        // Bouton Quitter la partie
+        const quitBtn = this.modalContainer.querySelector('#quit-game-btn');
+        if (quitBtn) {
+            quitBtn.addEventListener('click', () => this.quitGame());
+        }
+
         // Écoute globale pour ESC et O
         document.addEventListener('keydown', (e) => {
             // ESC ou O (attention au chat actif)
@@ -504,5 +539,32 @@ export class SettingsModal {
         this.modalContainer.querySelector('.settings-overlay').appendChild(modal);
 
         console.log('[SettingsModal] Paramètres réinitialisés');
+    }
+
+    /**
+     * Quitte la partie proprement
+     */
+    quitGame() {
+        if (!confirm('Voulez-vous vraiment quitter la partie ? Votre progression sera sauvegardée.')) {
+            return;
+        }
+
+        console.log('[SettingsModal] Quitting game...');
+
+        // Fermer la modal
+        this.close();
+
+        // Déconnecter proprement du socket
+        if (this.gameEngine.networkManager && this.gameEngine.networkManager.socket) {
+            console.log('[SettingsModal] Disconnecting from lobby...');
+            this.gameEngine.networkManager.socket.disconnect();
+        }
+
+        // Nettoyage du sessionStorage
+        sessionStorage.removeItem('currentLobby');
+
+        // Redirection vers le dashboard
+        console.log('[SettingsModal] Redirecting to dashboard...');
+        window.location.href = '/dashboard.html';
     }
 }

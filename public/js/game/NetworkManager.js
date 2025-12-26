@@ -152,9 +152,7 @@ export class NetworkManager {
                     if (target) {
                         target.position.copy(pd.model.position);
                         target.rotation.y = pd.model.rotation.y;
-
-                        // Force camera update immediately
-                        this.game.inputManager.updateCamera(target, this.game.sceneManager.camera);
+                        // Camera will update automatically in the game loop
                     }
                 }
             }
