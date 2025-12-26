@@ -3,7 +3,7 @@ import { SceneManager } from './game/SceneManager.js';
 import { NetworkManager } from './game/NetworkManager.js';
 import { EntityManager } from './game/EntityManager.js';
 import { InputManager } from './game/InputManager.js';
-import { UIManager } from './game/UIManager.js';
+import { UIManager } from './game/ui/UIManager.js';
 import { CollisionManager } from './game/CollisionManager.js';
 import { ChatManager } from './game/chat/ChatManager.js';
 import { SettingsModal } from './game/settings/SettingsModal.js';
@@ -74,10 +74,12 @@ class GameEngine {
         // Init Managers
         this.sceneManager.init();
         this.networkManager.setupSockets();
-        this.uiManager.setupUI(gameData.players);
 
-        // Load Entities
+        // Load Entities FIRST (sets localCharacterId in EntityManager)
         await this.entityManager.loadPlayers(gameData.players, this.localCharacterId);
+
+        // THEN setup UI (now EntityManager.localCharacterId is available)
+        this.uiManager.setupUI(gameData.players);
 
         // Join Game
         const lobbyCode = sessionStorage.getItem('lobbyCode');

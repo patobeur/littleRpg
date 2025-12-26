@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/styles/game.css">
     <link rel="stylesheet" href="/styles/chat.css">
     <link rel="stylesheet" href="/styles/settings.css">
+    <link rel="stylesheet" href="/styles/party-ui.css">
     <style>
         body,
         html {
@@ -48,7 +49,10 @@
     <div id="game-container"></div>
 
     <div id="ui-overlay">
-        <h2>LittleRPG - Adventure Started</h2>
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+            <h2 id="scenario-name" style="margin: 0; font-size: 24px;">LittleRPG</h2>
+            <div id="map-name" style="font-size: 16px; opacity: 0.8;">Loading...</div>
+        </div>
         <div id="players-ingame"></div>
     </div>
 

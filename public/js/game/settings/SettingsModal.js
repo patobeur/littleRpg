@@ -381,11 +381,14 @@ export class SettingsModal {
             this.close();
         });
 
-        // Bouton Quitter la partie
-        const quitBtn = this.modalContainer.querySelector('#quit-game-btn');
-        if (quitBtn) {
-            quitBtn.addEventListener('click', () => this.quitGame());
-        }
+        // Utiliser la délégation d'événements pour le bouton Quitter
+        // (fonctionne même si le bouton est recréé)
+        this.modalContainer.addEventListener('click', (e) => {
+            if (e.target.id === 'quit-game-btn' || e.target.closest('#quit-game-btn')) {
+                console.log('[SettingsModal] Quit button clicked via delegation!');
+                this.quitGame();
+            }
+        });
 
         // Écoute globale pour ESC et O
         document.addEventListener('keydown', (e) => {
@@ -545,14 +548,67 @@ export class SettingsModal {
      * Quitte la partie proprement
      */
     quitGame() {
-        if (!confirm('Voulez-vous vraiment quitter la partie ? Votre progression sera sauvegardée.')) {
-            return;
-        }
+        console.log('[SettingsModal] quitGame() called');
 
-        console.log('[SettingsModal] Quitting game...');
+        // Créer une confirmation personnalisée dans la modal
+        const confirmOverlay = document.createElement('div');
+        confirmOverlay.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        `;
+
+        const confirmBox = document.createElement('div');
+        confirmBox.style.cssText = `
+            background: #1a1a2e;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 400px;
+            border: 2px solid #9d4edd;
+        `;
+
+        confirmBox.innerHTML = `
+            <h3 style="margin: 0 0 20px 0; color: #fff;">🚪 Quitter la partie ?</h3>
+            <p style="margin: 0 0 30px 0; color: #ccc;">Votre progression sera sauvegardée.</p>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button id="confirm-quit-yes" class="btn btn-danger" style="padding: 10px 30px;">Oui, quitter</button>
+                <button id="confirm-quit-no" class="btn btn-secondary" style="padding: 10px 30px;">Annuler</button>
+            </div>
+        `;
+
+        confirmOverlay.appendChild(confirmBox);
+        this.modalContainer.querySelector('.settings-modal').appendChild(confirmOverlay);
+
+        // Handlers
+        const handleYes = () => {
+            console.log('[SettingsModal] User confirmed quit');
+            confirmOverlay.remove();
+            this.performQuit();
+        };
+
+        const handleNo = () => {
+            console.log('[SettingsModal] User cancelled quit');
+            confirmOverlay.remove();
+        };
+
+        document.getElementById('confirm-quit-yes').addEventListener('click', handleYes);
+        document.getElementById('confirm-quit-no').addEventListener('click', handleNo);
+    }
+
+    performQuit() {
+        console.log('[SettingsModal] Performing quit...');
 
         // Fermer la modal
         this.close();
+        console.log('[SettingsModal] Modal closed');
 
         // Déconnecter proprement du socket
         if (this.gameEngine.networkManager && this.gameEngine.networkManager.socket) {
@@ -562,6 +618,7 @@ export class SettingsModal {
 
         // Nettoyage du sessionStorage
         sessionStorage.removeItem('currentLobby');
+        console.log('[SettingsModal] Session storage cleared');
 
         // Redirection vers le dashboard
         console.log('[SettingsModal] Redirecting to dashboard...');

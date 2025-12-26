@@ -12,7 +12,7 @@ export class ChatUI {
         this.messagesContainer = null;
         this.inputElement = null;
         this.tabsContainer = null;
-        this.isExpanded = true; // Chat ouvert par défaut
+        this.isExpanded = false; // Chat fermé par défaut
         this.messageHistory = []; // Historique des messages
         this.maxMessages = 100; // Maximum de messages conservés
     }
@@ -76,6 +76,10 @@ export class ChatUI {
 
         // Ajout au DOM
         document.body.appendChild(this.container);
+
+        // Appliquer l'état collapsed par défaut
+        this.container.classList.add('collapsed');
+        toggleBtn.innerHTML = '▲';
     }
 
     /**

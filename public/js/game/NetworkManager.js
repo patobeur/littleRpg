@@ -46,9 +46,18 @@ export class NetworkManager {
         this.socket.on('enemy_states', (data) => this.handleEnemyStates(data));
         this.socket.on('structure_states', (data) => this.handleStructureStates(data));
         this.socket.on('entity_update', (data) => this.handleEntityUpdate(data)); // Keep for individual updates
+        this.socket.on('player_stats', (data) => this.handlePlayerStats(data)); // Party UI stats
         this.socket.on('player_disconnected', (data) => this.handlePlayerDisconnected(data));
         this.socket.on('player_reconnected', (data) => this.handlePlayerReconnected(data));
         this.socket.on('player_removed_permanently', (data) => this.handlePlayerRemovedPermanently(data));
+
+        // Handle rejection when player was removed from lobby
+        this.socket.on('join_game_rejected', (data) => {
+            console.warn('[NetworkManager] Join game rejected:', data.reason, data.message);
+            alert(data.message);
+            sessionStorage.clear();
+            window.location.href = '/dashboard.html';
+        });
 
         // Scene/Teleport events
         this.socket.on('teleport_countdown', (data) => {
@@ -201,41 +210,70 @@ export class NetworkManager {
         }
     }
 
-    handlePlayerDisconnected(data) {
-        console.log(`Player ${data.playerId} disconnected`);
-        if (!data.characterId) return;
-
-        const pd = this.game.entityManager.playerData.get(data.characterId);
-        if (pd) {
-            fadeModel(pd.model, 0.4, 500);
+    handlePlayerStats(data) {
+        // Update party UI with player stats
+        console.log('[NetworkManager] Received player_stats:', data);
+        if (this.game.uiManager) {
+            this.game.uiManager.updatePlayerStats(data.characterId, {
+                health: data.health,
+                maxHealth: data.maxHealth,
+                mana: data.mana,
+                maxMana: data.maxMana
+            });
         }
+    }
 
-        const timer = setTimeout(() => {
-            const pd = this.game.entityManager.playerData.get(data.characterId);
-            if (pd) {
+    handlePlayerDisconnected(data) {
+        console.log(`Player disconnected: ${data.characterId}`);
+        const pd = this.game.entityManager.playerData.get(data.characterId);
+
+        if (pd) {
+            // Stage 1: After 1 second, fade to 0.4 opacity (semi-transparent)
+            const fadeToTransparentTimer = setTimeout(() => {
+                fadeModel(pd.model, 0.4, 500);
+            }, 1000);
+
+            // Stage 2: After 5 seconds total, fade to invisible
+            const fadeToInvisibleTimer = setTimeout(() => {
                 fadeModel(pd.model, 0, 500);
                 setTimeout(() => {
                     pd.model.visible = false;
                     pd.disconnected = true;
                 }, 500);
-            }
-            this.disconnectTimers.delete(data.characterId);
-        }, 5000);
+            }, 5000);
 
-        this.disconnectTimers.set(data.characterId, timer);
+            // Update party UI status (immediately)
+            if (this.game.uiManager) {
+                this.game.uiManager.updatePlayerStatus(data.characterId, 'disconnected');
+            }
+
+            // Store both timers so we can cancel them on reconnect
+            this.disconnectTimers.set(data.characterId, {
+                fadeToTransparent: fadeToTransparentTimer,
+                fadeToInvisible: fadeToInvisibleTimer
+            });
+        }
     }
 
     handlePlayerReconnected(data) {
         console.log(`Player ${data.name} reconnected`);
         const pd = this.game.entityManager.playerData.get(data.characterId);
         if (pd) {
+            // Cancel both disconnect timers if they exist
             if (this.disconnectTimers.has(data.characterId)) {
-                clearTimeout(this.disconnectTimers.get(data.characterId));
+                const timers = this.disconnectTimers.get(data.characterId);
+                if (timers.fadeToTransparent) clearTimeout(timers.fadeToTransparent);
+                if (timers.fadeToInvisible) clearTimeout(timers.fadeToInvisible);
                 this.disconnectTimers.delete(data.characterId);
             }
             pd.disconnected = false;
             pd.model.visible = true;
             fadeModel(pd.model, 1.0, 500);
+        }
+
+        // Update party UI status
+        if (this.game.uiManager) {
+            this.game.uiManager.updatePlayerStatus(data.characterId, 'online');
         }
     }
 
@@ -260,6 +298,11 @@ export class NetworkManager {
 
                 // Remove from player data
                 this.game.entityManager.playerData.delete(data.characterId);
+
+                // Remove from party UI
+                if (this.game.uiManager) {
+                    this.game.uiManager.removePlayer(data.characterId);
+                }
 
                 console.log(`Player ${data.characterId} fully removed from game`);
             }, 500);

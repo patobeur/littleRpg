@@ -44,9 +44,17 @@ export class InputManager {
      */
     setupCameraSwitch() {
         document.addEventListener('keydown', (e) => {
+            // Camera switch (C key)
             if (e.key.toLowerCase() === 'c' && !this.chatActive) {
                 if (this.game.cameraManager) {
                     this.game.cameraManager.switchToNextMode();
+                }
+            }
+
+            // Party config panel (P key)
+            if (e.key.toLowerCase() === 'p' && !this.chatActive) {
+                if (this.game.uiManager) {
+                    this.game.uiManager.togglePartyConfig();
                 }
             }
         });

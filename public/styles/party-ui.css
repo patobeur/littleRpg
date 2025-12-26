@@ -1,0 +1,594 @@
+/* ============================================
+   PARTY UI - MMO-Style Player Frames
+   ============================================ */
+
+/* Container for all party frames */
+#party-frames-container {
+    position: absolute;
+    top: 80px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 1000;
+    pointer-events: auto;
+    font-family: 'Cinzel', serif;
+}
+
+#party-frames-container.dragging {
+    pointer-events: none;
+}
+
+/* Individual party frame */
+.party-frame {
+    position: relative;
+    width: 200px;
+    height: 70px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease;
+    cursor: move;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.party-frame:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.party-frame.dragging {
+    opacity: 0.7;
+    transform: scale(1.05);
+    z-index: 2000;
+    cursor: grabbing;
+}
+
+.party-frame.disconnected {
+    opacity: 0.4;
+    filter: grayscale(1);
+}
+
+/* Local player highlight */
+.party-frame.local-player {
+    border: 2px solid #ffd700;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 215, 0, 0.4);
+}
+
+.party-frame.local-player:hover {
+    border-color: #ffed4e;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.8), 0 0 16px rgba(255, 215, 0, 0.6);
+}
+
+/* Class-based background gradients */
+.party-frame.warrior {
+    background: linear-gradient(135deg, #c9462c 0%, #8b1a1a 100%);
+}
+
+.party-frame.mage {
+    background: linear-gradient(135deg, #8b5cf6 0%, #4c1d95 100%);
+}
+
+.party-frame.healer {
+    background: linear-gradient(135deg, #10b981 0%, #065f46 100%);
+}
+
+/* Compact mode */
+.party-frame.compact {
+    width: 160px;
+    height: 64px;
+}
+
+.party-frame.compact .party-frame-content {
+    padding: 6px 8px 8px 8px;
+}
+
+.party-frame.compact .party-player-name {
+    font-size: 12px;
+}
+
+.party-frame.compact .party-player-level {
+    font-size: 10px;
+}
+
+/* Frame content wrapper */
+.party-frame-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 8px 10px 10px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Player info section */
+.party-player-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+    margin-right: 32px;
+}
+
+.party-player-name {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: bold;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 130px;
+}
+
+/* 'Vous' badge for local player */
+.you-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    color: #000;
+    font-size: 9px;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 3px;
+    margin-left: 4px;
+    text-shadow: none;
+    vertical-align: middle;
+}
+
+.party-player-level {
+    color: #ffd700;
+    font-size: 12px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.4);
+    padding: 2px 6px;
+    border-radius: 4px;
+    min-width: 30px;
+    text-align: center;
+}
+
+/* Class icon */
+.party-class-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Stat bars container */
+.party-stats-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: 4px;
+}
+
+/* Health bar */
+.party-health-bar {
+    position: relative;
+    height: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.8);
+}
+
+.party-health-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%);
+    transition: width 0.3s ease-out;
+    box-shadow: 0 0 8px rgba(220, 38, 38, 0.8);
+    position: relative;
+}
+
+.party-health-fill::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, transparent 100%);
+}
+
+.party-health-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
+    pointer-events: none;
+}
+
+/* Mana bar */
+.party-mana-bar {
+    position: relative;
+    height: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.8);
+    margin-bottom: 4px;
+}
+
+.party-mana-bar.hidden {
+    display: none;
+}
+
+.party-mana-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+    transition: width 0.3s ease-out;
+    box-shadow: 0 0 6px rgba(37, 99, 235, 0.8);
+    position: relative;
+}
+
+.party-mana-fill::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+}
+
+.party-mana-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ffffff;
+    font-size: 9px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
+    pointer-events: none;
+}
+
+/* Status indicators */
+.party-status-indicator {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+    animation: pulse-indicator 2s ease-in-out infinite;
+}
+
+.party-status-indicator.offline {
+    background: #6b7280;
+    box-shadow: none;
+    animation: none;
+}
+
+@keyframes pulse-indicator {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* ============================================
+   PARTY CONFIGURATION PANEL
+   ============================================ */
+
+#party-config-panel {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    max-height: 600px;
+    background: linear-gradient(135deg, rgba(30, 30, 50, 0.98) 0%, rgba(20, 20, 35, 0.98) 100%);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9);
+    border: 2px solid rgba(139, 92, 246, 0.5);
+    z-index: 10000;
+    display: none;
+    overflow: hidden;
+}
+
+#party-config-panel.visible {
+    display: flex;
+    flex-direction: column;
+}
+
+.party-config-header {
+    padding: 16px 20px;
+    background: rgba(139, 92, 246, 0.2);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.party-config-title {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.party-config-close {
+    background: rgba(239, 68, 68, 0.3);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    color: #ffffff;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.2s ease;
+}
+
+.party-config-close:hover {
+    background: rgba(239, 68, 68, 0.6);
+    transform: scale(1.1);
+}
+
+.party-config-body {
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 500px;
+}
+
+.party-config-section {
+    margin-bottom: 24px;
+}
+
+.party-config-section-title {
+    color: #8b5cf6;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.party-config-option {
+    margin-bottom: 16px;
+}
+
+.party-config-label {
+    color: #d1d5db;
+    font-size: 13px;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.party-config-input {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 4px;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.party-config-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: #8b5cf6;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    transition: all 0.2s ease;
+}
+
+.party-config-input::-webkit-slider-thumb:hover {
+    background: #a78bfa;
+    transform: scale(1.1);
+}
+
+.party-config-select {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+}
+
+.party-config-select:hover {
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+.party-config-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.party-config-toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    transition: background 0.3s ease;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.party-config-toggle-switch::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    background: #6b7280;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.party-config-toggle input:checked+.party-config-toggle-switch {
+    background: rgba(139, 92, 246, 0.4);
+}
+
+.party-config-toggle input:checked+.party-config-toggle-switch::before {
+    transform: translateX(20px);
+    background: #8b5cf6;
+}
+
+.party-config-toggle input {
+    display: none;
+}
+
+.party-config-value {
+    color: #8b5cf6;
+    font-weight: bold;
+    margin-left: 8px;
+}
+
+.party-config-footer {
+    padding: 16px 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-top: 1px solid rgba(139, 92, 246, 0.3);
+    display: flex;
+    gap: 10px;
+}
+
+.party-config-button {
+    flex: 1;
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: none;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.party-config-button.primary {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: #ffffff;
+}
+
+.party-config-button.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.party-config-button.secondary {
+    background: rgba(107, 114, 128, 0.3);
+    color: #d1d5db;
+    border: 1px solid rgba(107, 114, 128, 0.5);
+}
+
+.party-config-button.secondary:hover {
+    background: rgba(107, 114, 128, 0.5);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+    #party-frames-container {
+        left: 10px;
+        top: 60px;
+    }
+
+    .party-frame {
+        width: 160px;
+        height: 50px;
+    }
+
+    .party-player-name {
+        font-size: 12px;
+        max-width: 100px;
+    }
+
+    .party-player-level {
+        font-size: 10px;
+        padding: 1px 4px;
+    }
+
+    #party-config-panel {
+        width: 90%;
+        max-width: 350px;
+    }
+}
+
+/* Horizontal layout */
+#party-frames-container.layout-horizontal {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+/* Grid layout */
+#party-frames-container.layout-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+@media (max-width: 480px) {
+    #party-frames-container.layout-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Animation for new party members */
+@keyframes party-frame-enter {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.party-frame.entering {
+    animation: party-frame-enter 0.4s ease-out;
+}
+
+/* Low health warning */
+.party-health-fill.critical {
+    animation: health-critical 1s ease-in-out infinite;
+}
+
+@keyframes health-critical {
+
+    0%,
+    100% {
+        box-shadow: 0 0 8px rgba(220, 38, 38, 0.8);
+    }
+
+    50% {
+        box-shadow: 0 0 16px rgba(220, 38, 38, 1), 0 0 24px rgba(220, 38, 38, 0.6);
+    }
+}

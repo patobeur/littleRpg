@@ -121,6 +121,14 @@ class Character {
         );
     }
 
+    // Update character stats (health/mana)
+    static async updateStats(id, currentHp, maxHp, currentMana, maxMana) {
+        await database.run(
+            'UPDATE characters SET current_hp = ?, max_hp = ?, current_mana = ?, max_mana = ? WHERE id = ?',
+            [currentHp, maxHp, currentMana, maxMana, id]
+        );
+    }
+
     // Validate character name
     static validateName(name) {
         const { nameMinLength, nameMaxLength } = config.characters;

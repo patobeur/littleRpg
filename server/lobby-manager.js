@@ -24,6 +24,7 @@ class LobbyManager {
         this.sceneChangeTimers = new Map(); // code -> timer
         this.enemyStates = new Map(); // code -> Map<enemyId, ...>
         this.structureStates = new Map(); // code -> Map<structureId, ...>
+        this.playerStats = new Map(); // characterId -> { health, maxHealth, mana, maxMana }
 
         // Disconnect cleanup timers: characterId -> timer (for permanent removal after 30s)
         this.disconnectCleanupTimers = new Map();
@@ -205,17 +206,62 @@ class LobbyManager {
         }
     }
 
-    async handleJoinGame(socket, { code, characterId }) {
+    async handleJoinGame(socket, data) {
+        const { code, characterId } = data;
         if (!code) return;
 
         const lobbyCode = code.toUpperCase();
-        this.playerToLobby.set(socket.id, lobbyCode);
-        socket.join(lobbyCode);
-        console.log(`[LobbyManager] Socket ${socket.id} joined game room ${lobbyCode} (Char: ${characterId})`);
-
         const lobby = this.lobbies.get(lobbyCode);
+
         if (lobby) {
-            // Update the player's socket ID in the lobby if they reconnected
+            // CRITICAL: Check if this character is still in the lobby
+            // If they were removed (e.g., after 30s timeout), reject the connection
+            const playerInLobby = lobby.players.find(p => p.characterId === characterId);
+
+            if (!playerInLobby) {
+                console.warn(`[LobbyManager] Player ${characterId} tried to join lobby ${lobbyCode} but is not in players list - rejecting`);
+                socket.emit('join_game_rejected', {
+                    reason: 'not_in_lobby',
+                    message: 'Vous avez été retiré du lobby. Veuillez retourner au tableau de bord.'
+                });
+                return;
+            }
+
+            // IMPORTANT: Check if player is already in another lobby
+            const previousLobbyCode = this.playerToLobby.get(socket.id);
+            if (previousLobbyCode && previousLobbyCode !== lobbyCode) {
+                console.log(`[LobbyManager] Player ${characterId} switching from lobby ${previousLobbyCode} to ${lobbyCode}`);
+
+                // Get previous lobby
+                const previousLobby = this.lobbies.get(previousLobbyCode);
+                if (previousLobby) {
+                    // Remove player from previous lobby
+                    const playerIndex = previousLobby.players.findIndex(p => p.id === socket.id || p.characterId === characterId);
+                    if (playerIndex !== -1) {
+                        const removedPlayer = previousLobby.players[playerIndex];
+                        previousLobby.players.splice(playerIndex, 1);
+
+                        // Notify other players in the PREVIOUS lobby that this player left permanently
+                        this.io.to(previousLobbyCode).emit('player_removed_permanently', {
+                            characterId: characterId,
+                            name: removedPlayer.name
+                        });
+
+                        console.log(`[LobbyManager] Removed ${removedPlayer.name} from previous lobby ${previousLobbyCode}`);
+                    }
+
+                    // Clean up cleanup timer if exists
+                    if (this.disconnectCleanupTimers.has(characterId)) {
+                        clearTimeout(this.disconnectCleanupTimers.get(characterId));
+                        this.disconnectCleanupTimers.delete(characterId);
+                    }
+                }
+            }
+
+            socket.join(lobbyCode);
+            this.playerToLobby.set(socket.id, lobbyCode);
+
+            // Update socket ID if player reconnecting
             if (characterId) {
                 const playerInLobby = lobby.players.find(p => p.characterId === characterId);
                 if (playerInLobby) {
@@ -361,6 +407,54 @@ class LobbyManager {
                     config: sceneConfig
                 });
             }
+
+            // Initialize player stats based on class if not already set
+            if (characterId && !this.playerStats.has(characterId)) {
+                const player = lobby.players.find(p => p.characterId === characterId);
+                if (player) {
+                    console.log(`[LobbyManager] Initializing stats for player ${player.name} (${characterId})`);
+                    await this.initializePlayerStats(characterId, player.class);
+                }
+            }
+
+            // Send initial player stats to client
+            if (characterId && this.playerStats.has(characterId)) {
+                const stats = this.playerStats.get(characterId);
+                console.log(`[LobbyManager] Sending initial stats to ${characterId}:`, stats);
+                socket.emit('player_stats', {
+                    characterId: characterId,
+                    health: stats.health,
+                    maxHealth: stats.maxHealth,
+                    mana: stats.mana,
+                    maxMana: stats.maxMana
+                });
+
+                // Also broadcast to other players in the lobby
+                socket.broadcast.to(lobbyCode).emit('player_stats', {
+                    characterId: characterId,
+                    health: stats.health,
+                    maxHealth: stats.maxHealth,
+                    mana: stats.mana,
+                    maxMana: stats.maxMana
+                });
+            }
+
+            // Send all other players' stats to the joining player
+            if (lobby.players) {
+                lobby.players.forEach(p => {
+                    if (p.characterId !== characterId && this.playerStats.has(p.characterId)) {
+                        const stats = this.playerStats.get(p.characterId);
+                        console.log(`[LobbyManager] Sending stats of ${p.name} to ${characterId}:`, stats);
+                        socket.emit('player_stats', {
+                            characterId: p.characterId,
+                            health: stats.health,
+                            maxHealth: stats.maxHealth,
+                            mana: stats.mana,
+                            maxMana: stats.maxMana
+                        });
+                    }
+                });
+            }
         } else {
             console.warn(`[LobbyManager] Lobby ${code} NOT found in handleJoinGame`);
         }
@@ -475,10 +569,16 @@ class LobbyManager {
 
     handleDisconnect(socket) {
         const code = this.playerToLobby.get(socket.id);
-        if (!code) return;
+        if (!code) {
+            console.log(`[LobbyManager] Socket ${socket.id} disconnected but not in any lobby`);
+            return;
+        }
 
         const lobby = this.lobbies.get(code);
-        if (!lobby) return;
+        if (!lobby) {
+            console.log(`[LobbyManager] Socket ${socket.id} disconnected but lobby ${code} not found`);
+            return;
+        }
 
         // If the game has started, don't remove the player immediately, 
         // they might be refreshing!
@@ -866,6 +966,88 @@ class LobbyManager {
             this.io.to(code).emit('entity_defeated', { id: target.id });
             enemies.delete(target.id);
         }
+    }
+
+    /**
+     * Initialize player stats based on class
+     * Loads from database if exists, otherwise uses archetype defaults
+     */
+    async initializePlayerStats(characterId, playerClass) {
+        try {
+            // Try to load stats from database first
+            const char = await Character.findById(characterId);
+
+            if (char && char.current_hp !== null && char.current_hp !== undefined) {
+                // Load from database (character already has saved stats)
+                this.playerStats.set(characterId, {
+                    health: char.current_hp,
+                    maxHealth: char.max_hp,
+                    mana: char.current_mana,
+                    maxMana: char.max_mana
+                });
+                console.log(`[LobbyManager] Loaded stats from DB for ${characterId}: HP ${char.current_hp}/${char.max_hp}, Mana ${char.current_mana}/${char.max_mana}`);
+            } else {
+                // Initialize from archetypes (new character or missing stats)
+                const archetype = archetypes.chars[playerClass] || archetypes.chars['Warrior'];
+                const maxHealth = archetype.stats.hp || 100;
+                const maxMana = archetype.stats.mana || 100;
+
+                this.playerStats.set(characterId, {
+                    health: maxHealth,
+                    maxHealth: maxHealth,
+                    mana: maxMana,
+                    maxMana: maxMana
+                });
+                console.log(`[LobbyManager] Initialized stats from archetypes for ${characterId} (${playerClass}): HP ${maxHealth}, Mana ${maxMana}`);
+
+                // Save to database
+                await this.savePlayerStats(characterId);
+            }
+        } catch (error) {
+            console.error(`[LobbyManager] Error initializing stats for ${characterId}:`, error);
+            // Fallback to archetype defaults
+            const archetype = archetypes.chars[playerClass] || archetypes.chars['Warrior'];
+            const maxHealth = archetype.stats.hp || 100;
+            const maxMana = archetype.stats.mana || 100;
+
+            this.playerStats.set(characterId, {
+                health: maxHealth,
+                maxHealth: maxHealth,
+                mana: maxMana,
+                maxMana: maxMana
+            });
+        }
+    }
+
+    /**
+     * Save player stats to database
+     */
+    async savePlayerStats(characterId) {
+        const stats = this.playerStats.get(characterId);
+        if (!stats) return;
+
+        try {
+            await Character.updateStats(characterId, stats.health, stats.maxHealth, stats.mana, stats.maxMana);
+            console.log(`[LobbyManager] Saved stats for ${characterId}`);
+        } catch (error) {
+            console.error(`[LobbyManager] Error saving stats for ${characterId}:`, error);
+        }
+    }
+
+    /**
+     * Broadcast player stats update to lobby
+     */
+    broadcastPlayerStats(code, characterId) {
+        if (!this.playerStats.has(characterId)) return;
+
+        const stats = this.playerStats.get(characterId);
+        this.io.to(code).emit('player_stats', {
+            characterId: characterId,
+            health: stats.health,
+            maxHealth: stats.maxHealth,
+            mana: stats.mana,
+            maxMana: stats.maxMana
+        });
     }
 }
 
