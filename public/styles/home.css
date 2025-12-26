@@ -409,7 +409,7 @@
 .class-image {
 	width: 100%;
 	height: 100%;
-	object-fit: contain;
+	object-fit: cover;
 	transition: transform 0.5s ease;
 }
 
@@ -439,6 +439,7 @@
 	font-weight: 600;
 	text-transform: uppercase;
 }
+
 .class-tag.bientot {
 	background: rgba(192, 192, 192, 0.1);
 	color: var(--color-accent-primary-bientot);
