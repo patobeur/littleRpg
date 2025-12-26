@@ -225,6 +225,13 @@ class LobbyManager {
 
                     // Notify other players that this player has reconnected
                     if (wasReconnection) {
+                        // Cancel cleanup timer if player reconnects
+                        if (this.disconnectCleanupTimers.has(characterId)) {
+                            clearTimeout(this.disconnectCleanupTimers.get(characterId));
+                            this.disconnectCleanupTimers.delete(characterId);
+                            console.log(`[LobbyManager] Cancelled cleanup timer for reconnected player ${characterId}`);
+                        }
+
                         socket.broadcast.to(lobbyCode).emit('player_reconnected', {
                             characterId: characterId,
                             name: playerInLobby.name
@@ -706,6 +713,27 @@ class LobbyManager {
             enemies: currentEnemies,
             structures: currentStructures
         });
+    }
+
+    /**
+     * Clean up all data structures for a lobby
+     */
+    cleanupLobby(code) {
+        // Delete lobby data
+        this.lobbies.delete(code);
+        this.lobbyScenes.delete(code);
+        this.playersInZone.delete(code);
+        this.enemyStates.delete(code);
+        this.structureStates.delete(code);
+        this.spatialGrids.delete(code);
+
+        // Clear any timers
+        if (this.sceneChangeTimers.has(code)) {
+            clearTimeout(this.sceneChangeTimers.get(code));
+            this.sceneChangeTimers.delete(code);
+        }
+
+        console.log(`[LobbyManager] Lobby ${code} cleaned up completely`);
     }
 
     generateCode() {

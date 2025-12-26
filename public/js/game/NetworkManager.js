@@ -48,6 +48,7 @@ export class NetworkManager {
         this.socket.on('entity_update', (data) => this.handleEntityUpdate(data)); // Keep for individual updates
         this.socket.on('player_disconnected', (data) => this.handlePlayerDisconnected(data));
         this.socket.on('player_reconnected', (data) => this.handlePlayerReconnected(data));
+        this.socket.on('player_removed_permanently', (data) => this.handlePlayerRemovedPermanently(data));
 
         // Scene/Teleport events
         this.socket.on('teleport_countdown', (data) => {
@@ -237,6 +238,33 @@ export class NetworkManager {
             pd.disconnected = false;
             pd.model.visible = true;
             fadeModel(pd.model, 1.0, 500);
+        }
+    }
+
+    handlePlayerRemovedPermanently(data) {
+        console.log(`Player ${data.characterId} removed permanently from game`);
+        const pd = this.game.entityManager.playerData.get(data.characterId);
+
+        if (pd) {
+            // Fade out completely
+            fadeModel(pd.model, 0, 500);
+
+            setTimeout(() => {
+                // Remove model from scene
+                if (pd.model && pd.model.parent) {
+                    this.game.sceneManager.scene.remove(pd.model);
+                }
+
+                // Remove HUD elements
+                if (pd.nameSprite) {
+                    this.game.sceneManager.scene.remove(pd.nameSprite);
+                }
+
+                // Remove from player data
+                this.game.entityManager.playerData.delete(data.characterId);
+
+                console.log(`Player ${data.characterId} fully removed from game`);
+            }, 500);
         }
     }
 
