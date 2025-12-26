@@ -13,6 +13,10 @@ const { runMigrations, seedDefaultAdmin } = require('./database/migrations');
 const authRoutes = require('./routes/auth');
 const characterRoutes = require('./routes/characters');
 const userRoutes = require('./routes/users');
+const statsRoutes = require('./routes/stats');
+
+// Import middleware
+const visitTracker = require('./middleware/visitTracker');
 
 const http = require('http');
 const { Server } = require('socket.io');
@@ -117,10 +121,14 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/js/three', express.static(path.join(__dirname, '..', 'node_modules', 'three', 'build')));
 app.use('/js/addons', express.static(path.join(__dirname, '..', 'node_modules', 'three', 'examples', 'jsm')));
 
+// Visit tracking middleware - track all public pages
+app.use(visitTracker);
+
 // API routes
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/characters', characterRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/stats', statsRoutes);
 
 // Serve HTML files
 app.get('/', (req, res) => {

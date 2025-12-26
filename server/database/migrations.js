@@ -68,6 +68,54 @@ const migrations = [
 			console.log("  ✓ Migrations tracking table");
 		},
 	},
+	{
+		version: 2,
+		name: "Add visits tracking",
+		up: async () => {
+			// Create visits table for unique visitors
+			await database.run(`
+                CREATE TABLE IF NOT EXISTS visits (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    visitor_id TEXT UNIQUE NOT NULL,
+                    ip_address TEXT,
+                    user_agent TEXT,
+                    first_visit DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    last_visit DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    visit_count INTEGER DEFAULT 1
+                )
+            `);
+
+			// Create visit_logs table for detailed logging
+			await database.run(`
+                CREATE TABLE IF NOT EXISTS visit_logs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    visitor_id TEXT NOT NULL,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    page TEXT,
+                    referrer TEXT,
+                    FOREIGN KEY (visitor_id) REFERENCES visits(visitor_id)
+                )
+            `);
+
+			// Create indexes for better performance
+			await database.run(`
+                CREATE INDEX IF NOT EXISTS idx_visits_visitor_id ON visits(visitor_id)
+            `);
+
+			await database.run(`
+                CREATE INDEX IF NOT EXISTS idx_visit_logs_visitor_id ON visit_logs(visitor_id)
+            `);
+
+			await database.run(`
+                CREATE INDEX IF NOT EXISTS idx_visit_logs_timestamp ON visit_logs(timestamp)
+            `);
+
+			console.log("✅ Migration 2: Visits tracking tables created");
+			console.log("  ✓ visits table (unique visitors)");
+			console.log("  ✓ visit_logs table (detailed logs)");
+			console.log("  ✓ Performance indexes");
+		},
+	},
 ];
 
 // Seed default admin account
