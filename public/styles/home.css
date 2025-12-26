@@ -712,56 +712,6 @@
 	flex-wrap: wrap;
 }
 
-.counter-stat {
-	display: flex;
-	align-items: center;
-	gap: var(--spacing-md);
-	padding: var(--spacing-md) var(--spacing-lg);
-	background: rgba(139, 92, 246, 0.05);
-	border: 1px solid rgba(139, 92, 246, 0.2);
-	border-radius: var(--radius-lg);
-	backdrop-filter: blur(10px);
-	transition: all var(--transition-normal);
-}
-
-.counter-stat:hover {
-	background: rgba(139, 92, 246, 0.1);
-	border-color: var(--color-accent-primary);
-	transform: translateY(-2px);
-	box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
-}
-
-.counter-icon {
-	font-size: 2rem;
-	filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4));
-}
-
-.counter-info {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-}
-
-.counter-value {
-	font-size: 1.5rem;
-	font-weight: 700;
-	color: var(--color-text-primary);
-	font-family: var(--font-primary);
-	background: var(--gradient-accent);
-	-webkit-background-clip: text;
-	-webkit-text-fill-color: transparent;
-	background-clip: text;
-	line-height: 1.2;
-}
-
-.counter-label {
-	font-size: 0.75rem;
-	color: var(--color-text-muted);
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-	font-weight: 500;
-}
-
 .footer-logo {
 	display: inline-flex;
 	align-items: center;

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics - LittleRPG</title>
+    <link rel="icon" type="image/png" href="/medias/littlerpg_favicon_32.png">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/components.css">
+    <link rel="stylesheet" href="/styles/layouts.css">
+    <link rel="stylesheet" href="/styles/stats.css">
+</head>
+
+<body class="dashboard-layout">
+    <!-- Navigation injected by nav.js -->
+
+    <!-- Stats Hero -->
+    <div class="dashboard-hero">
+        <div class="container text-center">
+            <h1>📊 Statistiques de Visites</h1>
+            <p class="text-muted">Tableau de bord des visiteurs - SuperAdmin uniquement</p>
+        </div>
+    </div>
+
+    <!-- Stats Content -->
+    <div class="dashboard-content">
+        <div class="container">
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="totalVisitors">-</div>
+                        <div class="stat-label">Visiteurs Uniques</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="todayVisitors">-</div>
+                        <div class="stat-label">Aujourd'hui</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">📆</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="weekVisitors">-</div>
+                        <div class="stat-label">Cette Semaine</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="monthVisitors">-</div>
+                        <div class="stat-label">Ce Mois</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🔢</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="totalPageViews">-</div>
+                        <div class="stat-label">Pages Vues</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Visitors Table -->
+            <div class="dashboard-section" style="margin-top: 2rem;">
+                <div class="section-header">
+                    <h2 class="section-title">Visiteurs Récents</h2>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-danger btn-sm" id="exportResetBtn">
+                            📦 Export & Reset
+                        </button>
+                        <button class="btn btn-secondary btn-sm" id="refreshBtn">
+                            🔄 Actualiser
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div id="visitors-loading" class="text-center" style="padding: 2rem;">
+                        <div class="loading-spinner"></div>
+                        <p class="text-muted">Chargement des données...</p>
+                    </div>
+
+                    <div id="visitors-error" class="hidden text-center" style="padding: 2rem;">
+                        <p class="text-danger">❌ Erreur lors du chargement des données</p>
+                        <p class="text-muted" id="error-message"></p>
+                    </div>
+
+                    <div id="visitors-table" class="hidden">
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Visitor ID</th>
+                                        <th>Adresse IP</th>
+                                        <th>User Agent</th>
+                                        <th>Première Visite</th>
+                                        <th>Dernière Visite</th>
+                                        <th>Nb Visites</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="visitors-tbody">
+                                    <!-- Data loaded via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/nav.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/stats.js"></script>
+</body>
+
+</html>

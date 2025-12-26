@@ -35,6 +35,7 @@ class NavigationManager {
         if (path === '/' || path.endsWith('index.html')) return 'home';
         if (path.includes('dashboard')) return 'dashboard';
         if (path.includes('profile')) return 'profile';
+        if (path.includes('stats')) return 'stats';
         if (path.includes('login')) return 'login';
         if (path.includes('register')) return 'register';
         return 'other';
@@ -76,10 +77,12 @@ class NavigationManager {
     getAuthenticatedNav() {
         const dashboardActive = this.currentPage === 'dashboard' ? 'active' : '';
         const profileActive = this.currentPage === 'profile' ? 'active' : '';
+        const statsActive = this.currentPage === 'stats' ? 'active' : '';
 
         // SuperAdmin links
         const superAdminLinks = this.userRole === 'superAdmin'
-            ? '<a href="/map_generator.html" class="nav-link">🛠️ Map Generator</a>'
+            ? `<a href="/stats.html" class="nav-link ${statsActive}">📊 Stats</a>
+               <a href="/map_generator.html" class="nav-link">🛠️ Map Generator</a>`
             : '';
 
         return `
