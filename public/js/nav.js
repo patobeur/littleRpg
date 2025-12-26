@@ -4,6 +4,7 @@
 class NavigationManager {
     constructor() {
         this.isAuthenticated = false;
+        this.userRole = null;
         this.currentPage = this.getCurrentPage();
     }
 
@@ -17,6 +18,9 @@ class NavigationManager {
 
             if (response.ok) {
                 const data = await response.json();
+                if (data.authenticated && data.user) {
+                    this.userRole = data.user.role;
+                }
                 return data.authenticated || false;
             }
             return false;
@@ -73,6 +77,11 @@ class NavigationManager {
         const dashboardActive = this.currentPage === 'dashboard' ? 'active' : '';
         const profileActive = this.currentPage === 'profile' ? 'active' : '';
 
+        // SuperAdmin links
+        const superAdminLinks = this.userRole === 'superAdmin'
+            ? '<a href="/map_generator.html" class="nav-link">🛠️ Map Generator</a>'
+            : '';
+
         return `
             <nav class="main-nav">
                 <div class="container nav-container">
@@ -83,6 +92,7 @@ class NavigationManager {
                     <div class="nav-links">
                         <a href="/dashboard.html" class="nav-link ${dashboardActive}">Dashboard</a>
                         <a href="/profile.html" class="nav-link ${profileActive}">Profile</a>
+                        ${superAdminLinks}
                         <a href="#" id="logout-link" class="nav-link">Logout</a>
                     </div>
                     <button class="mobile-menu-toggle" aria-label="Menu">

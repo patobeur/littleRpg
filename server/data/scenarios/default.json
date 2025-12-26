@@ -1,8 +1,9 @@
 {
-	"id": "default",
-	"name": "Un nouveau Départ",
-	"maps": [
-		"map1"
-	],
-	"active": true
+  "id": "default",
+  "name": "Un nouveau Départ",
+  "maps": [
+    "Aventure_0",
+    "map1"
+  ],
+  "active": true
 }

@@ -14,6 +14,7 @@ router.post('/register', validateRegistration, async (req, res) => {
         // Create session
         req.session.userId = user.id;
         req.session.username = user.username;
+        req.session.role = user.role;
 
         res.status(201).json({
             success: true,
@@ -21,6 +22,7 @@ router.post('/register', validateRegistration, async (req, res) => {
                 id: user.id,
                 username: user.username,
                 email: user.email,
+                role: user.role,
             },
         });
     } catch (error) {
@@ -43,12 +45,14 @@ router.post('/login', validateLogin, async (req, res) => {
         // Create session
         req.session.userId = user.id;
         req.session.username = user.username;
+        req.session.role = user.role;
 
         res.json({
             success: true,
             user: {
                 id: user.id,
                 username: user.username,
+                role: user.role,
             },
         });
     } catch (error) {
@@ -78,6 +82,7 @@ router.get('/session', (req, res) => {
             user: {
                 id: req.session.userId,
                 username: req.session.username,
+                role: req.session.role,
             },
         });
     } else {

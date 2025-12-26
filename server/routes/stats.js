@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const Visit = require('../models/Visit');
+const { requireRole } = require('../middleware/auth');
 
 // Public endpoint - Get basic visit statistics
 router.get('/visits', async (req, res) => {
@@ -14,8 +15,8 @@ router.get('/visits', async (req, res) => {
     }
 });
 
-// Admin endpoint - Get recent visitors (simplified - no auth for now)
-router.get('/recent-visitors', async (req, res) => {
+// SuperAdmin only - Get recent visitors
+router.get('/recent-visitors', requireRole(['superAdmin']), async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 50;
         const visitors = await Visit.getRecentVisitors(limit);
@@ -26,8 +27,8 @@ router.get('/recent-visitors', async (req, res) => {
     }
 });
 
-// Admin endpoint - Get visitor logs (simplified - no auth for now)
-router.get('/visitor-logs/:visitorId', async (req, res) => {
+// SuperAdmin only - Get visitor logs
+router.get('/visitor-logs/:visitorId', requireRole(['superAdmin']), async (req, res) => {
     try {
         const { visitorId } = req.params;
         const limit = parseInt(req.query.limit) || 100;

@@ -9,6 +9,37 @@ function requireAuth(req, res, next) {
     }
 }
 
+// Require user to have specific role(s)
+function requireRole(allowedRoles) {
+    return async (req, res, next) => {
+        if (!req.session || !req.session.userId) {
+            return res.status(401).json({ error: 'Authentication required' });
+        }
+
+        try {
+            // Import User model to get user role
+            const User = require('../models/User');
+            const user = await User.findById(req.session.userId);
+
+            if (!user) {
+                return res.status(401).json({ error: 'User not found' });
+            }
+
+            // Check if user has one of the allowed roles
+            if (!allowedRoles.includes(user.role)) {
+                return res.status(403).json({ error: 'Insufficient permissions' });
+            }
+
+            // Attach user to request for later use
+            req.user = user;
+            next();
+        } catch (error) {
+            console.error('Error checking user role:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    };
+}
+
 // Redirect authenticated users (for login/register pages)
 function redirectIfAuthenticated(req, res, next) {
     if (req.session && req.session.userId) {
@@ -25,6 +56,7 @@ function getCurrentUserId(req) {
 
 module.exports = {
     requireAuth,
+    requireRole,
     redirectIfAuthenticated,
     getCurrentUserId,
 };
