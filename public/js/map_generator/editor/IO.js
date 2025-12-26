@@ -69,6 +69,10 @@ export function saveMap() {
     // Calculate map size based on object positions
     let maxDistance = 25; // Minimum default
 
+    // Counters for index-based spawn/teleport assignment
+    let spawnIndex = 0;
+    let exitIndex = 0;
+
     state.objects.forEach(obj => {
         const type = obj.userData.type;
         const pos = obj.position;
@@ -109,18 +113,20 @@ export function saveMap() {
                 rotation: { z: THREE.MathUtils.radToDeg(rot.y) } // Save Y rot as Z for legacy compat or simplified
             });
         } else if (type === 'spawn') {
+            spawnIndex++; // Increment index for each spawn
             data.spawns.push({
                 x: pos.x, y: pos.y, z: pos.z,
                 scale: scale,
-                class: getClassFromColor(obj.userData.color),
-                color: obj.userData.color
+                index: spawnIndex, // Use array-based index instead of class
+                color: obj.userData.color // Keep color for visual display
             });
         } else if (type === 'exit') {
+            exitIndex++; // Increment index for each teleport
             data.teleportZones.push({
                 x: pos.x, y: pos.y, z: pos.z,
                 radius: 1.5 * scale, // Exit torus radius approx
-                class: getClassFromColor(obj.userData.color),
-                color: obj.userData.color
+                index: exitIndex, // Use array-based index instead of class
+                color: obj.userData.color // Keep color for visual display
             });
         } else if (type === 'enemy') {
             data.enemies.push({ type: obj.userData.enemyType, x: pos.x, y: pos.y, z: pos.z, scale: scale });
@@ -208,8 +214,26 @@ function loadMapData(mapData) {
     }
 
     if (mapData.spawns) {
-        mapData.spawns.forEach(s => {
-            const color = s.color || getColorFromClass(s.class);
+        mapData.spawns.forEach((s, arrayIndex) => {
+            // Determine color for visual display
+            let color = s.color;
+
+            // Migration from old format (class-based) to new format (index-based)
+            if (!color && s.class) {
+                const classToColor = {
+                    'Warrior': 0xff0000,  // Red
+                    'Healer': 0x00ff00,   // Green
+                    'Mage': 0x0000ff      // Blue
+                };
+                color = classToColor[s.class] || 0xff0000;
+            }
+
+            // Fallback color if still missing
+            if (!color) {
+                const colors = [0xff0000, 0x00ff00, 0x0000ff];
+                color = colors[arrayIndex % 3];
+            }
+
             const obj = addSpawnAt(s.x, s.z, color);
             if (s.scale) obj.scale.setScalar(s.scale);
         });
@@ -218,8 +242,26 @@ function loadMapData(mapData) {
     // Support both 'exits' (old) and 'teleportZones' (new)
     const zones = mapData.teleportZones || mapData.exits;
     if (zones) {
-        zones.forEach(e => {
-            const color = e.color || getColorFromClass(e.class);
+        zones.forEach((e, arrayIndex) => {
+            // Determine color for visual display
+            let color = e.color;
+
+            // Migration from old format (class-based) to new format (index-based)
+            if (!color && e.class) {
+                const classToColor = {
+                    'Warrior': 0xff0000,  // Red
+                    'Healer': 0x00ff00,   // Green
+                    'Mage': 0x0000ff      // Blue
+                };
+                color = classToColor[e.class] || 0xff0000;
+            }
+
+            // Fallback color if still missing
+            if (!color) {
+                const colors = [0xff0000, 0x00ff00, 0x0000ff];
+                color = colors[arrayIndex % 3];
+            }
+
             const obj = addExitAt(e.x, e.z, color);
             // If radius is present, derive scale? Default exit radius is ~1.5 at scale 1 (Torus radius 1 + tube 0.1? No, logic above says radius 1.5 * scale)
             // So scale = radius / 1.5
@@ -250,7 +292,7 @@ function loadMapData(mapData) {
             // Use addNature if type is available, otherwise fallback to addPlaceholder
             const natureType = t.type || 'tree';
             const obj = window.addNature ? window.addNature(natureType, t.x, t.z) : null;
-            
+
             // Fallback to addPlaceholder if addNature not available
             if (!obj) {
                 addPlaceholder('tree', t.x, t.z, 0x228b22);

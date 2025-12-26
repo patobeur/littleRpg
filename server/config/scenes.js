@@ -60,8 +60,28 @@ try {
                         isLastMap: !!mapData.isLastMap,
                         scene: sceneConfig,
                         mapSize: mapData.mapSize || 50, // Map bounds for collision
-                        spawns: mapData.spawns || [],
-                        teleportZones: mapData.teleportZones || [],
+                        // Migrate spawns: add index if missing (for old class-based maps)
+                        spawns: (mapData.spawns || []).map((spawn, i) => {
+                            if (!spawn.index && spawn.class) {
+                                // Migration: Warrior=1, Healer=2, Mage=3
+                                const classToIndex = { 'Warrior': 1, 'Healer': 2, 'Mage': 3 };
+                                spawn.index = classToIndex[spawn.class] || (i + 1);
+                            } else if (!spawn.index) {
+                                // Fallback to array position
+                                spawn.index = i + 1;
+                            }
+                            return spawn;
+                        }),
+                        // Migrate teleportZones: add index if missing
+                        teleportZones: (mapData.teleportZones || []).map((zone, i) => {
+                            if (!zone.index && zone.class) {
+                                const classToIndex = { 'Warrior': 1, 'Healer': 2, 'Mage': 3 };
+                                zone.index = classToIndex[zone.class] || (i + 1);
+                            } else if (!zone.index) {
+                                zone.index = i + 1;
+                            }
+                            return zone;
+                        }),
                         enemies: (mapData.enemies || []).map((e, i) => ({
                             ...e,
                             id: e.id || `enemy_${sceneId}_${i}`
@@ -102,27 +122,26 @@ function getSceneConfig(sceneId) {
 }
 
 /**
- * Get spawn position for a class in a scene
+ * Get spawn position by player index in a scene
  * @param {string} sceneId - Scene identifier
- * @param {string} className - Player class (Warrior, Mage, Healer)
+ * @param {number} playerIndex - Player index (1, 2, 3...)
  * @returns {object|null} Spawn position object or null if not found
  */
-function getSpawnPosition(sceneId, className) {
+function getSpawnByIndex(sceneId, playerIndex) {
     const scene = SCENES[sceneId];
     if (!scene || !scene.spawns) return null;
 
-    // Try to find specific class spawn
-    let spawn = scene.spawns.find(s => s.class === className);
+    // Try to find spawn with matching index
+    let spawn = scene.spawns.find(s => s.index === playerIndex);
 
-    // Initial fallback: any spawn
-    if (!spawn && scene.spawns.length > 0) {
-        spawn = scene.spawns[0];
+    // Fallback: use array position (playerIndex - 1)
+    if (!spawn && scene.spawns[playerIndex - 1]) {
+        spawn = scene.spawns[playerIndex - 1];
     }
 
-    // Last resort fallback: default list logic (if no spawns defined in file)
-    if (!spawn) {
-        // ... (existing helper logic if you want to keep it, otherwise return null)
-        return null;
+    // Last fallback: first spawn
+    if (!spawn && scene.spawns.length > 0) {
+        spawn = scene.spawns[0];
     }
 
     return spawn;
@@ -156,14 +175,19 @@ function getFirstScene(scenarioId) {
 }
 
 /**
- * Check if player is within a teleport zone
+ * Check if player is within their teleport zone
+ * @param {object} playerPos - Player position {x, z}
+ * @param {string} sceneId - Scene identifier
+ * @param {number} playerIndex - Player index (1, 2, 3...)
+ * @param {number} tolerance - Distance tolerance
+ * @returns {boolean} True if player is in their zone
  */
-function isPlayerInZone(playerPos, sceneId, playerClass, tolerance = 1.0) {
+function isPlayerInZone(playerPos, sceneId, playerIndex, tolerance = 1.0) {
     const scene = SCENES[sceneId];
     if (!scene || !scene.teleportZones) return false;
 
-    // Find zone for this class
-    const zone = scene.teleportZones.find(z => z.class === playerClass);
+    // Find zone for this player index
+    const zone = scene.teleportZones.find(z => z.index === playerIndex);
     if (!zone) return false;
 
     // Check distance (zone.x/z vs playerPos.x/z)
@@ -181,7 +205,7 @@ module.exports = {
     SCENES,
     SCENE_ORDER,
     getSceneConfig,
-    getSpawnPosition,
+    getSpawnByIndex,  // Changed from getSpawnPosition
     getNextScene,
     getFirstScene,
     isPlayerInZone

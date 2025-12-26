@@ -244,10 +244,20 @@ class GameEngine {
 
         const selectedChar = JSON.parse(sessionStorage.getItem('selectedCharacter'));
         if (!selectedChar) return;
-        const myClass = selectedChar.class;
 
         if (!this.myTeleportZone) {
-            this.myTeleportZone = zones.find(z => z.config.class === myClass);
+            // Get player index from lobby data
+            const lobbyData = JSON.parse(sessionStorage.getItem('currentLobby'));
+            if (!lobbyData || !lobbyData.players) return;
+
+            // Find this player's index in the lobby (1-based)
+            const playerIndex = lobbyData.players.findIndex(p => p.characterId === selectedChar.id);
+            if (playerIndex === -1) return;
+
+            const myIndex = playerIndex + 1; // Convert to 1-based index
+
+            // Find teleport zone by index instead of class
+            this.myTeleportZone = zones.find(z => z.config.index === myIndex);
         }
         if (!this.myTeleportZone) return;
 

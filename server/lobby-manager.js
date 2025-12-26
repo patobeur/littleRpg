@@ -2,7 +2,7 @@
  * Lobby Manager
  */
 const Character = require('./models/Character');
-const { getSceneConfig, getSpawnPosition, getNextScene, isPlayerInZone } = require('./config/scenes');
+const { getSceneConfig, getSpawnByIndex, getNextScene, isPlayerInZone } = require('./config/scenes');
 const { SCENARIOS } = require('./config/scenarios');
 const enemiesData = require('./models/enemies');
 const structuresData = require('./models/structures');
@@ -232,6 +232,13 @@ class LobbyManager {
 
             console.log(`[LobbyManager] Found lobby ${lobbyCode}, players count: ${lobby.players.length}`);
 
+            // IMPORTANT: Assign spawn index to each player based on their position in the lobby
+            lobby.players.forEach((p, index) => {
+                if (!p.spawnIndex) {
+                    p.spawnIndex = index + 1; // 1-based index (1, 2, 3...)
+                }
+            });
+
             // Get current scene
             const { getFirstScene } = require('./config/scenes');
             const currentScene = this.lobbyScenes.get(lobbyCode) || getFirstScene(lobby.scenarioId);
@@ -261,8 +268,8 @@ class LobbyManager {
                             this.playerStates.set(p.characterId, state);
                         } else {
                             // No DB position - use spawn position from scene config
-                            console.log(`[LobbyManager] No DB position found for char ${p.characterId}, using spawn position for ${p.class}`);
-                            const spawnPos = getSpawnPosition(currentScene, p.class);
+                            console.log(`[LobbyManager] No DB position found for char ${p.characterId}, using spawn position for index ${p.spawnIndex}`);
+                            const spawnPos = getSpawnByIndex(currentScene, p.spawnIndex);
                             if (spawnPos) {
                                 state = {
                                     position: { x: spawnPos.x, y: 0, z: spawnPos.z }, // FORCE Y=0
@@ -272,7 +279,7 @@ class LobbyManager {
                                     lastDBSave: 0
                                 };
                                 this.playerStates.set(p.characterId, state);
-                                console.log(`[LobbyManager] Spawning ${p.class} at x=${spawnPos.x}, z=${spawnPos.z}`);
+                                console.log(`[LobbyManager] Spawning player at index ${p.spawnIndex}: x=${spawnPos.x}, z=${spawnPos.z}`);
                             } else {
                                 state = {
                                     position: { x: 0, y: 0, z: 0 },
@@ -281,7 +288,7 @@ class LobbyManager {
                                     timeScale: 1,
                                     lastDBSave: 0
                                 };
-                                console.warn(`[LobbyManager] No spawn position found for ${p.class} in ${currentScene}, defaulting to 0,0,0`);
+                                console.warn(`[LobbyManager] No spawn position found for index ${p.spawnIndex} in ${currentScene}, defaulting to 0,0,0`);
                                 this.playerStates.set(p.characterId, state);
                             }
                         }
@@ -516,11 +523,11 @@ class LobbyManager {
         } else {
             const currentScene = this.lobbyScenes.get(code) || 'scene_01';
             // Use tolerance of 1.0 to account for latency and movement between updates
-            const isInZone = isPlayerInZone(playerState.position, currentScene, player.class, 1.0);
+            const isInZone = isPlayerInZone(playerState.position, currentScene, player.spawnIndex, 1.0);
 
             if (!isInZone) {
-                console.warn(`[LobbyManager] Player ${characterId} claims to be in zone but server validation failed!`);
-                console.warn(`[LobbyManager] Position: x=${playerState.position.x.toFixed(2)}, z=${playerState.position.z.toFixed(2)}, class=${player.class}`);
+                console.warn(`[LobbyManager] Player ${characterId} (index ${player.spawnIndex}) claims to be in zone but server validation failed!`);
+                console.warn(`[LobbyManager] Position: x=${playerState.position.x.toFixed(2)}, z=${playerState.position.z.toFixed(2)}`);
                 return; // Reject - player is not actually in zone (possible cheat attempt)
             }
         }
@@ -610,7 +617,7 @@ class LobbyManager {
             await Character.resetPositionForScene(player.characterId, nextScene);
 
             // Get spawn position using helper function
-            const spawn = getSpawnPosition(nextScene, player.class);
+            const spawn = getSpawnByIndex(nextScene, player.spawnIndex);
             if (spawn) {
                 spawnPositions[player.characterId] = {
                     x: spawn.x,
