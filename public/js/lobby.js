@@ -60,7 +60,7 @@
                 <div class="player-info">
                     <div style="font-size: 1.5rem;">${player.isHost ? '👑' : '👤'}</div>
                     <div>
-                        <div class="font-bold">${player.name} ${player.id === socket.id ? '(You)' : ''}</div>
+                        <div class="font-bold">${escapeHtml(player.name)} ${player.id === socket.id ? '(You)' : ''}</div>
                         <div class="text-xs text-muted">${player.isHost ? 'Host' : 'Comrade'}</div>
                     </div>
                 </div>
@@ -137,7 +137,7 @@
         currentLobby.host = hostId;
         currentLobby.players.forEach(p => p.isHost = (p.id === hostId));
         renderLobby();
-        addChatMessage('System', `New host assigned: ${currentLobby.players.find(p => p.id === hostId)?.name}`);
+        addChatMessage('System', `New host assigned: ${escapeHtml(currentLobby.players.find(p => p.id === hostId)?.name)}`);
     });
 
     socket.on('chat_message', (data) => {
@@ -162,8 +162,8 @@
         const msgEl = document.createElement('div');
         msgEl.className = 'chat-message';
         msgEl.innerHTML = `
-            <span class="player-name">${speaker}:</span>
-            <span class="msg-content">${message}</span>
+            <span class="player-name">${escapeHtml(speaker)}:</span>
+            <span class="msg-content">${escapeHtml(message)}</span>
         `;
         chatMessages.appendChild(msgEl);
         chatMessages.scrollTop = chatMessages.scrollHeight;

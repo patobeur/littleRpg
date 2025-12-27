@@ -595,7 +595,7 @@
 	padding: var(--spacing-2xl) 0;
 	background-image: linear-gradient(rgba(10, 10, 15, 0.5),
 			rgba(10, 10, 15, 0.5)),
-		url("/medias/features.png");
+		url("/medias/features.jpg");
 	background-attachment: fixed;
 	background-size: cover;
 	background-position: center;

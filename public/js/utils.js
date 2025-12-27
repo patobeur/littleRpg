@@ -134,3 +134,17 @@ async function redirectIfAuthenticated(targetPage = '/dashboard.html') {
         redirectTo(targetPage);
     }
 }
+
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    if (!text) return text;
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+
+// Load Cookie Consent
+const cookieScript = document.createElement('script');
+cookieScript.src = '/js/cookie-consent.js';
+document.head.appendChild(cookieScript);
