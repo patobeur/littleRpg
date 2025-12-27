@@ -220,6 +220,28 @@ app.post('/api/maps', requireLocalhost, express.json(), (req, res) => {
     });
 });
 
+// Admin routes (Localhost only)
+app.get('/api/admin/lobbies', requireLocalhost, (req, res) => {
+    try {
+        const lobbies = Array.from(lobbyManager.lobbies.values()).map(lobby => ({
+            code: lobby.code,
+            host: lobby.host,
+            scenario: lobby.scenarioName || lobby.scenarioId,
+            players: lobby.players.map(p => ({
+                name: p.name,
+                class: p.class,
+                level: 1 // Placeholder, could fetch real level if needed
+            })),
+            started: lobby.started || false,
+            createdAt: lobby.createdAt
+        }));
+        res.json(lobbies);
+    } catch (error) {
+        console.error('Error listing lobbies:', error);
+        res.status(500).json({ error: 'Failed to list lobbies' });
+    }
+});
+
 // List available structure files
 app.get('/api/structures', requireLocalhost, (req, res) => {
     try {
