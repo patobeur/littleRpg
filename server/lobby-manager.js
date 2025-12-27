@@ -966,9 +966,104 @@ class LobbyManager {
         });
 
         if (target.hp <= 0) {
-            // Handle Death - immediate broadcast for critical events
+            // Handle Death
             this.io.to(code).emit('entity_defeated', { id: target.id });
             enemies.delete(target.id);
+
+            // XP Logic
+            const xpReward = enemiesData.enemies[target.type] ? enemiesData.enemies[target.type].xp : 10;
+            const currentXP = player.experience || 0;
+            const currentLevel = player.level || 1;
+
+            // Add XP
+            let newXP = currentXP + xpReward;
+            let newLevel = currentLevel;
+            let leveledUp = false;
+
+            // Start level 1, need 100 XP to reach level 2.
+            // Formula: XP Required for next level = Level * 100
+            let xpRequired = newLevel * 100;
+
+            console.log(`[XP] ${player.name} gained ${xpReward} XP. Total: ${newXP}/${xpRequired}`);
+
+            // Level Up Loop (in case big XP gain)
+            while (newXP >= xpRequired) {
+                newXP -= xpRequired;
+                newLevel++;
+                leveledUp = true;
+                xpRequired = newLevel * 100;
+                console.log(`[XP] ${player.name} Leveled Up to ${newLevel}!`);
+            }
+
+            // Update Player State
+            player.level = newLevel;
+            player.experience = newXP;
+
+            // Persist Progress
+            Character.updateProgress(player.characterId, newLevel, newXP).catch(err =>
+                console.error(`[XP] Failed to save progress for ${player.characterId}:`, err)
+            );
+
+            // Handle Level Up Stats and Heal
+            if (leveledUp) {
+                // Get current stats
+                let stats = this.playerStats.get(player.characterId);
+                if (stats) {
+                    // Reduce old max stats from current stats if you wanted to keep damage, 
+                    // BUT explicitly requested "restore HP/Mana to full on level up"
+
+                    // Increase Max Stats
+                    // +20 HP, +10 Mana per level
+                    stats.maxHealth += 20;
+                    stats.maxMana += 10;
+
+                    // Full Heal
+                    stats.health = stats.maxHealth;
+                    stats.mana = stats.maxMana;
+
+                    this.playerStats.set(player.characterId, stats);
+
+                    // Save to DB
+                    this.savePlayerStats(player.characterId);
+
+                    // Broadcast Level Up Effect
+                    this.io.to(code).emit('level_up', {
+                        characterId: player.characterId,
+                        newLevel: newLevel
+                    });
+
+                    // Broadcast Stats Update (Max values changed)
+                    this.broadcastPlayerStats(code, player.characterId);
+
+                    // Broadcast Progress Update (Level & XP reset)
+                    this.io.to(code).emit('player_progress', {
+                        characterId: player.characterId,
+                        level: newLevel,
+                        experience: newXP,
+                        nextLevelXP: xpRequired // New requirement for next level
+                    });
+
+                    // System Message
+                    this.io.to(code).emit('chat_message', {
+                        playerId: 'SYSTEM',
+                        playerName: 'System',
+                        message: `🎉 ${player.name} est passé au niveau ${newLevel} !`,
+                        timestamp: Date.now(),
+                        isSystem: true
+                    });
+                }
+            } else {
+                // Just update XP on client (we repurpose player_stats or send a specific event?)
+                // Currently player_stats sends health/mana. We need to send XP too.
+                // Let's modify broadcastPlayerStats to include XP/Level or send a separate event.
+                // For efficiency, let's just emit a "player_progress" event.
+                this.io.to(code).emit('player_progress', {
+                    characterId: player.characterId,
+                    level: newLevel,
+                    experience: newXP,
+                    nextLevelXP: xpRequired
+                });
+            }
         }
     }
 

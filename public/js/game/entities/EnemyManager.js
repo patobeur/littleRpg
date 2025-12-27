@@ -188,4 +188,48 @@ export class EnemyManager {
         const hpPercent = (enemy.stats.hp / enemy.stats.maxHp) * 100;
         if (hpFill) hpFill.style.width = `${Math.max(0, hpPercent)}%`;
     }
+
+    handleEntityDefeated(id) {
+        const enemy = this.enemies.get(id);
+        if (!enemy) return;
+
+        console.log(`[EnemyManager] Enemy ${id} defeated!`);
+
+        // Remove HUD immediately
+        if (enemy.hud) enemy.hud.remove();
+
+        // Play Death Animation if available
+        if (enemy.actions['dying'] || enemy.actions['die'] || enemy.actions['dead']) {
+            const deathAction = enemy.actions['dying'] || enemy.actions['die'] || enemy.actions['dead'];
+
+            // Stop other actions
+            enemy.mixer.stopAllAction();
+
+            deathAction.setLoop(THREE.LoopOnce);
+            deathAction.clampWhenFinished = true;
+            deathAction.play();
+
+            // Remove after animation (approx 2-3 seconds)
+            setTimeout(() => {
+                this.removeEnemy(id);
+            }, 3000);
+        } else {
+            // No animation, just remove immediately (or fade out logic elsewhere)
+            this.removeEnemy(id);
+        }
+    }
+
+    removeEnemy(id) {
+        const enemy = this.enemies.get(id);
+        if (!enemy) return;
+
+        if (enemy.model) {
+            this.game.sceneManager.scene.remove(enemy.model);
+        }
+        if (enemy.hud) {
+            enemy.hud.remove();
+        }
+        this.enemies.delete(id);
+        console.log(`[EnemyManager] Removed enemy ${id} from scene`);
+    }
 }

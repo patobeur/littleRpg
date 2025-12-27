@@ -45,8 +45,11 @@ export class NetworkManager {
         this.socket.on('player_joined_game', (data) => this.handlePlayerJoinedGame(data)); // Handle joining players for visibility fix
         this.socket.on('enemy_states', (data) => this.handleEnemyStates(data));
         this.socket.on('structure_states', (data) => this.handleStructureStates(data));
+        this.socket.on('structure_states', (data) => this.handleStructureStates(data));
         this.socket.on('entity_update', (data) => this.handleEntityUpdate(data)); // Keep for individual updates
+        this.socket.on('entity_defeated', (data) => this.handleEntityDefeated(data)); // Handle death
         this.socket.on('player_stats', (data) => this.handlePlayerStats(data)); // Party UI stats
+        this.socket.on('player_progress', (data) => this.handlePlayerProgress(data)); // XP & Level update
         this.socket.on('player_disconnected', (data) => this.handlePlayerDisconnected(data));
         this.socket.on('player_reconnected', (data) => this.handlePlayerReconnected(data));
         this.socket.on('player_removed_permanently', (data) => this.handlePlayerRemovedPermanently(data));
@@ -351,5 +354,20 @@ export class NetworkManager {
     handleEntityUpdate(data) {
         // data = { id, stats: { hp, maxHp }, ... }
         this.game.entityManager.updateEnemyStats(data.id, data.stats);
+    }
+
+    handleEntityDefeated(data) {
+        this.game.entityManager.enemyManager.handleEntityDefeated(data.id);
+    }
+
+    handlePlayerProgress(data) {
+        // data: { characterId, level, experience, nextLevelXP }
+        if (this.game.uiManager) {
+            this.game.uiManager.updatePlayerStats(data.characterId, {
+                level: data.level,
+                experience: data.experience,
+                nextLevelXP: data.nextLevelXP
+            });
+        }
     }
 }

@@ -72,6 +72,9 @@ export class PartyUI {
                         <div class="party-mana-fill" style="width: 100%"></div>
                         <div class="party-mana-text">100%</div>
                     </div>
+                    <div class="party-xp-bar">
+                        <div class="party-xp-fill" style="width: 0%"></div>
+                    </div>
                 </div>
                 <div class="party-status-indicator"></div>
             </div>
@@ -153,6 +156,20 @@ export class PartyUI {
 
             if (manaText) {
                 manaText.textContent = `${Math.round(manaPercent)}%`;
+            }
+        }
+
+        // Update XP bar & Level
+        if (stats.level !== undefined) {
+            const levelEl = frame.querySelector('.party-player-level');
+            if (levelEl) levelEl.textContent = `Lv.${stats.level}`;
+        }
+
+        if (stats.experience !== undefined && stats.nextLevelXP !== undefined) {
+            const xpPercent = Math.max(0, Math.min(100, (stats.experience / stats.nextLevelXP) * 100));
+            const xpFill = frame.querySelector('.party-xp-fill');
+            if (xpFill) {
+                xpFill.style.width = `${xpPercent}%`;
             }
         }
     }
