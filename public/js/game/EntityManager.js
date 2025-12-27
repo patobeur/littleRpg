@@ -1,6 +1,7 @@
 import { PlayerManager } from './entities/PlayerManager.js';
 import { EnemyManager } from './entities/EnemyManager.js';
 import { StructureManager } from './entities/StructureManager.js';
+import { InteractableManager } from './entities/InteractableManager.js';
 
 export class EntityManager {
     constructor(game) {
@@ -9,6 +10,7 @@ export class EntityManager {
         this.playerManager = new PlayerManager(game);
         this.enemyManager = new EnemyManager(game);
         this.structureManager = new StructureManager(game);
+        this.interactableManager = new InteractableManager(game);
 
         // Options d'affichage (modifiables par les paramètres)
         this.showEnemyHUD = true;
@@ -36,9 +38,14 @@ export class EntityManager {
         return this.structureManager.loadStructures(structureList);
     }
 
+    async loadInteractables(list) {
+        return this.interactableManager.loadInteractables(list);
+    }
+
     update(delta) {
         this.playerManager.update(delta);
         this.enemyManager.update(delta);
+        this.interactableManager.update(delta);
     }
 
     fadeToAction(characterId, name, duration = 0.2, timeScale = 1) {

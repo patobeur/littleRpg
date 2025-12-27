@@ -104,4 +104,109 @@ export class UIManager {
     update(delta) {
         this.partyUI.update(delta);
     }
+
+    // --- Interaction UI ---
+
+    showInteractionPrompt(text) {
+        let prompt = document.getElementById('interaction-prompt');
+        if (!prompt) {
+            prompt = document.createElement('div');
+            prompt.id = 'interaction-prompt';
+            prompt.style.cssText = `
+                position: absolute;
+                bottom: 15%;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.8);
+                padding: 10px 20px;
+                border-radius: 8px;
+                color: #fff;
+                font-family: 'Cinzel', serif;
+                font-size: 18px;
+                text-align: center;
+                pointer-events: none;
+                z-index: 1000;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+                animation: fadeIn 0.3s ease;
+            `;
+            document.body.appendChild(prompt);
+        }
+        prompt.textContent = text;
+        prompt.style.display = 'block';
+    }
+
+    hideInteractionPrompt() {
+        const prompt = document.getElementById('interaction-prompt');
+        if (prompt) {
+            prompt.style.display = 'none';
+        }
+    }
+
+    showInteractionResponse(data) {
+        // Simple modal or overlay
+        let responseContainer = document.getElementById('interaction-response');
+        if (!responseContainer) {
+            responseContainer = document.createElement('div');
+            responseContainer.id = 'interaction-response';
+            responseContainer.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(20, 20, 30, 0.95);
+                border: 2px solid #8b5cf6;
+                border-radius: 12px;
+                padding: 20px;
+                min-width: 400px;
+                color: white;
+                font-family: 'Cinzel', serif;
+                z-index: 5000;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            `;
+
+            // Close button (supports click or Escape)
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = 'Fermer';
+            closeBtn.style.cssText = `
+                align-self: flex-end;
+                background: #8b5cf6;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-family: inherit;
+                font-weight: bold;
+            `;
+            closeBtn.onclick = () => {
+                responseContainer.style.display = 'none';
+                // Re-enable controls if disabled
+            };
+
+            this.responseContent = document.createElement('div');
+            responseContainer.appendChild(this.responseContent);
+            responseContainer.appendChild(closeBtn);
+
+            document.body.appendChild(responseContainer);
+        }
+
+        let html = '';
+        if (data.type === 'dialogue') {
+            html += `<h2 style="color: #a78bfa; margin: 0 0 10px 0;">${data.name}</h2>`;
+            data.text.forEach(line => {
+                html += `<p style="margin: 5px 0; font-size: 1.1rem;">${line}</p>`;
+            });
+        } else if (data.type === 'message') {
+            data.text.forEach(line => {
+                html += `<p style="margin: 5px 0; font-size: 1.1rem;">${line}</p>`;
+            });
+        }
+
+        this.responseContent.innerHTML = html;
+        responseContainer.style.display = 'flex';
+    }
 }

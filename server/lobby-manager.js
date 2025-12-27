@@ -12,6 +12,7 @@ const NetworkOptimizer = require('./utils/NetworkOptimizer');
 const MessageBatcher = require('./utils/MessageBatcher');
 const SpatialGrid = require('./utils/SpatialGrid');
 const ChatHandler = require('./chat/ChatHandler');
+const interactablesData = require('./models/interactables');
 
 class LobbyManager {
     constructor(io) {
@@ -24,6 +25,7 @@ class LobbyManager {
         this.sceneChangeTimers = new Map(); // code -> timer
         this.enemyStates = new Map(); // code -> Map<enemyId, ...>
         this.structureStates = new Map(); // code -> Map<structureId, ...>
+        this.interactableStates = new Map(); // code -> Map<id, state>
         this.playerStats = new Map(); // characterId -> { health, maxHealth, mana, maxMana }
 
         // Disconnect cleanup timers: characterId -> timer (for permanent removal after 30s)
@@ -55,6 +57,7 @@ class LobbyManager {
             socket.on('player_entered_zone', (data) => this.handlePlayerEnteredZone(socket, data));
             socket.on('player_left_zone', (data) => this.handlePlayerLeftZone(socket, data));
             socket.on('player_attack', (data) => this.handlePlayerAttack(socket, data));
+            socket.on('player_interact', (data) => this.handlePlayerInteract(socket, data));
             socket.on('disconnect', () => this.handleDisconnect(socket));
         });
     }
@@ -203,6 +206,15 @@ class LobbyManager {
             // Initialize entities for the first scene
             this.loadEnemiesForScene(code, startScene);
             this.loadStructuresForScene(code, startScene);
+
+            // Initialize Interactables
+            const interactableList = interactablesData.list;
+            if (interactableList) {
+                this.interactableStates.set(code, new Map(interactableList.map(i => [i.id, { ...i }])));
+                console.log(`[Lobby] Loaded ${interactableList.length} interactables for lobby ${code}`);
+            } else {
+                this.interactableStates.set(code, new Map());
+            }
         }
     }
 
@@ -395,6 +407,15 @@ class LobbyManager {
                 const structures = Array.from(this.structureStates.get(lobbyCode).values());
                 if (structures.length > 0) {
                     socket.emit('structure_states', { structures });
+                }
+            }
+
+            // Send interactable states
+            if (this.interactableStates.has(lobbyCode)) {
+                const interactables = Array.from(this.interactableStates.get(lobbyCode).values());
+                if (interactables.length > 0) {
+                    console.log(`[LobbyManager] Sending ${interactables.length} interactables to socket ${socket.id}`);
+                    socket.emit('interactable_states', { interactables });
                 }
             }
 
@@ -1147,6 +1168,71 @@ class LobbyManager {
             mana: stats.mana,
             maxMana: stats.maxMana
         });
+    }
+
+    handlePlayerInteract(socket, data) {
+        const code = this.playerToLobby.get(socket.id);
+        if (!code) return;
+
+        const lobby = this.lobbies.get(code);
+        const interactables = this.interactableStates.get(code);
+        if (!lobby || !interactables) return;
+
+        const interactableId = data.interactableId;
+        const interactable = interactables.get(interactableId);
+        if (!interactable) return;
+
+        const player = lobby.players.find(p => p.id === socket.id);
+        if (!player) return;
+
+        const playerState = this.playerStates.get(player.characterId);
+        if (!playerState) return;
+
+        // Distance Check
+        const dist = Math.hypot(
+            playerState.position.x - interactable.position.x,
+            playerState.position.z - interactable.position.z
+        );
+
+        const range = interactable.radius || 2.0;
+        if (dist > range + 1.0) { // Tolerance
+            console.warn(`[Interact] Player ${player.name} too far from ${interactable.name}`);
+            return;
+        }
+
+        console.log(`[Interact] ${player.name} interacted with ${interactable.name} (${interactable.type})`);
+
+        // Execute Action
+        if (interactable.type === 'npc') {
+            socket.emit('interaction_response', {
+                type: 'dialogue',
+                name: interactable.name,
+                text: interactable.data.dialogue
+            });
+        }
+        else if (interactable.type === 'chest') {
+            if (interactable.opened) {
+                socket.emit('interaction_response', {
+                    type: 'message',
+                    text: ["Ce coffre est vide."]
+                });
+                return;
+            }
+
+            // Grant rewards (dummy for now)
+            interactable.opened = true;
+
+            socket.emit('interaction_response', {
+                type: 'message',
+                text: ["Vous avez trouvé un trésor !"]
+            });
+
+            // Update visual state for everyone
+            this.io.to(code).emit('interactable_update', {
+                id: interactable.id,
+                state: { opened: true }
+            });
+        }
     }
 }
 

@@ -46,6 +46,9 @@ export class NetworkManager {
         this.socket.on('enemy_states', (data) => this.handleEnemyStates(data));
         this.socket.on('structure_states', (data) => this.handleStructureStates(data));
         this.socket.on('structure_states', (data) => this.handleStructureStates(data));
+        this.socket.on('interactable_states', (data) => this.handleInteractableStates(data));
+        this.socket.on('interactable_update', (data) => this.handleInteractableUpdate(data));
+        this.socket.on('interaction_response', (data) => this.handleInteractionResponse(data));
         this.socket.on('entity_update', (data) => this.handleEntityUpdate(data)); // Keep for individual updates
         this.socket.on('entity_defeated', (data) => this.handleEntityDefeated(data)); // Handle death
         this.socket.on('player_stats', (data) => this.handlePlayerStats(data)); // Party UI stats
@@ -128,6 +131,27 @@ export class NetworkManager {
         if (data.structures) {
             console.log(`[NetworkManager] Received ${data.structures.length} structures`);
             this.game.entityManager.loadStructures(data.structures);
+        }
+    }
+
+    handleInteractableStates(data) {
+        if (data.interactables) {
+            console.log(`[NetworkManager] Received ${data.interactables.length} interactables`, data.interactables);
+            this.game.entityManager.loadInteractables(data.interactables);
+        } else {
+            console.warn('[NetworkManager] Received interactable_states but no list found');
+        }
+    }
+
+    handleInteractableUpdate(data) {
+        // data: { id, state: { opened: true } }
+        this.game.entityManager.interactableManager.updateState(data.id, data.state);
+    }
+
+    handleInteractionResponse(data) {
+        // data: { type: 'dialogue' | 'message', text: [...], name: '...' }
+        if (this.game.uiManager) {
+            this.game.uiManager.showInteractionResponse(data);
         }
     }
 

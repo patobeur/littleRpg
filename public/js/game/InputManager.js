@@ -57,6 +57,13 @@ export class InputManager {
                     this.game.uiManager.togglePartyConfig();
                 }
             }
+
+            // Interaction (E key)
+            if (e.key.toLowerCase() === 'e' && !this.chatActive) {
+                if (this.game.entityManager.interactableManager) {
+                    this.game.entityManager.interactableManager.interact();
+                }
+            }
         });
     }
 
