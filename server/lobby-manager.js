@@ -952,6 +952,10 @@ class LobbyManager {
 
         // Apply Damage
         const dmg = archetype.stats.autoAttackDamage || 10;
+
+        // DEBUG: Print damage source
+        console.log(`[Combat Debug] Class: ${player.class}, BaseDmg from config: ${archetype.stats.autoAttackDamage}, UsedDmg: ${dmg}`);
+
         target.hp -= dmg;
         console.log(`[Combat] ${player.name} hit ${target.name} for ${dmg} dmg. HP: ${target.hp}/${target.maxHp}`);
 
