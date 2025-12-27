@@ -2,6 +2,8 @@
  * Session Manager
  * Enforces single session per user policy (Last Login Wins)
  */
+const Visit = require('./models/Visit');
+
 class SessionManager {
     constructor() {
         // Map<userId, sessionId>
@@ -33,6 +35,24 @@ class SessionManager {
                             console.error(`[SessionManager] Failed to destroy session ${oldSessionId}:`, err);
                         }
                     });
+                }
+
+                // Log the event in the visit tracker
+                try {
+                    const ip = req.ip || req.connection.remoteAddress || 'unknown';
+                    const userAgent = req.get('user-agent') || 'unknown';
+                    // Use existing visitorId or generate a temporary one for this log
+                    const visitorId = req.session?.visitorId || Visit.generateVisitorId(ip, userAgent);
+
+                    Visit.recordVisit(
+                        visitorId,
+                        ip,
+                        userAgent,
+                        '/AUTH/FORCE_LOGOUT', // Virtual path to identify this event
+                        `Session Conflict: User ${userId} logged in from new device` // Details in referrer
+                    ).catch(e => console.error('Failed to log session preemption:', e));
+                } catch (logErr) {
+                    console.error('Error logging session preemption:', logErr);
                 }
             }
         }
