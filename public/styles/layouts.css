@@ -358,3 +358,11 @@
         align-items: flex-start;
     }
 }
+
+/* Specific background for Register Form */
+#register-form {
+    background: linear-gradient(rgba(17, 24, 39, 0.75), rgba(17, 24, 39, 0.85)), url('/medias/inscription2.jpg');
+    background-size: cover;
+    background-position: center;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
