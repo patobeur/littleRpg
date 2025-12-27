@@ -4,7 +4,7 @@
 	"main": "server.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"start": "node server/server.js",
+		"start": "cross-env NODE_ENV=production PORT=80 node server/server.js",
 		"dev": "nodemon server/server.js"
 	},
 	"keywords": [],
@@ -23,6 +23,7 @@
 		"ws": "^8.18.3"
 	},
 	"devDependencies": {
+		"cross-env": "^10.1.0",
 		"nodemon": "^3.1.11"
 	}
 }
