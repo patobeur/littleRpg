@@ -299,6 +299,16 @@
     font-size: 0.875rem;
 }
 
+/* Responsive Visibility */
+.mobile-only {
+    display: none !important;
+}
+
+.desktop-only {
+    display: block !important;
+    /* Or flex/grid depending on context, but block is safe for containers */
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .navbar-menu {
@@ -332,6 +342,14 @@
 
     .auth-fields-col {
         padding: var(--spacing-xl);
+    }
+
+    .mobile-only {
+        display: block !important;
+    }
+
+    .desktop-only {
+        display: none !important;
     }
 
     .section-header {

@@ -17,39 +17,59 @@
   <!-- Navigation injected by nav.js -->
   <div class="auth-layout">
     <div class="auth-container">
-      <div class="auth-card">
-        <div class="auth-header">
-          <h1 class="auth-logo">⚔️ LittleRPG</h1>
-          <p class="auth-subtitle">Enter the realm of adventure</p>
-        </div>
-
-        <div id="error-message" class="hidden"></div>
-
-        <form id="login-form">
+      <form id="login-form" class="auth-card">
+        <!-- Left Column: Fields -->
+        <div class="auth-fields-col">
           <div class="form-group">
-            <label for="username" class="form-label">Username</label>
-            <input type="text" id="username" name="username" class="form-input" placeholder="Enter your username"
+            <label for="username" class="form-label">Nom d'utilisateur</label>
+            <input type="text" id="username" name="username" class="form-input" placeholder="Votre pseudo"
               autocomplete="username" required>
           </div>
 
           <div class="form-group">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" id="password" name="password" class="form-input" placeholder="Enter your password"
+            <label for="password" class="form-label">Mot de passe</label>
+            <input type="password" id="password" name="password" class="form-input" placeholder="Votre mot de passe"
               autocomplete="current-password" required>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-block btn-lg">
-            Login
-          </button>
-        </form>
-
-        <div class="auth-footer">
-          <p class="text-muted">
-            Don't have an account?
-            <a href="/register.html">Create one now</a>
-          </p>
+          <!-- Mobile Only: Actions below fields -->
+          <div class="mobile-only" style="margin-top: 1rem;">
+            <button type="submit" class="btn btn-primary btn-block btn-lg">
+              Connexion
+            </button>
+            <div class="auth-footer" style="border-top: none; margin-top: 1rem; padding-top: 0;">
+              <p class="text-muted">
+                Pas encore de compte ?
+                <a href="/register.html">Créer un compte</a>
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
+
+        <!-- Right Column: Logo, Info, Actions -->
+        <div class="auth-actions-col">
+          <div class="auth-header">
+            <h1 class="auth-logo">⚔️ LittleRPG</h1>
+            <p class="auth-subtitle">Entrez dans le royaume de l'aventure</p>
+          </div>
+
+          <div id="error-message" class="hidden" style="margin-bottom: 1rem;"></div>
+
+          <!-- Desktop Only: Actions in right column -->
+          <div class="desktop-only">
+            <button type="submit" class="btn btn-primary btn-block btn-lg">
+              Connexion
+            </button>
+
+            <div class="auth-footer">
+              <p class="text-muted">
+                Pas encore de compte ?
+                <a href="/register.html">Créer un compte</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
   </div>
 

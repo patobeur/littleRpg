@@ -7,7 +7,7 @@
     document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const submitBtns = e.target.querySelectorAll('button[type="submit"]');
         const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value;
 
@@ -28,7 +28,7 @@
         }
 
         // Submit
-        setLoading(submitBtn, true);
+        submitBtns.forEach(btn => setLoading(btn, true));
 
         try {
             await API.auth.login(username, password);
@@ -36,7 +36,7 @@
             redirectTo('/dashboard.html');
         } catch (error) {
             showError(error.message || 'Login failed');
-            setLoading(submitBtn, false);
+            submitBtns.forEach(btn => setLoading(btn, false));
         }
     });
 })();
