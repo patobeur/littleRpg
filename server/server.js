@@ -78,9 +78,10 @@ if (config.server.env === 'production') {
             directives: {
                 ...helmet.contentSecurityPolicy.getDefaultDirectives(),
                 "script-src": ["'self'", "'unsafe-inline'"],
-                "img-src": ["'self'", "data:", "blob:"],
+                "style-src": ["'self'", "'unsafe-inline'", "https:", "data:"],
+                "img-src": ["'self'", "data:", "blob:", "https:"],
                 "connect-src": ["'self'", "ws://*:*", "http://*:*"],
-                "font-src": ["'self'", "data:"],
+                "font-src": ["'self'", "data:", "https:"],
             },
         },
     }));
