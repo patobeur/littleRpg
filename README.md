@@ -1,53 +1,63 @@
 # ⚔️ LittleRPG
 
-A local multiplayer RPG with account management featuring a dark fantasy aesthetic. Built with Node.js, Express, SQLite, and vanilla HTML/CSS/JS.
+A local multiplayer RPG with account management, featuring a dark fantasy aesthetic. Built with Node.js, Express, SQLite, and vanilla HTML/CSS/JS.
 
 ## Features
 
--  **Account Management**: Secure registration and login with bcrypt password hashing
--  **Character System**: Create up to 5 characters per account
--  **Profile Management**: View account information and character statistics
--  **Dark Fantasy UI**: Beautiful, responsive interface with gothic aesthetics
--  **Security**: HTTPOnly cookies, rate limiting, helmet protection, and server-side validation
+### 🎮 Gameplay & Aesthetics
+- **Multiplayer Engine**: Real-time player movement and synchronization.
+- **Camera System**: 3 switchable camera modes (Third-Person, Top-Down, Isometric).
+- **Map Generator**: Built-in tool (`/map_generator.html`) to create and edit game maps visually.
+- **Dark Fantasy UI**: Immersive "Glassmorphism" design with 4K backgrounds and smooth animations.
+- **Responsive Navigation**: Adaptive burger menu and fluid layout for all devices.
+
+### 👤 Account & Progression
+- **Secure Authentication**: Registration, Login, and Session Management with strict security.
+- **Character System**: Create, rename, and delete characters with distinct classes (Warrior, Mage, Healer, Archer).
+- **GDPR Compliance**: Cookie consent banner with opt-in tracking logic.
+- **Single Session Policy**: "Last Login Wins" strategy prevents concurrent sessions on multiple devices.
+
+### 🛠️ Admin & Tools
+- **Role-Based Access**: Role system (SuperAdmin, Admin, Moderator, User).
+- **Admin Dashboard**:
+    - **Statistics**: Real-time tracking of visitors, visits, and page views.
+    - **Security Logs**: Monitoring of "Force Logout" events and session conflicts.
+    - **Reset & Export**: Tools to backup and clear statistical data.
 
 ## Tech Stack
 
--  **Backend**: Node.js, Express
--  **Database**: SQLite with automatic migrations
--  **Authentication**: express-session with HTTPOnly cookies, bcrypt
--  **Security**: helmet, express-rate-limit
--  **Frontend**: Vanilla HTML/CSS/JS (no heavy frameworks)
--  **Fonts**: Cinzel (headings), Inter (body text)
+- **Backend**: Node.js, Express, Socket.io (implied usage for multiplayer)
+- **Database**: SQLite with automatic migrations
+- **Authentication**: `express-session`, `bcrypt`, Custom Session Manager
+- **Security**: `helmet`, `csurf` (CSRF tokens), `express-rate-limit`, Input Sanitization (`escapeHtml`)
+- **Frontend**: Vanilla HTML/CSS/JS (Lightweight, no frameworks)
+- **Fonts**: Cinzel (Headings), Inter (Body)
 
 ## Installation
 
 1. **Clone or navigate to the project directory**:
-
    ```bash
    cd d:\laragon\www\littleRpg
    ```
 
 2. **Install dependencies**:
-
    ```bash
    npm install
    ```
 
-3. **Install nodemon** (if not already installed):
+3. **Install nodemon** (optional, for dev):
    ```bash
    npm install --save-dev nodemon
    ```
 
 ## Running the Application
 
-### Development Mode (with auto-restart)
-
+### Development Mode
 ```bash
 npm run dev
 ```
 
 ### Production Mode
-
 ```bash
 npm start
 ```
@@ -59,111 +69,34 @@ The server will start on `http://localhost:3000`
 ```
 littleRpg/
 ├── server/
-│   ├── config.js              # Server configuration
-│   ├── server.js              # Main Express server
-│   ├── database/
-│   │   ├── database.js        # SQLite connection wrapper
-│   │   └── migrations.js      # Database migrations
-│   ├── models/
-│   │   ├── User.js           # User model
-│   │   └── Character.js      # Character model
-│   ├── middleware/
-│   │   ├── auth.js           # Authentication middleware
-│   │   └── validation.js     # Input validation
-│   └── routes/
-│       ├── auth.js           # Authentication endpoints
-│       ├── characters.js     # Character management
-│       └── users.js          # User profile endpoints
+│   ├── config.js               # Configuration (Session, Ports, etc.)
+│   ├── session-manager.js      # Single Session Enforcement Logic
+│   ├── database/               # SQLite DB and Migrations
+│   ├── models/                 # Data Models (User, Character, Visit)
+│   ├── middleware/             # Auth, Validation, VisitTracker
+│   └── routes/                 # API Routes (Auth, Stats, Characters)
 ├── public/
-│   ├── index.html            # Login page
-│   ├── register.html         # Registration page
-│   ├── profile.html          # User profile
-│   ├── dashboard.html        # Character dashboard
-│   ├── styles/
-│   │   ├── main.css          # Base styles and variables
-│   │   ├── components.css    # Reusable components
-│   │   └── layouts.css       # Page layouts
-│   └── js/
-│       ├── api.js            # API client
-│       └── utils.js          # Utility functions
-├── data/                     # Created automatically
-│   └── rpg.db               # SQLite database
-├── package.json
-└── README.md
+│   ├── map_generator.html      # Level Editor Tool
+│   ├── stats.html              # Admin Statistics Dashboard
+│   ├── lobby.html              # Game Lobby & Chat
+│   ├── styles/                 # CSS (Components, Layouts, Home)
+│   └── js/                     # Client-side Logic
+└── data/                       # Database Storage
 ```
-
-## API Endpoints
-
-### Authentication
-
--  `POST /api/auth/register` - Register new user
--  `POST /api/auth/login` - Login user
--  `POST /api/auth/logout` - Logout user
--  `GET /api/auth/session` - Check session status
-
-### Characters
-
--  `GET /api/characters` - Get all user characters
--  `POST /api/characters` - Create new character
--  `DELETE /api/characters/:id` - Delete character
-
-### Users
-
--  `GET /api/users/profile` - Get user profile
-
-## Usage
-
-1. **Start the server**: Run `npm run dev`
-2. **Open browser**: Navigate to `http://localhost:3000`
-3. **Register**: Create a new account
-4. **Create characters**: Add up to 5 characters
-5. **Manage profile**: View your account information
 
 ## Security Features
 
--  Passwords hashed with bcrypt (10 salt rounds)
--  HTTPOnly cookies for session management
--  Rate limiting on all endpoints (100 req/15min)
--  Stricter rate limiting on auth endpoints (5 req/15min)
--  Helmet.js for HTTP header security
--  Server-side input validation
--  SQL injection protection via parameterized queries
--  CSRF protection through SameSite cookies
-
-## Configuration
-
-Edit `server/config.js` to customize:
-
--  Server port (default: 3000)
--  Session secret (change in production!)
--  Rate limiting rules
--  Character slot limits
--  Validation rules
-
-## Future Features
-
--  Multiplayer game functionality
--  Character classes and abilities
--  Inventory system
--  Real-time gameplay with WebSocket
--  Battle system
-
-## Development
-
-The project uses nodemon in development mode for automatic server restart on file changes.
-
-To add new features:
-
-1. Create database migration in `server/database/migrations.js`
-2. Add models as needed in `server/models/`
-3. Create routes in `server/routes/`
-4. Build frontend UI in `public/`
+- **XSS Protection**: Comprehensive input sanitization on chat and lobby.
+- **Session Security**: HTTPOnly cookies, Double-Submit CSRF implementation.
+- **Brute Force Protection**: Rate limiting on sensitive endpoints.
+- **Identity Enforcement**: Automatic invalidation of old sessions upon new login.
+- **Audit Logging**: Tracking of security-critical events.
 
 ## License
 
 Apache-2.0
 
-Ce projet inclut du code provenant de littleRpg (Patobeur).
+*Ce projet inclut du code provenant de littleRpg (Patobeur).*
 
 ## Attribution
 

@@ -17,6 +17,7 @@ const statsRoutes = require('./routes/stats');
 
 // Import middleware
 const visitTracker = require('./middleware/visitTracker');
+const { requireRole } = require('./middleware/auth');
 
 const http = require('http');
 const { Server } = require('socket.io');
@@ -130,44 +131,17 @@ app.use('/api/characters', characterRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/stats', statsRoutes);
 
-// Serve HTML files
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+// Protected Admin Views
+app.get('/stats.html', requireRole(['superAdmin']), (req, res) => {
+    res.sendFile(path.join(__dirname, 'protected_views', 'stats.html'));
 });
 
-app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public', 'login.html'));
+app.get('/map_generator.html', requireRole(['superAdmin']), (req, res) => {
+    res.sendFile(path.join(__dirname, 'protected_views', 'map_generator', 'index.html'));
 });
 
-
-
-// Map Generator Routes
-// Middleware to restrict access to localhost and local network
-const requireLocalhost = (req, res, next) => {
-    const ip = req.ip || req.connection.remoteAddress;
-
-    // Extract the actual IP address (remove IPv6 prefix if present)
-    const cleanIp = ip.replace('::ffff:', '');
-
-    // Allow localhost
-    if (ip === '::1' || cleanIp === '127.0.0.1') {
-        return next();
-    }
-
-    // Allow local network IPs (192.168.x.x and 10.x.x.x)
-    if (cleanIp.startsWith('192.168.') || cleanIp.startsWith('10.')) {
-        return next();
-    }
-
-    // Deny all other IPs
-    res.status(403).send('Access denied. Local network only.');
-};
-
-app.get('/map_generator.html', requireLocalhost, (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public', 'map_generator', 'index.html'));
-});
-
-app.get('/api/maps', requireLocalhost, (req, res) => {
+// Protected Map API Routes
+app.get('/api/maps', requireRole(['superAdmin']), (req, res) => {
     const mapDir = path.join(__dirname, 'data/maps');
     if (!fs.existsSync(mapDir)) fs.mkdirSync(mapDir, { recursive: true });
 
@@ -177,7 +151,7 @@ app.get('/api/maps', requireLocalhost, (req, res) => {
     });
 });
 
-app.get('/api/maps/:name', requireLocalhost, (req, res) => {
+app.get('/api/maps/:name', requireRole(['superAdmin']), (req, res) => {
     const safeName = req.params.name.replace(/[^a-zA-Z0-9_-]/g, '');
     const filePath = path.join(__dirname, 'data/maps', `${safeName}.json`);
 
@@ -191,7 +165,7 @@ app.get('/api/maps/:name', requireLocalhost, (req, res) => {
     });
 });
 
-app.post('/api/maps', requireLocalhost, express.json(), (req, res) => {
+app.post('/api/maps', requireRole(['superAdmin']), express.json(), (req, res) => {
     const { name, data } = req.body;
     if (!name || !data) return res.status(400).json({ error: 'Missing name or data' });
 
@@ -221,7 +195,7 @@ app.post('/api/maps', requireLocalhost, express.json(), (req, res) => {
 });
 
 // Admin routes (Localhost only)
-app.get('/api/admin/lobbies', requireLocalhost, (req, res) => {
+app.get('/api/admin/lobbies', requireRole(['superAdmin']), (req, res) => {
     try {
         const lobbies = Array.from(lobbyManager.lobbies.values()).map(lobby => ({
             code: lobby.code,
@@ -243,7 +217,7 @@ app.get('/api/admin/lobbies', requireLocalhost, (req, res) => {
 });
 
 // List available structure files
-app.get('/api/structures', requireLocalhost, (req, res) => {
+app.get('/api/structures', requireRole(['superAdmin']), (req, res) => {
     try {
         // Read structures from the configuration file
         const structuresConfig = require('./models/structures.js');
@@ -272,7 +246,7 @@ app.get('/api/structures', requireLocalhost, (req, res) => {
 });
 
 // List available enemies
-app.get('/api/enemies', requireLocalhost, (req, res) => {
+app.get('/api/enemies', requireRole(['superAdmin']), (req, res) => {
     try {
         const enemiesConfig = require('./models/enemies.js');
 
@@ -300,7 +274,7 @@ app.get('/api/enemies', requireLocalhost, (req, res) => {
 });
 
 // List available natures (trees, rocks, etc.)
-app.get('/api/natures', requireLocalhost, (req, res) => {
+app.get('/api/natures', requireRole(['superAdmin']), (req, res) => {
     try {
         const naturesConfig = require('./models/natures.js');
 
@@ -368,7 +342,7 @@ app.get('/api/scenarios/:id', (req, res) => {
 });
 
 // POST is still protected - only for map generator
-app.post('/api/scenarios', requireLocalhost, express.json(), (req, res) => {
+app.post('/api/scenarios', requireRole(['superAdmin']), express.json(), (req, res) => {
     const scenario = req.body;
     if (!scenario.id || !scenario.name) return res.status(400).json({ error: 'Invalid scenario data' });
 
