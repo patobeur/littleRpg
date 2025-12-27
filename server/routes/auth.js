@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const { validateRegistration, validateLogin } = require('../middleware/validation');
+const sessionManager = require('../session-manager');
 
 // Register new user
 router.post('/register', validateRegistration, async (req, res) => {
@@ -15,6 +16,9 @@ router.post('/register', validateRegistration, async (req, res) => {
         req.session.userId = user.id;
         req.session.username = user.username;
         req.session.role = user.role;
+
+        // Enforce single session
+        sessionManager.registerSession(user.id, req.sessionID, req);
 
         res.status(201).json({
             success: true,
@@ -47,6 +51,9 @@ router.post('/login', validateLogin, async (req, res) => {
         req.session.username = user.username;
         req.session.role = user.role;
 
+        // Enforce single session
+        sessionManager.registerSession(user.id, req.sessionID, req);
+
         res.json({
             success: true,
             user: {
@@ -63,6 +70,11 @@ router.post('/login', validateLogin, async (req, res) => {
 
 // Logout user
 router.post('/logout', (req, res) => {
+    // Remove from active sessions
+    if (req.session.userId) {
+        sessionManager.removeSession(req.session.userId);
+    }
+
     req.session.destroy((err) => {
         if (err) {
             console.error('Logout error:', err);
