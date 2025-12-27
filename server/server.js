@@ -132,6 +132,11 @@ app.use('/api/characters', characterRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/stats', statsRoutes);
 
+// Client Configuration Endpoint
+app.get('/api/config/client', (req, res) => {
+    res.json(config.clientDefaults || {});
+});
+
 // Protected Admin Views
 app.get('/stats.html', requireRole(['superAdmin']), (req, res) => {
     res.sendFile(path.join(__dirname, 'protected_views', 'stats.html'));

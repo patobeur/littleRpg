@@ -57,6 +57,29 @@ class GameEngine {
         // Protect page
         if (typeof protectPage !== 'undefined') await protectPage();
 
+        // Load Client Configuration
+        try {
+            const configRes = await fetch('/api/config/client');
+            this.config = await configRes.json();
+            console.log('[GameEngine] Client config loaded:', this.config);
+
+            // Apply Defaults
+            // 1. Enemy HUD Visibility
+            if (this.entityManager && this.config.showEnemyHUD !== undefined) {
+                this.entityManager.showEnemyHUD = this.config.showEnemyHUD;
+            }
+
+            // 2. Mouse Inversion (Third Person)
+            const tpMode = this.cameraManager.modes.get('third-person');
+            if (tpMode && this.config.invertMouseY !== undefined) {
+                tpMode.invertY = this.config.invertMouseY;
+            }
+
+        } catch (err) {
+            console.warn('[GameEngine] Failed to load config, using hardcoded defaults:', err);
+            this.config = {};
+        }
+
         // Check if game data exists
         const gameDataStr = sessionStorage.getItem('gameData');
         if (!gameDataStr) {

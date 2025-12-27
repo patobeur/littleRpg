@@ -69,6 +69,12 @@ const config = {
         nameMinLength: 2,
         nameMaxLength: 20,
     },
+
+    // Default client settings
+    clientDefaults: {
+        invertMouseY: true,
+        showEnemyHUD: true,
+    },
 };
 
 module.exports = config;
