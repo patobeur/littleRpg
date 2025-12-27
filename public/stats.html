@@ -117,6 +117,43 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Security Logs Table -->
+            <div class="dashboard-section" style="margin-top: 2rem;">
+                <div class="section-header">
+                    <h2 class="section-title">🚨 Journal de Sécurité (Force Logout)</h2>
+                </div>
+
+                <div class="card">
+                    <div id="security-loading" class="text-center" style="padding: 2rem;">
+                        <div class="loading-spinner"></div>
+                        <p class="text-muted">Chargement des données...</p>
+                    </div>
+
+                    <div id="security-error" class="hidden text-center" style="padding: 2rem;">
+                        <p class="text-danger">❌ Erreur lors du chargement des données</p>
+                    </div>
+
+                    <div id="security-table" class="hidden">
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type d'événement</th>
+                                        <th>Détails</th>
+                                        <th>IP Source</th>
+                                        <th>User Agent</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="security-tbody">
+                                    <!-- Data loaded via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

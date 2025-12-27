@@ -40,6 +40,18 @@ router.get('/visitor-logs/:visitorId', requireRole(['superAdmin']), async (req, 
     }
 });
 
+// SuperAdmin only - Get security logs
+router.get('/security-logs', requireRole(['superAdmin']), async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 50;
+        const logs = await Visit.getSecurityLogs(limit);
+        res.json(logs);
+    } catch (error) {
+        console.error('Error fetching security logs:', error);
+        res.status(500).json({ error: 'Failed to fetch security logs' });
+    }
+});
+
 // SuperAdmin only - Export all data
 router.get('/export', requireRole(['superAdmin']), async (req, res) => {
     try {

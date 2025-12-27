@@ -164,6 +164,24 @@ class Visit {
             return [];
         }
     }
+    // Get security logs (Force Logout, etc.)
+    static async getSecurityLogs(limit = 50) {
+        try {
+            const logs = await database.all(
+                `SELECT l.timestamp, l.page, l.referrer, v.ip_address, v.user_agent 
+                FROM visit_logs l
+                JOIN visits v ON l.visitor_id = v.visitor_id
+                WHERE l.page LIKE '/AUTH/%' 
+                ORDER BY l.timestamp DESC 
+                LIMIT ?`,
+                [limit]
+            );
+            return logs;
+        } catch (error) {
+            console.error('Error getting security logs:', error);
+            return [];
+        }
+    }
 }
 
 module.exports = Visit;

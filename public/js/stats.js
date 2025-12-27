@@ -144,9 +144,64 @@
         });
     }
 
+    // Load security logs
+    async function loadSecurityLogs() {
+        const loadingEl = document.getElementById('security-loading');
+        const errorEl = document.getElementById('security-error');
+        const tableEl = document.getElementById('security-table');
+        const tbodyEl = document.getElementById('security-tbody');
+
+        try {
+            loadingEl.classList.remove('hidden');
+            errorEl.classList.add('hidden');
+            tableEl.classList.add('hidden');
+
+            const response = await fetch('/api/stats/security-logs?limit=20', {
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch security logs');
+
+            const logs = await response.json();
+
+            // Clear table
+            tbodyEl.innerHTML = '';
+
+            // Populate table
+            if (logs.length === 0) {
+                tbodyEl.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Aucu incident de sécurité récent</td></tr>';
+            } else {
+                logs.forEach(log => {
+                    const row = document.createElement('tr');
+                    // Extract event type from page path based on our convention "/AUTH/..."
+                    const eventType = log.page.replace('/AUTH/', '');
+
+                    row.innerHTML = `
+                        <td>${formatDate(log.timestamp)}</td>
+                        <td><span class="badge badge-danger">${eventType}</span></td>
+                        <td>${log.referrer || 'N/A'}</td> <!-- Referrer stores the details message -->
+                        <td><code>${log.ip_address}</code></td>
+                        <td class="user-agent-cell" title="${log.user_agent}">
+                            ${truncateUserAgent(log.user_agent)}
+                        </td>
+                    `;
+                    tbodyEl.appendChild(row);
+                });
+            }
+
+            loadingEl.classList.add('hidden');
+            tableEl.classList.remove('hidden');
+
+        } catch (error) {
+            console.error('Error loading security logs:', error);
+            loadingEl.classList.add('hidden');
+            errorEl.classList.remove('hidden');
+        }
+    }
+
     // Refresh button
     document.getElementById('refreshBtn').addEventListener('click', async () => {
-        await Promise.all([loadStats(), loadRecentVisitors()]);
+        await Promise.all([loadStats(), loadRecentVisitors(), loadSecurityLogs()]);
     });
 
     // Export & Reset button
@@ -244,10 +299,10 @@
     });
 
     // Initial load
-    await Promise.all([loadStats(), loadRecentVisitors()]);
+    await Promise.all([loadStats(), loadRecentVisitors(), loadSecurityLogs()]);
 
     // Auto-refresh every 30 seconds
     setInterval(async () => {
-        await Promise.all([loadStats(), loadRecentVisitors()]);
+        await Promise.all([loadStats(), loadRecentVisitors(), loadSecurityLogs()]);
     }, 30000);
 })();
