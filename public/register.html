@@ -17,67 +17,72 @@
     <!-- Navigation injected by nav.js -->
     <div class="auth-layout">
         <div class="auth-container">
-            <div class="auth-card">
-                <div class="auth-header">
-                    <h1 class="auth-logo">⚔️ LittleRPG</h1>
-                    <p class="auth-subtitle">Begin your journey</p>
-
-                    <div
-                        style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 13px; color: #fca5a5; line-height: 1.5;">
-                        <strong style="color: #ef4444; display: block; margin-bottom: 4px;">⚠️ Zone de travaux</strong>
-                        <p style="margin-bottom: 8px;">Le projet est encore en plein développement, donc la base de
-                            données peut être réinitialisée assez souvent (oui, parfois sans prévenir). Résultat : les
-                            personnages que vous créez aujourd’hui peuvent disparaître demain, comme si rien ne s’était
-                            passé. Profitez, testez, expérimentez… mais évitez de vous projeter trop fort : ici,
-                            l’attachement émotionnel n’a pas encore été patché.</p>
-                        <p style="margin: 0; color: #fbbf24;"><strong>Conseil :</strong> Utilisez une fausse adresse
-                            email pour l'instant, car il n'y a pas encore de système de récupération de mot de passe.
-                        </p>
-                    </div>
-                </div>
-
-                <div id="error-message" class="hidden"></div>
-
-                <form id="register-form">
+            <form id="register-form" class="auth-card">
+                <!-- Left Column: Fields -->
+                <div class="auth-fields-col">
                     <div class="form-group">
-                        <label for="username" class="form-label">Username</label>
+                        <label for="username" class="form-label">Nom d'utilisateur</label>
                         <input type="text" id="username" name="username" class="form-input"
-                            placeholder="Choose a username" autocomplete="username" required>
-                        <span class="form-help">3-20 characters, letters, numbers, and underscores only</span>
+                            placeholder="Choisissez un pseudo" autocomplete="username" required>
+                        <span class="form-help">3-20 caractères (lettres, chiffres, _ uniquement)</span>
                     </div>
 
                     <div class="form-group">
                         <label for="email" class="form-label">Email</label>
                         <input type="email" id="email" name="email" class="form-input"
-                            placeholder="your.email@example.com" autocomplete="email" required>
-                        <span class="form-help">A valid email address</span>
+                            placeholder="votre.email@exemple.com" autocomplete="email" required>
+                        <span class="form-help">Une adresse email valide</span>
                     </div>
 
                     <div class="form-group">
-                        <label for="password" class="form-label">Password</label>
+                        <label for="password" class="form-label">Mot de passe</label>
                         <input type="password" id="password" name="password" class="form-input"
-                            placeholder="Create a password" autocomplete="new-password" required>
-                        <span class="form-help">Minimum 8 characters</span>
+                            placeholder="Créez un mot de passe" autocomplete="new-password" required>
+                        <span class="form-help">8 caractères minimum</span>
                     </div>
 
                     <div class="form-group">
-                        <label for="confirm-password" class="form-label">Confirm Password</label>
+                        <label for="confirm-password" class="form-label">Confirmer le mot de passe</label>
                         <input type="password" id="confirm-password" name="confirm-password" class="form-input"
-                            placeholder="Confirm your password" autocomplete="new-password" required>
+                            placeholder="Confirmez votre mot de passe" autocomplete="new-password" required>
                     </div>
+                </div>
+
+                <!-- Right Column: Logo, Info, Actions -->
+                <div class="auth-actions-col">
+                    <div class="auth-header">
+                        <h1 class="auth-logo">⚔️ LittleRPG</h1>
+                        <p class="auth-subtitle">Commencez votre aventure épique.</p>
+
+                        <div
+                            style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 13px; color: #fca5a5; line-height: 1.5;">
+                            <strong style="color: #ef4444; display: block; margin-bottom: 4px;">⚠️ Zone de
+                                travaux</strong>
+                            <p style="margin-bottom: 8px;">Le projet est encore en plein développement, donc la base de
+                                données peut être réinitialisée assez souvent (oui, parfois sans prévenir). Résultat :
+                                les personnages que vous créez aujourd’hui peuvent disparaître demain, comme si rien ne
+                                s’était passé. Profitez, testez, expérimentez… mais évitez de vous projeter trop fort :
+                                ici, l’attachement émotionnel n’a pas encore été patché.</p>
+                            <p style="margin: 0; color: #fbbf24;"><strong>Conseil :</strong> Utilisez une fausse adresse
+                                email pour l'instant, car il n'y a pas encore de système de récupération de mot de
+                                passe.</p>
+                        </div>
+                    </div>
+
+                    <div id="error-message" class="hidden" style="margin-bottom: 1rem;"></div>
 
                     <button type="submit" class="btn btn-primary btn-block btn-lg">
-                        Create Account
+                        Créer le compte
                     </button>
-                </form>
 
-                <div class="auth-footer">
-                    <p class="text-muted">
-                        Already have an account?
-                        <a href="/">Login here</a>
-                    </p>
+                    <div class="auth-footer">
+                        <p class="text-muted">
+                            Vous avez déjà un compte ?
+                            <a href="/">Se connecter</a>
+                        </p>
+                    </div>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
 
