@@ -1,102 +1,93 @@
 # ⚔️ LittleRPG
 
-A local multiplayer RPG with account management, featuring a dark fantasy aesthetic. Built with Node.js, Express, SQLite, and vanilla HTML/CSS/JS.
+[English](README_en.md) | [Español](README_es.md)
 
-## Features
+---
 
-### 🎮 Gameplay & Aesthetics
-- **Multiplayer Engine**: Real-time player movement and synchronization.
-- **Camera System**: 3 switchable camera modes (Third-Person, Top-Down, Isometric).
-- **Map Generator**: Built-in tool (`/map_generator.html`) to create and edit game maps visually.
-- **Dark Fantasy UI**: Immersive "Glassmorphism" design with 4K backgrounds and smooth animations.
-- **Responsive Navigation**: Adaptive burger menu and fluid layout for all devices.
+**LittleRPG** est un RPG multijoueur local avec gestion de compte, présentant une esthétique dark fantasy. Construit avec Node.js, Express, SQLite et HTML/CSS/JS vanilla.
 
-### 👤 Account & Progression
-- **Secure Authentication**: Registration, Login, and Session Management with strict security.
-- **Character System**: Create, rename, and delete characters with distinct classes (Warrior, Mage, Healer, Archer).
-- **GDPR Compliance**: Cookie consent banner with opt-in tracking logic.
-- **Single Session Policy**: "Last Login Wins" strategy prevents concurrent sessions on multiple devices.
+### Fonctionnalités
 
-### 🛠️ Admin & Tools
-- **Role-Based Access**: Role system (SuperAdmin, Admin, Moderator, User).
-- **Admin Dashboard**:
-    - **Statistics**: Real-time tracking of visitors, visits, and page views.
-    - **Security Logs**: Monitoring of "Force Logout" events and session conflicts.
-    - **Reset & Export**: Tools to backup and clear statistical data.
+#### 🎮 Gameplay & Esthétique
 
-## Tech Stack
+-  **Moteur Multijoueur**: Mouvement et synchronisation des joueurs en temps réel.
+-  **Système de Caméra**: 3 modes de caméra commutables (Troisième personne, Vue de dessus, Isométrique).
+-  **Générateur de Carte**: Outil intégré pour créer et éditer des cartes de jeu visuellement.
+-  **Interface Dark Fantasy**: Design "Glassmorphism" immersif avec arrière-plans 4K et animations fluides.
+-  **Navigation Responsive**: Menu burger adaptatif et mise en page fluide pour tous les appareils.
 
-- **Backend**: Node.js, Express, Socket.io (implied usage for multiplayer)
-- **Database**: SQLite with automatic migrations
-- **Authentication**: `express-session`, `bcrypt`, Custom Session Manager
-- **Security**: `helmet`, `csurf` (CSRF tokens), `express-rate-limit`, Input Sanitization (`escapeHtml`)
-- **Frontend**: Vanilla HTML/CSS/JS (Lightweight, no frameworks)
-- **Fonts**: Cinzel (Headings), Inter (Body)
+#### 👤 Compte & Progression
 
-## Installation
+-  **Authentification Sécurisée**: Inscription, Connexion et Gestion de Session avec sécurité stricte.
+-  **Système de Personnage**: Créer, renommer et supprimer des personnages avec des classes distinctes (Guerrier, Mage, Guérisseur, Archer).
+-  **Conformité RGPD**: Bannière de consentement aux cookies avec logique d'opt-in.
+-  **Politique de Session Unique**: Stratégie "Dernière connexion gagne" empêchant les sessions simultanées.
 
-1. **Clone or navigate to the project directory**:
+#### 🛠️ Administration & Outils
+
+-  **Accès Basé sur les Rôles**: Système de rôles (SuperAdmin, Admin, Modérateur, Utilisateur).
+-  **Tableau de Bord Admin**:
+   -  **Statistiques**: Suivi en temps réel des visiteurs, des visites et des pages vues.
+   -  **Journaux de Sécurité**: Surveillance des événements "Force Logout" et conflits de session.
+   -  **Réinitialisation & Export**: Outils pour sauvegarder et effacer les données statistiques.
+
+**Note :** `map_generator.html` et `stats.html` ont été déplacés vers des emplacements sécurisés accessibles uniquement via l'application serveur.
+
+### Installation
+
+1. **Cloner le dépôt**:
+
    ```bash
-   cd d:\laragon\www\littleRpg
+   git clone https://github.com/patobeur/littleRpg.git
+   cd littleRpg
    ```
 
-2. **Install dependencies**:
+2. **Installer les dépendances**:
+
    ```bash
    npm install
    ```
 
-3. **Install nodemon** (optional, for dev):
+3. **Installer nodemon** (optionnel, pour le développement):
    ```bash
    npm install --save-dev nodemon
    ```
 
-## Running the Application
+### Lancer l'Application
 
-### Development Mode
-```bash
-npm run dev
-```
+-  **Mode Développement**: `npm run dev`
+-  **Mode Production**: `npm start`
 
-### Production Mode
-```bash
-npm start
-```
+Le serveur démarrera sur `http://localhost:3000`
 
-The server will start on `http://localhost:3000`
-
-## Project Structure
+### Structure du Projet
 
 ```
 littleRpg/
 ├── server/
-│   ├── config.js               # Configuration (Session, Ports, etc.)
-│   ├── session-manager.js      # Single Session Enforcement Logic
-│   ├── database/               # SQLite DB and Migrations
-│   ├── models/                 # Data Models (User, Character, Visit)
+│   ├── config.js               # Configuration
+│   ├── session-manager.js      # Logique de Session Unique
+│   ├── database/               # Base de données SQLite et Migrations
+│   ├── models/                 # Modèles de Données
 │   ├── middleware/             # Auth, Validation, VisitTracker
-│   └── routes/                 # API Routes (Auth, Stats, Characters)
+│   ├── routes/                 # Routes API
+│   └── protected_views/        # VUES ADMIN SÉCURISÉES
+│       ├── stats.html          # Tableau de Bord Statistiques
+│       └── map_generator/      # Éditeur de Niveaux (index.html)
 ├── public/
-│   ├── map_generator.html      # Level Editor Tool
-│   ├── stats.html              # Admin Statistics Dashboard
-│   ├── lobby.html              # Game Lobby & Chat
-│   ├── styles/                 # CSS (Components, Layouts, Home)
-│   └── js/                     # Client-side Logic
-└── data/                       # Database Storage
+│   ├── lobby.html              # Lobby du Jeu & Chat
+│   ├── styles/                 # CSS
+│   └── js/                     # Logique Client
+└── data/                       # Stockage Base de Données
 ```
 
-## Security Features
-
-- **XSS Protection**: Comprehensive input sanitization on chat and lobby.
-- **Session Security**: HTTPOnly cookies, Double-Submit CSRF implementation.
-- **Brute Force Protection**: Rate limiting on sensitive endpoints.
-- **Identity Enforcement**: Automatic invalidation of old sessions upon new login.
-- **Audit Logging**: Tracking of security-critical events.
+---
 
 ## License
 
 Apache-2.0
 
-*Ce projet inclut du code provenant de littleRpg (Patobeur).*
+_Ce projet inclut du code provenant de littleRpg (Patobeur)._
 
 ## Attribution
 
