@@ -119,7 +119,7 @@ class GameEngine {
         this.uiManager.hideLoading();
 
         // Initialiser le chat en jeu
-        this.chatManager.init();
+        this.chatManager.init(this.config.defaultChatChannel);
 
         // Initialiser la modal de paramètres
         this.settingsModal.init();

@@ -79,6 +79,7 @@ const config = {
     clientDefaults: {
         invertMouseY: true,
         showEnemyHUD: true,
+        defaultChatChannel: 'local',
     },
 };
 

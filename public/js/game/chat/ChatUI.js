@@ -98,7 +98,7 @@ export class ChatUI {
             tab.onclick = () => this.chatManager.switchChannel(channelKey);
 
             // Premier onglet actif par défaut
-            if (channelKey === 'global') {
+            if (channelKey === this.chatManager.currentChannel) {
                 tab.classList.add('active');
             }
 

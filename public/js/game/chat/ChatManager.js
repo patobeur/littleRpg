@@ -16,9 +16,14 @@ export class ChatManager {
 
     /**
      * Initialise le système de chat
+     * @param {string} defaultChannel - Canal par défaut (optionnel)
      */
-    init() {
+    init(defaultChannel) {
         if (this.isInitialized) return;
+
+        if (defaultChannel && ChatChannels[defaultChannel]) {
+            this.currentChannel = defaultChannel;
+        }
 
         // Créer l'interface
         this.ui = new ChatUI(this);
