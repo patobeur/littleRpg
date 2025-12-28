@@ -116,8 +116,9 @@ export class AmbianceManager {
             const color = l.color !== undefined ? l.color : 0xffaa00;
             const distance = l.distance !== undefined ? l.distance : 15;
             const decay = l.decay !== undefined ? l.decay : 2;
+            const intensity = l.intensity !== undefined ? l.intensity : 1;
 
-            const light = new THREE.PointLight(color, 1, distance, decay);
+            const light = new THREE.PointLight(color, intensity, distance, decay);
             light.position.set(l.x, l.y, l.z);
             light.userData.isMapLight = true;
             // Shadow casting for point lights is expensive, enable if needed

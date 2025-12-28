@@ -30,11 +30,13 @@ export const UI = {
 
             // Update Transform Inputs
             const posX = document.getElementById('posX');
+            const posY = document.getElementById('posY');
             const posZ = document.getElementById('posZ');
             const rotY = document.getElementById('rotY');
             const scale = document.getElementById('scale');
 
             if (posX) posX.value = obj.position.x.toFixed(2);
+            if (posY) posY.value = obj.position.y.toFixed(2);
             if (posZ) posZ.value = obj.position.z.toFixed(2);
             if (rotY) rotY.value = THREE.MathUtils.radToDeg(obj.rotation.y).toFixed(2);
             if (scale) scale.value = obj.scale.x.toFixed(2);
@@ -78,11 +80,13 @@ export const UI = {
         const updateTransform = () => {
             if (!state.selectedObject) return;
             const x = parseFloat(document.getElementById('posX').value) || 0;
+            const y = parseFloat(document.getElementById('posY').value) || 0;
             const z = parseFloat(document.getElementById('posZ').value) || 0;
             const r = parseFloat(document.getElementById('rotY').value) || 0;
             const s = parseFloat(document.getElementById('scale').value) || 1;
 
             state.selectedObject.position.x = x;
+            state.selectedObject.position.y = y;
             state.selectedObject.position.z = z;
             state.selectedObject.rotation.y = THREE.MathUtils.degToRad(r);
             state.selectedObject.scale.setScalar(s);
@@ -90,7 +94,7 @@ export const UI = {
             if (updateGizmoCallback) updateGizmoCallback();
         };
 
-        ['posX', 'posZ', 'rotY', 'scale'].forEach(id => {
+        ['posX', 'posY', 'posZ', 'rotY', 'scale'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.addEventListener('change', updateTransform);
         });

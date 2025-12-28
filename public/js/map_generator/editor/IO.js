@@ -231,6 +231,7 @@ function loadMapData(mapData) {
                 if (obj) {
                     obj.rotation.y = rotY;
                     if (s.scale) obj.scale.setScalar(s.scale);
+                    if (s.y !== undefined) obj.position.y = s.y;
                 }
             });
         });
@@ -259,6 +260,7 @@ function loadMapData(mapData) {
 
             const obj = addSpawnAt(s.x, s.z, color);
             if (s.scale) obj.scale.setScalar(s.scale);
+            if (s.y !== undefined) obj.position.y = s.y;
         });
     }
 
@@ -290,6 +292,7 @@ function loadMapData(mapData) {
             // So scale = radius / 1.5
             if (e.radius) obj.scale.setScalar(e.radius / 1.5);
             else if (e.scale) obj.scale.setScalar(e.scale);
+            if (e.y !== undefined) obj.position.y = e.y;
         });
     }
 
@@ -297,6 +300,7 @@ function loadMapData(mapData) {
         mapData.enemies.forEach(e => {
             const obj = addEnemyAt(e.type, e.x, e.z);
             if (e.scale) obj.scale.setScalar(e.scale);
+            if (e.y !== undefined) obj.position.y = e.y;
         });
     }
 
@@ -307,6 +311,7 @@ function loadMapData(mapData) {
             // Saved: { x, z, rot, len, scale }
             const obj = addRoad(r.len, r.x, r.z, r.rot);
             if (r.scale) obj.scale.setScalar(r.scale);
+            if (r.y !== undefined) obj.position.y = r.y;
         });
     }
 
@@ -321,8 +326,10 @@ function loadMapData(mapData) {
                 addPlaceholder('tree', t.x, t.z, 0x228b22);
                 const fallbackObj = state.objects[state.objects.length - 1];
                 if (fallbackObj && t.scale) fallbackObj.scale.setScalar(t.scale);
+                if (fallbackObj && t.y !== undefined) fallbackObj.position.y = t.y;
             } else if (t.scale) {
                 obj.scale.setScalar(t.scale);
+                if (t.y !== undefined) obj.position.y = t.y;
             }
         });
     }

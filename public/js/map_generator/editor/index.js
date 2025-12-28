@@ -4,7 +4,7 @@ import { initThree, onWindowResize, updateEnvironment } from './Scene.js';
 import { initEvents } from './Input.js';
 import { state } from './State.js';
 import { TransformGizmo } from '../tools/Gizmo.js';
-import { addStructure, addSpawn, addEnemy, addNature, deleteSelected, addExit, addDefaultSpawnsAndExits, checkAndAddDefaultSpawnsAndExits } from './Objects.js';
+import { addStructure, addSpawn, addEnemy, addNature, deleteSelected, addExit, addDefaultSpawnsAndExits, checkAndAddDefaultSpawnsAndExits, addPointLight } from './Objects.js';
 import { refreshMapList, saveMap, loadSelectedMap } from './IO.js';
 import { generateOrganicVillage } from '../procedural/index.js';
 import { refreshScenarioList, refreshScenarioMapSelect } from './Scenario.js';
@@ -48,6 +48,7 @@ function init() {
     window.refreshMapList = refreshMapList;
     window.loadSelectedMap = loadSelectedMap;
     window.checkAndAddDefaultSpawnsAndExits = checkAndAddDefaultSpawnsAndExits;
+    window.addPointLight = addPointLight;
 
 
     animate();
