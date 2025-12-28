@@ -252,21 +252,29 @@ export function addExit() {
 }
 
 export function addDefaultSpawnsAndExits() {
-    const colors = [0xff0000, 0x00ff00, 0x0000ff]; // Red, Green, Blue
+    const maxPlayers = window.gameConfig?.gameSettings?.maxLobbyPlayers || 3;
+    const colors = [];
 
-    // 3 Spawns in a triangle (Radius 3)
+    // Generate colors dynamically
+    for (let i = 0; i < maxPlayers; i++) {
+        const hue = (i * 360 / maxPlayers) / 360;
+        const color = new THREE.Color().setHSL(hue, 1, 0.5);
+        colors.push(color.getHex());
+    }
+
+    // Spawns in a triangle/polygon (Radius 3)
     const spawnRadius = 3;
-    for (let i = 0; i < 3; i++) {
-        const angle = (i * 120) * (Math.PI / 180);
+    for (let i = 0; i < maxPlayers; i++) {
+        const angle = (i * 360 / maxPlayers) * (Math.PI / 180);
         const x = Math.sin(angle) * spawnRadius;
         const z = Math.cos(angle) * spawnRadius;
         addSpawnAt(x, z, colors[i]);
     }
 
-    // 3 Exits in a triangle (Radius 8)
+    // Exits in a triangle/polygon (Radius 8)
     const exitRadius = 8;
-    for (let i = 0; i < 3; i++) {
-        const angle = (i * 120 + 60) * (Math.PI / 180); // Offset by 60 deg
+    for (let i = 0; i < maxPlayers; i++) {
+        const angle = ((i * 360 / maxPlayers) + (180 / maxPlayers)) * (Math.PI / 180); // Offset by half step
         const x = Math.sin(angle) * exitRadius;
         const z = Math.cos(angle) * exitRadius;
         addExitAt(x, z, colors[i]);
@@ -278,6 +286,15 @@ export function checkAndAddDefaultSpawnsAndExits() {
     const hasSpawns = state.objects.some(obj => obj.userData.type === 'spawn');
     const hasExits = state.objects.some(obj => obj.userData.type === 'exit');
 
+    // Config
+    const maxPlayers = window.gameConfig?.gameSettings?.maxLobbyPlayers || 3;
+    const colors = [];
+    for (let i = 0; i < maxPlayers; i++) {
+        const hue = (i * 360 / maxPlayers) / 360;
+        const color = new THREE.Color().setHSL(hue, 1, 0.5);
+        colors.push(color.getHex());
+    }
+
     if (hasSpawns && hasExits) {
         alert('Spawns and exits already exist in this map.');
         return;
@@ -286,28 +303,26 @@ export function checkAndAddDefaultSpawnsAndExits() {
     if (!hasSpawns && !hasExits) {
         // Ajouter tous les spawns et exits par défaut
         addDefaultSpawnsAndExits();
-        alert('Default spawns and exits have been added to the map.');
+        alert(`Default spawns and exits (${maxPlayers}) have been added to the map.`);
     } else if (!hasSpawns) {
         // Ajouter seulement les spawns
-        const colors = [0xff0000, 0x00ff00, 0x0000ff];
         const spawnRadius = 3;
-        for (let i = 0; i < 3; i++) {
-            const angle = (i * 120) * (Math.PI / 180);
+        for (let i = 0; i < maxPlayers; i++) {
+            const angle = (i * 360 / maxPlayers) * (Math.PI / 180);
             const x = Math.sin(angle) * spawnRadius;
             const z = Math.cos(angle) * spawnRadius;
             addSpawnAt(x, z, colors[i]);
         }
-        alert('Default spawns have been added to the map.');
+        alert(`Default spawns (${maxPlayers}) have been added to the map.`);
     } else if (!hasExits) {
         // Ajouter seulement les exits
-        const colors = [0xff0000, 0x00ff00, 0x0000ff];
         const exitRadius = 8;
-        for (let i = 0; i < 3; i++) {
-            const angle = (i * 120 + 60) * (Math.PI / 180);
+        for (let i = 0; i < maxPlayers; i++) {
+            const angle = ((i * 360 / maxPlayers) + (180 / maxPlayers)) * (Math.PI / 180);
             const x = Math.sin(angle) * exitRadius;
             const z = Math.cos(angle) * exitRadius;
             addExitAt(x, z, colors[i]);
         }
-        alert('Default exits have been added to the map.');
+        alert(`Default exits (${maxPlayers}) have been added to the map.`);
     }
 }

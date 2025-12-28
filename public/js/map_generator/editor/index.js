@@ -62,6 +62,15 @@ function init() {
     refreshStructureList();
     refreshEnemyList();
     refreshNatureList();
+
+    // Fetch Game Config
+    fetch('/api/config/client')
+        .then(r => r.json())
+        .then(config => {
+            window.gameConfig = config;
+            console.log('Game Config Loaded:', config);
+        })
+        .catch(err => console.error('Failed to load game config:', err));
 }
 
 // Global cache for structure and enemy metadata
@@ -77,7 +86,13 @@ function refreshStructureList() {
     selector.innerHTML = '<option>Loading...</option>';
 
     fetch('/api/structures')
-        .then(r => r.json())
+        .then(r => {
+            if (r.status === 401 || r.status === 403) {
+                window.location.href = '/login.html';
+                throw new Error('Unauthorized');
+            }
+            return r.json();
+        })
         .then(structures => {
             selector.innerHTML = '';
             if (structures.length === 0) {

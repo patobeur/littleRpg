@@ -13,12 +13,23 @@ export class AmbianceManager {
      * Setup scene lights (ambient and directional)
      */
     setupLights() {
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         this.scene.add(ambientLight);
 
         const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-        dirLight.position.set(5, 10, 5);
+        dirLight.position.set(50, 100, 50);
         dirLight.castShadow = true;
+
+        // Shadow High Quality settings (match Map Generator)
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+        dirLight.shadow.camera.near = 0.1;
+        dirLight.shadow.camera.far = 200;
+        dirLight.shadow.camera.left = -50;
+        dirLight.shadow.camera.right = 50;
+        dirLight.shadow.camera.top = 50;
+        dirLight.shadow.camera.bottom = -50;
+
         this.scene.add(dirLight);
     }
 
@@ -67,6 +78,15 @@ export class AmbianceManager {
             this.groundMesh.material.roughness = config.ground.roughness;
             this.groundMesh.material.metalness = config.ground.metalness;
             this.groundMesh.material.needsUpdate = true;
+        }
+
+        // Lighting (Ambient) - Match Map Generator logic
+        if (config.ambColor || config.ambInt !== undefined) {
+            const amb = this.scene.children.find(c => c.isAmbientLight);
+            if (amb) {
+                if (config.ambColor) amb.color = new THREE.Color(config.ambColor);
+                if (config.ambInt !== undefined) amb.intensity = parseFloat(config.ambInt);
+            }
         }
     }
 }

@@ -6,7 +6,7 @@ function requireAuth(req, res, next) {
         next();
     } else {
         if (req.accepts('html')) {
-            return res.redirect('/login');
+            return res.redirect('/login.html');
         }
         res.status(401).json({ error: 'Authentication required' });
     }
@@ -17,7 +17,7 @@ function requireRole(allowedRoles) {
     return async (req, res, next) => {
         if (!req.session || !req.session.userId) {
             if (req.accepts('html')) {
-                return res.redirect('/login');
+                return res.redirect('/login.html');
             }
             return res.status(401).json({ error: 'Authentication required' });
         }
@@ -45,7 +45,7 @@ function requireRole(allowedRoles) {
         } catch (error) {
             console.error('Error checking user role:', error);
             if (req.accepts('html')) {
-                return res.redirect('/login');
+                return res.redirect('/login.html');
             }
             res.status(500).json({ error: 'Internal server error' });
         }

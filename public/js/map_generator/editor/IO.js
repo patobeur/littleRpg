@@ -173,7 +173,14 @@ export function loadSelectedMap() {
     if (!name) return;
 
     fetch(`/api/maps/${name}`)
-        .then(r => r.json())
+        .then(r => {
+            if (r.status === 401 || r.status === 403) {
+                window.location.href = '/login.html';
+                throw new Error('Unauthorized');
+            }
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            return r.json();
+        })
         .then(data => {
             loadMapData(data);
         })
