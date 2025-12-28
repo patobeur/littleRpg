@@ -13,6 +13,7 @@ const MessageBatcher = require('./utils/MessageBatcher');
 const SpatialGrid = require('./utils/SpatialGrid');
 const ChatHandler = require('./chat/ChatHandler');
 const interactablesData = require('./models/interactables');
+const dialoguesData = require('./data/dialogues/dialogues'); // Import dialogues
 const config = require('./config');
 
 class LobbyManager {
@@ -215,13 +216,26 @@ class LobbyManager {
             this.loadStructuresForScene(code, startScene);
 
             // Initialize Interactables
-            const interactableList = interactablesData.list;
-            if (interactableList) {
-                this.interactableStates.set(code, new Map(interactableList.map(i => [i.id, { ...i }])));
-                console.log(`[Lobby] Loaded ${interactableList.length} interactables for lobby ${code}`);
-            } else {
-                this.interactableStates.set(code, new Map());
+            const interactableList = interactablesData.list || [];
+            const sceneInteractables = new Map(interactableList.map(i => [i.id, { ...i }]));
+
+            // Add NPCs from scene config for the STARTING scene
+            if (sceneConfig && sceneConfig.npcs) {
+                sceneConfig.npcs.forEach(npc => {
+                    sceneInteractables.set(npc.id, {
+                        id: npc.id,
+                        type: 'npc',
+                        name: npc.name,
+                        position: npc.position,
+                        radius: npc.radius || 2.0,
+                        dialogueId: npc.dialogueId,
+                        data: npc.data || {}
+                    });
+                });
             }
+
+            this.interactableStates.set(code, sceneInteractables);
+            console.log(`[Lobby] Loaded ${sceneInteractables.size} interactables for lobby ${code}`);
         }
     }
 
@@ -430,6 +444,7 @@ class LobbyManager {
             const sceneConfig = getSceneConfig(currentScene);
             if (sceneConfig) {
                 console.log(`[LobbyManager] Sending scene config for ${currentScene} to ${socket.id}`);
+                console.log(`[LobbyManager] NPCs in config:`, sceneConfig.npcs ? sceneConfig.npcs.length : 0);
                 socket.emit('scene_config', {
                     sceneId: currentScene,
                     config: sceneConfig
@@ -836,6 +851,24 @@ class LobbyManager {
         this.playersInZone.delete(code); // Clear zone tracking
         this.sceneChangeTimers.delete(code);
 
+        // Load interactables for the new scene
+        const sceneInteractables = new Map();
+        if (sceneConfig && sceneConfig.npcs) {
+            sceneConfig.npcs.forEach(npc => {
+                sceneInteractables.set(npc.id, {
+                    id: npc.id,
+                    type: 'npc',
+                    name: npc.name,
+                    position: npc.position,
+                    radius: npc.radius || 2.0,
+                    dialogueId: npc.dialogueId,
+                    data: npc.data || {}
+                });
+            });
+        }
+        this.interactableStates.set(code, sceneInteractables);
+        console.log(`[LobbyManager] Loaded ${sceneInteractables.size} interactables for scene ${nextScene}`);
+
         // Load enemies and structures for the new scene
         this.loadEnemiesForScene(code, nextScene);
         this.loadStructuresForScene(code, nextScene);
@@ -1220,10 +1253,22 @@ class LobbyManager {
 
         // Execute Action
         if (interactable.type === 'npc') {
+            let dialogueText = interactable.data.dialogue;
+
+            // Fallback to dialogueId if no direct text
+            if (!dialogueText && interactable.dialogueId !== undefined && dialoguesData[interactable.dialogueId]) {
+                dialogueText = dialoguesData[interactable.dialogueId].data.dialogue;
+            }
+
+            // Default fallback
+            if (!dialogueText) {
+                dialogueText = ["Bonjour !"];
+            }
+
             socket.emit('interaction_response', {
                 type: 'dialogue',
                 name: interactable.name,
-                text: interactable.data.dialogue
+                text: dialogueText
             });
         }
         else if (interactable.type === 'chest') {

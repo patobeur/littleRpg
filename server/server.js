@@ -302,7 +302,7 @@ app.get('/api/natures', requireRole(['superAdmin']), (req, res) => {
                 id: key,
                 name: nature.name || key,
                 scale: nature.scale || 1,
-                radius: nature.radius || 2,
+                radius: nature.radius || 0.5,
                 fbx: nature.glb
             };
         });
@@ -313,6 +313,26 @@ app.get('/api/natures', requireRole(['superAdmin']), (req, res) => {
         res.status(500).json({ error: 'Failed to load natures' });
     }
 });
+
+// List NPCs
+app.get('/api/npcs', requireRole(['superAdmin']), (req, res) => {
+    const npcDir = path.join(__dirname, '..', 'public', 'npc');
+    if (!fs.existsSync(npcDir)) {
+        return res.json([]);
+    }
+    fs.readdir(npcDir, (err, files) => {
+        if (err) return res.status(500).json({ error: 'Failed to read npc directory' });
+        const npcs = files
+            .filter(file => file.endsWith('.fbx'))
+            .map(file => ({
+                id: file.replace('.fbx', ''),
+                name: file.replace('.fbx', ''),
+                scale: 0.01 // Default scale for FBX
+            }));
+        res.json(npcs);
+    });
+});
+
 
 // SCENARIO ROUTES
 // Note: These routes are publicly accessible for game use (dashboard)

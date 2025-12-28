@@ -30,6 +30,7 @@
             <button class="ribbon-tab" onclick="UI.switchTab('edit')">Edit</button>
             <button class="ribbon-tab" onclick="UI.switchTab('view')">View</button>
             <button class="ribbon-tab" onclick="UI.switchTab('lights')">Lights</button>
+            <button class="ribbon-tab" onclick="UI.switchTab('npc')">NPCs</button>
         </div>
 
         <!-- Panels -->
@@ -174,6 +175,23 @@
             </div>
         </div>
 
+        <!-- NPC TAB -->
+        <div id="ribbon-npc" class="ribbon-panel">
+            <div class="ribbon-group">
+                <div class="ribbon-group-content">
+                    <div class="ribbon-column">
+                        <select id="npcType" class="ribbon-input" style="width: 150px;">
+                            <option>Loading...</option>
+                        </select>
+                        <button class="ribbon-btn" onclick="addNPC(document.getElementById('npcType').value)">
+                            <span class="material-icons">person</span> Add NPC
+                        </button>
+                    </div>
+                </div>
+                <div class="ribbon-group-title">NPCs</div>
+            </div>
+        </div>
+
         <!-- EDIT TAB -->
         <div id="ribbon-edit" class="ribbon-panel">
             <div class="ribbon-group">
@@ -213,6 +231,25 @@
                     </div>
                 </div>
                 <div class="ribbon-group-title">Transform</div>
+            </div>
+
+            <!-- NPC Properties -->
+            <div id="edit-npc-properties" class="ribbon-group" style="display: none;">
+                <div class="ribbon-group-content">
+                    <div class="ribbon-column">
+                        <div class="ribbon-input-group">
+                            <span class="ribbon-label">Dialog ID</span>
+                            <input type="text" id="editDialogueId" class="ribbon-input" style="width: 80px;"
+                                placeholder="0">
+                        </div>
+                        <div class="ribbon-input-group">
+                            <span class="ribbon-label">Interact Rad</span>
+                            <input type="number" id="editInteractionRadius" class="ribbon-input" step="0.5" value="2"
+                                style="width: 60px;">
+                        </div>
+                    </div>
+                </div>
+                <div class="ribbon-group-title">NPC</div>
             </div>
 
             <!-- Light Properties (Hidden by default) -->

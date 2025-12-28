@@ -18,6 +18,7 @@ export class InteractableManager {
         // Clear existing
         this.interactables.forEach(i => {
             if (i.model) this.game.sceneManager.scene.remove(i.model);
+            if (i.indicator) this.game.sceneManager.scene.remove(i.indicator);
         });
         this.interactables.clear();
         this.interactableList = [];
@@ -31,12 +32,21 @@ export class InteractableManager {
                     // Try exact path from root if starts with /
                     const cleanPath = data.model.startsWith('/') ? data.model : `/${data.model}`;
 
+                    console.log(`[InteractableManager] Loading model: ${cleanPath}`);
+
                     model = await new Promise((resolve, reject) => {
-                        this.loader.load(cleanPath, resolve, undefined, reject);
+                        this.loader.load(cleanPath, (fbx) => {
+                            console.log(`[InteractableManager] Success loading ${cleanPath}`);
+                            resolve(fbx);
+                        }, undefined, (err) => {
+                            console.error(`[InteractableManager] Error loading ${cleanPath}:`, err);
+                            reject(err);
+                        });
                     });
-                    console.log(`[InteractableManager] Loaded model for ${data.id}`);
+                    console.log(`[InteractableManager] Assigned model for ${data.id}`);
                 } else {
                     // Placeholder Box
+                    console.warn(`[InteractableManager] No model path for ${data.id}, using box.`);
                     const geom = new THREE.BoxGeometry(1, 1, 1);
                     const mat = new THREE.MeshStandardMaterial({ color: 0xffff00 });
                     model = new THREE.Mesh(geom, mat);
@@ -90,7 +100,7 @@ export class InteractableManager {
                 this.interactableList.push(interactable);
 
             } catch (err) {
-                console.error(`[InteractableManager] Failed to load ${data.id}:`, err);
+                console.error(`[InteractableManager] Failed to load ${data.id}. Path: ${data.model}`, err);
 
                 // Fallback: Create indicator anyway so we can interact/debug
                 const indicator = this.createIndicator();
@@ -138,8 +148,9 @@ export class InteractableManager {
         let minDist = Infinity;
 
         for (const interactable of this.interactableList) {
+            const range = interactable.data.radius || this.interactionRange; // Use custom or default
             const dist = playerPos.distanceTo(interactable.position);
-            if (dist <= this.interactionRange && dist < minDist) {
+            if (dist <= range && dist < minDist) {
                 minDist = dist;
                 closest = interactable;
             }

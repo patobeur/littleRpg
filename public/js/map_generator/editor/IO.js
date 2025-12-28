@@ -56,6 +56,7 @@ export function saveMap() {
         enemies: [],
         roads: [],
         trees: [],
+        npcs: [],
         lights: [],
         sceneSettings: {
             bgColor: document.getElementById('bgColor')?.value || '#111111',
@@ -158,13 +159,20 @@ export function saveMap() {
                 type: natureType,  // Save the nature type
                 fbx: fbxFile       // Save the FBX filename
             });
-        } else if (type === 'light') {
             data.lights.push({
                 x: pos.x, y: pos.y, z: pos.z,
                 color: obj.userData.color,
                 distance: obj.userData.distance,
                 decay: obj.userData.decay,
                 intensity: obj.userData.intensity || 1
+            });
+        } else if (type === 'npc') {
+            data.npcs.push({
+                x: pos.x, y: pos.y, z: pos.z,
+                scale: scale,
+                npcType: obj.userData.npcType,
+                dialogueId: obj.userData.dialogueId,
+                interactionRadius: obj.userData.interactionRadius || 2.0
             });
         }
     });
@@ -357,12 +365,33 @@ function loadMapData(mapData) {
         updateEnvironment(settings);
     }
 
-    // Load Lights
-    if (mapData.lights) {
+    // Load Lights and NPCs (requiring Objects.js)
+    if (mapData.lights || mapData.npcs) {
         import('./Objects.js').then(m => {
-            mapData.lights.forEach(l => {
-                m.addPointLightAt(l.x, l.y, l.z, l.color, l.distance, l.decay, l.intensity || 1);
-            });
+            if (mapData.lights) {
+                mapData.lights.forEach(l => {
+                    m.addPointLightAt(l.x, l.y, l.z, l.color, l.distance, l.decay, l.intensity || 1);
+                });
+            }
+
+            if (mapData.npcs) {
+                mapData.npcs.forEach(n => {
+                    if (!n.npcType || n.npcType === 'undefined' || n.npcType === 'Loading...') {
+                        console.warn('Skipping invalid NPC:', n);
+                        return;
+                    }
+                    const obj = m.addNPC(n.npcType, n.x, n.z);
+                    if (n.scale) obj.scale.setScalar(n.scale);
+                    if (n.y !== undefined) obj.position.y = n.y;
+                    obj.userData.dialogueId = n.dialogueId;
+                    if (n.interactionRadius) {
+                        obj.userData.interactionRadius = n.interactionRadius;
+                        // Update visual ring
+                        const ring = obj.getObjectByName('InteractionRadius');
+                        if (ring) ring.scale.setScalar(n.interactionRadius / 2.0);
+                    }
+                });
+            }
         });
     }
 }

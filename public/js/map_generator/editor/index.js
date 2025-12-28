@@ -4,7 +4,7 @@ import { initThree, onWindowResize, updateEnvironment } from './Scene.js';
 import { initEvents } from './Input.js';
 import { state } from './State.js';
 import { TransformGizmo } from '../tools/Gizmo.js';
-import { addStructure, addSpawn, addEnemy, addNature, deleteSelected, addExit, addDefaultSpawnsAndExits, checkAndAddDefaultSpawnsAndExits, addPointLight } from './Objects.js';
+import { addStructure, addSpawn, addEnemy, addNature, addNPC, deleteSelected, addExit, addDefaultSpawnsAndExits, checkAndAddDefaultSpawnsAndExits, addPointLight } from './Objects.js';
 import { refreshMapList, saveMap, loadSelectedMap } from './IO.js';
 import { generateOrganicVillage } from '../procedural/index.js';
 import { refreshScenarioList, refreshScenarioMapSelect } from './Scenario.js';
@@ -43,6 +43,7 @@ function init() {
     window.addSpawn = addSpawn;
     window.addEnemy = addEnemy;
     window.addNature = addNature;
+    window.addNPC = addNPC; // Expose NPC function
     window.addExit = addExit;
     window.deleteSelected = deleteSelected;
     window.refreshMapList = refreshMapList;
@@ -63,6 +64,7 @@ function init() {
     refreshStructureList();
     refreshEnemyList();
     refreshNatureList();
+    refreshNPCList(); // New Refresh Call
 
     // Fetch Game Config
     fetch('/api/config/client')
@@ -179,6 +181,35 @@ function refreshNatureList() {
         .catch(err => {
             console.error('Failed to load natures:', err);
             selector.innerHTML = '<option value="tree">Tree</option>';
+        });
+}
+
+// Load available NPCs from server
+function refreshNPCList() {
+    const selector = document.getElementById('npcType');
+    if (!selector) return;
+
+    selector.innerHTML = '<option>Loading...</option>';
+
+    fetch('/api/npcs')
+        .then(r => r.json())
+        .then(npcs => {
+            selector.innerHTML = '';
+            if (npcs.length === 0) {
+                selector.innerHTML = '<option value="">No NPCs found</option>';
+                return;
+            }
+            npcs.forEach(npc => {
+                const opt = document.createElement('option');
+                opt.value = npc.id;
+                opt.innerText = npc.name;
+                selector.appendChild(opt);
+            });
+            console.log(`Loaded ${npcs.length} NPC types`);
+        })
+        .catch(err => {
+            console.error('Failed to load NPCs:', err);
+            selector.innerHTML = '<option value="Peter">Peter</option>';
         });
 }
 

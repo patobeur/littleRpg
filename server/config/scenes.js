@@ -7,6 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 const { SCENARIOS } = require('./scenarios');
+const npcDefinitions = require('../models/npcs'); // Import NPC definitions
 
 const SCENES = {};
 
@@ -103,6 +104,21 @@ try {
                             ...s,
                             id: s.id || `struct_${sceneId}_${i}`
                         })),
+                        npcs: (mapData.npcs || []).map((n, i) => {
+                            const def = (npcDefinitions && npcDefinitions.npcs) ? (npcDefinitions.npcs[n.npcType] || {}) : {};
+                            return {
+                                id: `npc_${sceneId}_${i}`,
+                                name: def.name || n.npcType,
+                                // Model path: Priority: Def.model -> /npc/Type.fbx
+                                model: def.model ? `/npc/${def.model}` : `/npc/${n.npcType}.fbx`,
+                                position: { x: n.x, y: n.y, z: n.z },
+                                scale: n.scale || def.scale || 1,
+                                dialogueId: n.dialogueId !== undefined ? n.dialogueId : def.dialogue_id,
+                                radius: n.interactionRadius || def.radius || 2.0,
+                                type: 'npc',
+                                data: def.data // Pass extra data like dialogue text
+                            };
+                        }),
                         roads: mapData.roads || [],
                         trees: mapData.trees || []
                     };

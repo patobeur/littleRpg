@@ -213,6 +213,14 @@ class GameEngine {
         const lobbyData = JSON.parse(sessionStorage.getItem('currentLobby'));
         const scenarioName = lobbyData ? lobbyData.scenarioName : '';
         this.uiManager.updateLocation(scenarioName, data.config.name);
+
+        // Load NPCs from scene config if not already loaded by handleSceneChange
+        if (data.config.npcs) {
+            console.log(`[GameEngine] updateSceneConfig received ${data.config.npcs.length} NPCs`);
+            this.entityManager.loadInteractables(data.config.npcs);
+        } else {
+            console.log(`[GameEngine] updateSceneConfig received 0 NPCs`);
+        }
     }
 
     handleSceneChange(data) {
@@ -256,6 +264,11 @@ class GameEngine {
             // Load structures for the new scene
             if (data.structures) {
                 this.entityManager.loadStructures(data.structures);
+            }
+
+            // Load NPCs as Interactables
+            if (data.npcs) {
+                this.entityManager.loadInteractables(data.npcs);
             }
 
             // Clear my zone state

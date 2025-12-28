@@ -58,8 +58,23 @@ export const UI = {
                 if (lDist) lDist.value = obj.userData.distance;
                 if (lDecay) lDecay.value = obj.userData.decay;
 
+                if (lDecay) lDecay.value = obj.userData.decay;
+
             } else {
                 if (lightProps) lightProps.style.display = 'none';
+            }
+
+            // NPC Properties
+            const npcProps = document.getElementById('edit-npc-properties');
+            if (obj.userData.type === 'npc') {
+                if (npcProps) npcProps.style.display = 'block';
+                const el = document.getElementById('editDialogueId');
+                if (el) el.value = obj.userData.dialogueId || 0;
+
+                const radEl = document.getElementById('editInteractionRadius');
+                if (radEl) radEl.value = obj.userData.interactionRadius || 2.0;
+            } else {
+                if (npcProps) npcProps.style.display = 'none';
             }
 
         } else {
@@ -71,6 +86,9 @@ export const UI = {
 
             const lightProps = document.getElementById('edit-light-properties');
             if (lightProps) lightProps.style.display = 'none';
+
+            const npcProps = document.getElementById('edit-npc-properties');
+            if (npcProps) npcProps.style.display = 'none';
         }
     },
 
@@ -137,6 +155,29 @@ export const UI = {
             const el = document.getElementById(id);
             if (el) el.addEventListener('input', updateLight);
         });
+
+        // NPC Property Updates
+        const updateNPC = () => {
+            const obj = state.selectedObject;
+            if (!obj || obj.userData.type !== 'npc') return;
+
+            const val = document.getElementById('editDialogueId').value;
+            obj.userData.dialogueId = val;
+
+            // Radius
+            const radVal = parseFloat(document.getElementById('editInteractionRadius').value) || 2.0;
+            obj.userData.interactionRadius = radVal;
+
+            // Visual Ring
+            const ring = obj.getObjectByName('InteractionRadius');
+            if (ring) {
+                ring.scale.setScalar(radVal / 2.0);
+            }
+        };
+        const dlgInput = document.getElementById('editDialogueId');
+        if (dlgInput) dlgInput.addEventListener('input', updateNPC);
+        const radInput = document.getElementById('editInteractionRadius');
+        if (radInput) radInput.addEventListener('input', updateNPC);
 
         // Environment
         const updateEnv = () => {
