@@ -20,8 +20,8 @@
     <!-- Hero Section -->
     <div class="dashboard-hero">
         <div class="container text-center">
-            <h1 id="welcome-message">Welcome, Hero!</h1>
-            <p class="text-muted">Select a character or create a new one</p>
+            <h1 id="welcome-message">Bienvenue, Héros !</h1>
+            <p class="text-muted">Sélectionnez un personnage ou créez-en un nouveau</p>
         </div>
     </div>
 
@@ -31,9 +31,9 @@
             <!-- Character Slots Section -->
             <div class="dashboard-section">
                 <div class="section-header">
-                    <h2 class="section-title">Your Characters</h2>
+                    <h2 class="section-title">Vos Personnages</h2>
                     <button class="btn btn-primary" id="create-game-btn" disabled>
-                        🎮 Create/Join Game
+                        🎮 Créer/Rejoindre Partie
                     </button>
                 </div>
 
@@ -51,18 +51,17 @@
     <div id="create-character-modal" class="modal-overlay hidden">
         <div class="modal">
             <button class="modal-close" id="close-modal">&times;</button>
-            <h2>Create New Character</h2>
+            <h2>Créer un Nouveau Personnage</h2>
 
             <form id="create-character-form">
                 <div class="form-group">
-                    <label for="character-name" class="form-label">Character Name</label>
-                    <input type="text" id="character-name" class="form-input" placeholder="Enter character name"
-                        required>
-                    <span class="form-help">2-20 characters</span>
+                    <label for="character-name" class="form-label">Nom du Personnage</label>
+                    <input type="text" id="character-name" class="form-input" placeholder="Entrer le nom" required>
+                    <span class="form-help">2-20 caractères</span>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Select Class</label>
+                    <label class="form-label">Choisir une Classe</label>
                     <div class="class-selection-grid">
                         <label class="class-option">
                             <input type="radio" name="charClass" value="Warrior" checked>
@@ -92,10 +91,10 @@
 
                 <div class="card-footer">
                     <button type="button" class="btn btn-secondary" id="cancel-btn">
-                        Cancel
+                        Annuler
                     </button>
                     <button type="submit" class="btn btn-primary">
-                        Create Character
+                        Créer Personnage
                     </button>
                 </div>
             </form>
@@ -106,11 +105,11 @@
     <div id="rename-character-modal" class="modal-overlay hidden">
         <div class="modal">
             <button class="modal-close" id="close-rename-modal">&times;</button>
-            <h2>Rename Character</h2>
+            <h2>Renommer Personnage</h2>
 
             <form id="rename-character-form">
                 <div class="form-group">
-                    <label for="new-character-name" class="form-label">New Name</label>
+                    <label for="new-character-name" class="form-label">Nouveau Nom</label>
                     <input type="text" id="new-character-name" class="form-input" required>
                 </div>
 
@@ -118,10 +117,10 @@
 
                 <div class="card-footer">
                     <button type="button" class="btn btn-secondary" id="cancel-rename-btn">
-                        Cancel
+                        Annuler
                     </button>
                     <button type="submit" class="btn btn-primary">
-                        Save Name
+                        Sauvegarder
                     </button>
                 </div>
             </form>
@@ -130,34 +129,45 @@
 
     <!-- Lobby Selection Modal -->
     <div id="lobby-selection-modal" class="modal-overlay hidden">
-        <div class="modal">
-            <button class="modal-close" id="close-lobby-modal">&times;</button>
-            <h2>Multiplayer Lobby</h2>
-            <p class="text-muted mb-4">Select an action to continue</p>
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h2>Salon Multijoueur</h2>
+                <button class="modal-close" id="close-lobby-modal">&times;</button>
+            </div>
+            <p class="text-muted mb-4 text-center">Sélectionnez une action pour continuer</p>
 
-            <div class="lobby-actions">
-                <div class="card p-4 text-center mb-3">
-                    <h3>👑 Create New Game</h3>
-                    <p class="mb-3">Start a new adventure and invite friends.</p>
+            <div class="lobby-actions-grid">
+                <!-- Create Game Card -->
+                <div class="lobby-card create-game-card">
+                    <div class="lobby-card-icon">👑</div>
+                    <h3>Créer une Partie</h3>
+                    <p class="text-sm text-muted">Commencez une nouvelle aventure et invitez des amis.</p>
 
-                    <div style="text-align: left; margin-bottom: 10px;">
-                        <label class="form-label">Select Scenario</label>
-                        <select id="scenario-select" class="form-input text-center">
-                            <option value="">Loading...</option>
+                    <div class="lobby-form-group">
+                        <label class="form-label">Choisir un Scénario</label>
+                        <select id="scenario-select" class="form-input">
+                            <option value="">Chargement...</option>
                         </select>
                     </div>
 
-                    <button id="create-game-btn-confirm" class="btn btn-primary w-full">Create & Play</button>
+                    <button id="create-game-btn-confirm" class="btn btn-primary btn-block">
+                        Créer & Jouer
+                    </button>
                 </div>
 
-                <div class="card p-4 mb-3">
-                    <h3>⚔️ Join Existing Game</h3>
-                    <div class="flex gap-2">
-                        <input type="text" id="lobby-code-input" class="form-input" placeholder="ENTER CODE"
-                            maxlength="6"
-                            style="text-transform: uppercase; text-align: center; font-size: 1.5rem; letter-spacing: 2px;">
-                        <button class="btn btn-primary" id="join-lobby-btn">Join</button>
+                <!-- Join Game Card -->
+                <div class="lobby-card join-game-card">
+                    <div class="lobby-card-icon">⚔️</div>
+                    <h3>Rejoindre une Partie</h3>
+                    <p class="text-sm text-muted">Entrez le code pour rejoindre vos amis.</p>
+
+                    <div class="lobby-form-group">
+                        <label class="form-label">Code du Salon</label>
+                        <input type="text" id="lobby-code-input" class="form-input code-input" placeholder="CODE"
+                            maxlength="6">
                     </div>
+
+                    <button class="btn btn-secondary btn-block" id="join-lobby-btn">Rejoindre</button>
                 </div>
             </div>
         </div>

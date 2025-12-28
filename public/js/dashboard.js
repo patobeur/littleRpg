@@ -21,7 +21,7 @@
 
             // Update welcome message
             document.getElementById('welcome-message').textContent =
-                `Welcome, ${currentUser.username}!`;
+                `Bienvenue, ${currentUser.username} !`;
 
             // Render character slots
             renderCharacterSlots();
@@ -56,26 +56,30 @@
             div.className = 'character-slot filled';
             const classImg = character.class === 'Warrior' ? 'tank.png' : (character.class === 'Mage' ? 'mage.png' : 'healer.png');
             div.innerHTML = `
-        <div class="character-name">${character.name}</div>
-        <div class="flex items-center gap-4 mb-4">
-            <img src="/medias/archetypes/${classImg}" style="width: 60px; height: 60px; border-radius: 8px; border: 1px solid var(--color-border);">
-            <div class="text-left">
-                <div class="badge badge-primary">${getClassName(character.class)}</div>
-                <div class="text-xs text-muted mt-1">Level ${character.level}</div>
+        <div class="slot-header">
+            <img class="slot-image" src="/medias/archetypes/${classImg}" alt="${character.class}">
+            <div class="slot-info">
+                <div class="character-name">${character.name}</div>
+                <div class="slot-meta">
+                    <span class="badge badge-primary">${getClassName(character.class)}</span>
+                    <span class="text-xs text-muted">Niv. ${character.level}</span>
+                </div>
             </div>
         </div>
-        <div class="grid grid-cols-2 gap-2 text-xs text-left mb-4 w-full">
-            <div>💪 Str: ${character.strength}</div>
-            <div>🧠 Int: ${character.intelligence}</div>
-            <div>⚡ Dex: ${character.dexterity}</div>
-            <div>❤️ HP: ${character.max_hp}</div>
+        
+        <div class="slot-stats-grid">
+            <div class="stat-entry"><span class="stat-icon">💪</span> <span class="stat-val">${character.strength}</span></div>
+            <div class="stat-entry"><span class="stat-icon">🧠</span> <span class="stat-val">${character.intelligence}</span></div>
+            <div class="stat-entry"><span class="stat-icon">⚡</span> <span class="stat-val">${character.dexterity}</span></div>
+            <div class="stat-entry"><span class="stat-icon">❤️</span> <span class="stat-val">${character.max_hp}</span></div>
         </div>
+
         <div class="character-actions">
           <button class="btn btn-sm btn-secondary rename-btn" data-character-id="${character.id}">
-            Rename
+            Renommer
           </button>
           <button class="btn btn-sm btn-danger delete-btn" data-character-id="${character.id}">
-            Delete
+            Supprimer
           </button>
         </div>
       `;
@@ -111,7 +115,7 @@
             div.className = 'character-slot empty';
             div.innerHTML = `
         <div style="font-size: 3rem; margin-bottom: 1rem;">+</div>
-        <div style="color: var(--color-text-muted);">Create Character</div>
+        <div style="color: var(--color-text-muted);">Créer Personnage</div>
       `;
             div.addEventListener('click', () => openCreateModal(slotIndex));
         }
@@ -165,12 +169,12 @@
             await API.characters.create(name, slotIndex, charClass);
 
             closeModal();
-            showSuccess('Character created successfully!', 'success-message');
+            showSuccess('Personnage créé avec succès !', 'success-message');
 
             // Reload dashboard
             await loadDashboard();
         } catch (error) {
-            showError(error.message || 'Failed to create character');
+            showError(error.message || 'Échec de la création du personnage');
         } finally {
             setLoading(submitBtn, false);
         }
@@ -184,10 +188,10 @@
             setLoading(submitBtn, true);
             await API.characters.rename(id, name);
             closeRenameModal();
-            showSuccess('Character renamed successfully!', 'success-message');
+            showSuccess('Personnage renommé avec succès !', 'success-message');
             await loadDashboard();
         } catch (error) {
-            alert(error.message || 'Failed to rename character');
+            alert(error.message || 'Échec du renommage du personnage');
         } finally {
             setLoading(submitBtn, false);
         }
@@ -195,7 +199,7 @@
 
     // Delete character
     async function deleteCharacter(characterId) {
-        if (!confirm('Are you sure you want to delete this character?')) {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer ce personnage ?')) {
             return;
         }
 
@@ -205,12 +209,12 @@
 
             await API.characters.delete(characterId);
 
-            showSuccess('Character deleted successfully!', 'success-message');
+            showSuccess('Personnage supprimé avec succès !', 'success-message');
 
             // Reload dashboard
             await loadDashboard();
         } catch (error) {
-            showError(error.message || 'Failed to delete character');
+            showError(error.message || 'Échec de la suppression du personnage');
         }
     }
 
@@ -269,7 +273,7 @@
 
     document.getElementById('create-game-btn').addEventListener('click', () => {
         if (!selectedCharacter) {
-            alert('Please select a character first!');
+            alert('Veuillez d\'abord sélectionner un personnage !');
             return;
         }
         document.getElementById('lobby-selection-modal').classList.remove('hidden');
@@ -297,12 +301,12 @@
 
             if (scenarios.length === 0) {
                 const opt = document.createElement('option');
-                opt.innerText = "No scenarios found";
+                opt.innerText = "Aucun scénario trouvé";
                 select.appendChild(opt);
             }
         } catch (e) {
             console.error("Failed to load scenarios", e);
-            document.getElementById('scenario-select').innerHTML = '<option>Error loading scenarios</option>';
+            document.getElementById('scenario-select').innerHTML = '<option>Erreur de chargement des scénarios</option>';
         }
     }
 
@@ -311,7 +315,7 @@
     document.getElementById('create-game-btn-confirm').addEventListener('click', () => {
         const scenarioId = document.getElementById('scenario-select').value;
         if (!scenarioId) {
-            alert("Please select a scenario");
+            alert("Veuillez sélectionner un scénario");
             return;
         }
 
@@ -325,7 +329,7 @@
     document.getElementById('join-lobby-btn').addEventListener('click', () => {
         const code = document.getElementById('lobby-code-input').value.trim().toUpperCase();
         if (!code || code.length !== 6) {
-            alert('Please enter a valid 6-character code.');
+            alert('Veuillez entrer un code valide de 6 caractères.');
             return;
         }
 

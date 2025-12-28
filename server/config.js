@@ -70,6 +70,11 @@ const config = {
         nameMaxLength: 20,
     },
 
+    // Game settings
+    gameSettings: {
+        maxLobbyPlayers: 3,
+    },
+
     // Default client settings
     clientDefaults: {
         invertMouseY: true,

@@ -134,7 +134,10 @@ app.use('/api/stats', statsRoutes);
 
 // Client Configuration Endpoint
 app.get('/api/config/client', (req, res) => {
-    res.json(config.clientDefaults || {});
+    res.json({
+        ...config.clientDefaults,
+        gameSettings: config.gameSettings
+    });
 });
 
 // Protected Admin Views

@@ -13,6 +13,7 @@ const MessageBatcher = require('./utils/MessageBatcher');
 const SpatialGrid = require('./utils/SpatialGrid');
 const ChatHandler = require('./chat/ChatHandler');
 const interactablesData = require('./models/interactables');
+const config = require('./config');
 
 class LobbyManager {
     constructor(io) {
@@ -77,6 +78,8 @@ class LobbyManager {
                 name: character.name,
                 characterId: character.id,
                 class: character.class,
+                level: character.level || 1,
+                experience: character.experience || 0,
                 ready: false,
                 isHost: true
             }],
@@ -98,7 +101,7 @@ class LobbyManager {
             return socket.emit('error', { message: 'Lobby not found' });
         }
 
-        if (lobby.players.length >= 4) {
+        if (lobby.players.length >= config.gameSettings.maxLobbyPlayers) {
             return socket.emit('error', { message: 'Lobby is full' });
         }
 
@@ -107,6 +110,8 @@ class LobbyManager {
             name: character.name,
             characterId: character.id,
             class: character.class,
+            level: character.level || 1,
+            experience: character.experience || 0,
             ready: false,
             isHost: false
         };
@@ -186,6 +191,8 @@ class LobbyManager {
                         name: p.name,
                         characterId: p.characterId,
                         class: p.class,
+                        level: p.level || 1,
+                        experience: p.experience || 0,
                         scale: baseScale,
                         radius: baseRadius * baseScale
                     };
@@ -447,7 +454,9 @@ class LobbyManager {
                     health: stats.health,
                     maxHealth: stats.maxHealth,
                     mana: stats.mana,
-                    maxMana: stats.maxMana
+                    maxMana: stats.maxMana,
+                    level: lobby.players.find(p => p.characterId === characterId)?.level || 1,
+                    experience: lobby.players.find(p => p.characterId === characterId)?.experience || 0
                 });
 
                 // Also broadcast to other players in the lobby
@@ -471,7 +480,9 @@ class LobbyManager {
                             health: stats.health,
                             maxHealth: stats.maxHealth,
                             mana: stats.mana,
-                            maxMana: stats.maxMana
+                            maxMana: stats.maxMana,
+                            level: p.level || 1,
+                            experience: p.experience || 0
                         });
                     }
                 });

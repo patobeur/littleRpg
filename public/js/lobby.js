@@ -18,7 +18,7 @@
         const lobbyData = sessionStorage.getItem('currentLobby');
 
         if (!charData) {
-            alert('No character selected!');
+            alert('Aucun personnage sélectionné !');
             window.location.href = '/dashboard.html';
             return;
         }
@@ -51,46 +51,71 @@
         const listContainer = document.getElementById('player-list');
         listContainer.innerHTML = '';
 
+        // Calculate allReady and isHost for the Start Button logic
+        const allReady = currentLobby.players.every(p => p.ready);
+        const amIHost = currentLobby.host === socket.id;
+
         currentLobby.players.forEach(player => {
             const playerEl = document.createElement('div');
             playerEl.className = `player-item ${player.isHost ? 'is-host' : ''}`;
             playerEl.id = `player-${player.id}`;
 
+            const isMe = player.id === socket.id;
+            let actionHtml = '';
+
+            // Add Buttons for current user
+            if (isMe) {
+                // Add Start Button if Host (before Ready button)
+                if (amIHost) {
+                    actionHtml += `
+                        <button class="btn btn-primary btn-sm mr-2" id="my-start-btn" ${!allReady ? 'disabled' : ''} style="margin-right: 5px;">
+                            🚩 Lancer
+                        </button>
+                     `;
+                }
+
+                // Add Ready Button for current user
+                actionHtml += `
+                    <button class="btn btn-sm ${isReady ? 'btn-secondary' : 'btn-primary'} mr-2" id="my-ready-btn" style="margin-right: 10px;">
+                        ${isReady ? '❌ Pas Prêt' : '⚔️ Prêt !'}
+                    </button>
+                `;
+            }
+
             playerEl.innerHTML = `
                 <div class="player-info">
                     <div style="font-size: 1.5rem;">${player.isHost ? '👑' : '👤'}</div>
                     <div>
-                        <div class="font-bold">${escapeHtml(player.name)} ${player.id === socket.id ? '(You)' : ''}</div>
-                        <div class="text-xs text-muted">${player.isHost ? 'Host' : 'Comrade'}</div>
+                        <div class="font-bold">${escapeHtml(player.name)} ${isMe ? '(Vous)' : ''}</div>
+                        <div class="text-xs text-muted">${player.isHost ? 'Hôte' : 'Compagnon'}</div>
                     </div>
                 </div>
-                <div class="player-status ${player.ready ? 'status-ready' : 'status-waiting'}">
-                    ${player.ready ? 'Ready' : 'Waiting...'}
+                <div style="display: flex; align-items: center;">
+                    ${actionHtml}
+                    <div class="player-status ${player.ready ? 'status-ready' : 'status-waiting'}">
+                        ${player.ready ? 'Prêt' : 'En attente...'}
+                    </div>
                 </div>
             `;
             listContainer.appendChild(playerEl);
         });
 
-        // Update my ready button state
-        const readyBtn = document.getElementById('ready-btn');
-        if (isReady) {
-            readyBtn.textContent = '❌ UNREADY';
-            readyBtn.classList.replace('btn-primary', 'btn-secondary');
-        } else {
-            readyBtn.textContent = '⚔️ I\'M READY !';
-            readyBtn.classList.replace('btn-secondary', 'btn-primary');
+        // Attach listener to the new dynamic ready button
+        const myReadyBtn = document.getElementById('my-ready-btn');
+        if (myReadyBtn) {
+            myReadyBtn.onclick = () => {
+                isReady = !isReady;
+                socket.emit('ready_status', { ready: isReady });
+                renderLobby();
+            };
         }
 
-        // Show start button if I'm host and everyone is ready
-        const startBtn = document.getElementById('start-game-btn');
-        const isHost = currentLobby.host === socket.id;
-        const allReady = currentLobby.players.every(p => p.ready);
-
-        if (isHost) {
-            startBtn.classList.remove('hidden');
-            startBtn.disabled = !allReady;
-        } else {
-            startBtn.classList.add('hidden');
+        // Attach listener to the new dynamic start button
+        const myStartBtn = document.getElementById('my-start-btn');
+        if (myStartBtn) {
+            myStartBtn.onclick = () => {
+                socket.emit('start_game');
+            };
         }
     }
 
@@ -122,6 +147,10 @@
         const player = currentLobby.players.find(p => p.id === playerId);
         if (player) {
             player.ready = ready;
+            if (playerId === socket.id) {
+                // Ensure local state matches server state if triggered externally (though rare for ready)
+                isReady = ready;
+            }
             renderLobby();
         }
     });
@@ -137,7 +166,7 @@
         currentLobby.host = hostId;
         currentLobby.players.forEach(p => p.isHost = (p.id === hostId));
         renderLobby();
-        addChatMessage('System', `New host assigned: ${escapeHtml(currentLobby.players.find(p => p.id === hostId)?.name)}`);
+        addChatMessage('Système', `Nouvel hôte assigné : ${escapeHtml(currentLobby.players.find(p => p.id === hostId)?.name)}`);
     });
 
     socket.on('chat_message', (data) => {
@@ -170,11 +199,7 @@
     }
 
     // Event listeners
-    document.getElementById('ready-btn').addEventListener('click', () => {
-        isReady = !isReady;
-        socket.emit('ready_status', { ready: isReady });
-        renderLobby();
-    });
+    /* Removed global ready-btn listener as it is now dynamic */
 
     document.getElementById('leave-lobby-btn').addEventListener('click', () => {
         sessionStorage.removeItem('currentLobby');

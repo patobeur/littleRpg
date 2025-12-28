@@ -16,52 +16,64 @@
 <body class="dashboard-layout">
     <!-- Navigation injected by nav.js -->
 
-    <div class="container py-8">
-        <div class="card max-w-2xl mx-auto shadow-2xl bg-opacity-90">
-            <div class="text-center mb-8">
-                <h1 class="text-4xl font-bold mb-2">Adventure Lobby</h1>
-                <p class="text-muted">Waiting for players to get ready...</p>
-                <div class="divider"></div>
+    <div class="container py-4"> <!-- Reduced padding -->
+        <div class="card max-w-4xl mx-auto shadow-2xl bg-opacity-90"> <!-- Increased max-width -->
 
-                <div class="mb-6">
-                    <span class="text-sm text-muted uppercase tracking-widest">Lobby Code</span>
-                    <div id="lobby-code" class="lobby-code-display">------</div>
-                    <p class="text-sm text-accent">Share this code with your friends!</p>
+            <!-- Sticky Action Header -->
+            <div
+                class="lobby-header-actions mb-6 p-4 rounded bg-surface border border-color-border flex justify-between items-center sticky top-20 z-10 shadow-lg">
+                <div class="flex items-center gap-4">
+                    <h1 class="text-2xl font-bold m-0">Lobby</h1>
+                    <div id="lobby-code"
+                        class="lobby-code-badge text-xl font-mono bg-bg-tertiary px-3 py-1 rounded border border-accent-primary text-accent-primary">
+                        ------</div>
                 </div>
-            </div>
 
-            <div class="section-header">
-                <h2 class="section-title">Players (<span id="player-count">0</span>/4)</h2>
-            </div>
-
-            <div id="player-list" class="player-list mb-8">
-                <!-- Players will be rendered here -->
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="chat-container mb-6">
-                <div id="chat-messages" class="chat-messages mb-4">
-                    <div class="text-xs text-center text-muted">System: Welcome to the lobby!</div>
-                </div>
                 <div class="flex gap-2">
-                    <input type="text" id="chat-input" class="form-input" placeholder="Type a message..."
-                        maxlength="200">
-                    <button class="btn btn-primary" id="send-chat-btn">Send</button>
+                    <!-- Buttons are inside player cards now -->
+                    <button class="btn btn-primary hidden" id="start-game-btn">
+                        🚩 LANCER MISSION
+                    </button>
                 </div>
             </div>
 
-            <div class="card-footer justify-between items-center">
-                <button class="btn btn-secondary" id="leave-lobby-btn">
-                    🚪 Leave
-                </button>
-                <button class="btn btn-primary btn-lg" id="ready-btn">
-                    ⚔️ I'M READY !
-                </button>
-                <button class="btn btn-primary btn-lg hidden" id="start-game-btn">
-                    🚩 START MISSION
-                </button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Left Column: Players -->
+                <div class="lobby-section flex flex-col">
+                    <div class="section-header mb-2">
+                        <h2 class="section-title text-xl">Vos compagnons de route arrivent... (<span
+                                id="player-count">0</span>/3)</h2>
+                    </div>
+                    <div id="player-list" class="player-list h-64 overflow-y-auto pr-2 custom-scrollbar mb-2">
+                        <!-- Players will be rendered here -->
+                    </div>
+                    <div class="flex justify-end">
+                        <button class="btn btn-secondary btn-sm" id="leave-lobby-btn">
+                            🚪 Quitter
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Chat & Info -->
+                <div class="lobby-section flex flex-col h-full">
+                    <div class="section-header mb-4">
+                        <h2 class="section-title text-xl">Chat d'Escouade</h2>
+                    </div>
+
+                    <div class="chat-container flex-1 flex flex-col mb-0" style="min-height: 250px;">
+                        <div id="chat-messages"
+                            class="chat-messages flex-1 overflow-y-auto mb-4 p-2 bg-bg-tertiary rounded">
+                            <div class="text-xs text-center text-muted">Système: Bienvenue dans le lobby !</div>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="chat-input" class="form-input" placeholder="Message..."
+                                maxlength="200">
+                            <button class="btn btn-primary" id="send-chat-btn">Envoyer</button>
+                        </div>
+                    </div>
+                </div>
             </div>
+
         </div>
     </div>
 
