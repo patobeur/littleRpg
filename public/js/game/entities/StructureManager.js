@@ -26,14 +26,28 @@ export class StructureManager {
 
                 // Create a container group to match Editor logic
                 const group = new THREE.Group();
-                // FIXE: Force Y=0 (Editor logic) - structDef.position.y peut être négatif
-                group.position.set(structDef.position.x, 0, structDef.position.z);
+
+                // Handle flat coords (from scenes.js) or nested position (legacy)
+                const x = structDef.x !== undefined ? structDef.x : (structDef.position?.x || 0);
+                const z = structDef.z !== undefined ? structDef.z : (structDef.position?.z || 0);
+
+                // FIXE: Force Y=0 (Editor logic)
+                group.position.set(x, 0, z);
 
                 const finalScale = structDef.scale || 1;
                 // Apply intrinsic rotation/scale to the model
                 fbx.scale.setScalar(finalScale);
                 // Rotation -90° X pour tous les FBX (comme dans l'éditeur)
                 fbx.rotation.x = -Math.PI / 2;
+
+                // Apply World Rotation (Y-axis)
+                // New format: 'rot' (radians)
+                // Legacy format: 'rotation.z' (degrees, mapped to Y)
+                if (structDef.rot !== undefined) {
+                    group.rotation.y = structDef.rot;
+                } else if (structDef.rotation && structDef.rotation.z !== undefined) {
+                    group.rotation.y = THREE.MathUtils.degToRad(structDef.rotation.z);
+                }
 
                 // Add shadow props
                 fbx.traverse(child => {

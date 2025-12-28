@@ -489,6 +489,11 @@ class LobbyManager {
             }
         } else {
             console.warn(`[LobbyManager] Lobby ${code} NOT found in handleJoinGame`);
+            socket.emit('join_game_rejected', {
+                reason: 'lobby_not_found',
+                message: 'La partie a expiré ou n\'existe plus.',
+                redirect: '/dashboard.html'
+            });
         }
     }
 

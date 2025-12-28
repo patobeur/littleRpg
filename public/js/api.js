@@ -8,6 +8,7 @@ const API = {
                     'Content-Type': 'application/json',
                     ...options.headers,
                 },
+                cache: 'no-store', // Prevent caching of API responses
                 ...options,
             });
 

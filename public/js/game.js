@@ -192,6 +192,10 @@ class GameEngine {
         // Apply Ambiance
         if (data.config.scene) {
             this.sceneManager.updateAmbiance(data.config.scene);
+            // Load Point Lights if available
+            if (data.config.lights && this.sceneManager.ambianceManager) {
+                this.sceneManager.ambianceManager.loadLights(data.config.lights);
+            }
         }
 
         // Update map bounds for collision

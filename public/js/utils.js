@@ -123,7 +123,7 @@ async function checkAuth() {
 async function protectPage() {
     const isAuthenticated = await checkAuth();
     if (!isAuthenticated) {
-        redirectTo('/');
+        redirectTo('/login.html');
     }
 }
 

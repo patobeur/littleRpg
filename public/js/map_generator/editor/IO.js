@@ -56,13 +56,20 @@ export function saveMap() {
         enemies: [],
         roads: [],
         trees: [],
+        lights: [],
         sceneSettings: {
             bgColor: document.getElementById('bgColor')?.value || '#111111',
             fogColor: document.getElementById('fogColor')?.value || '#111111',
             fogNear: parseFloat(document.getElementById('fogNear')?.value) || 20,
             fogFar: parseFloat(document.getElementById('fogFar')?.value) || 100,
             ambColor: document.getElementById('ambColor')?.value || '#ffffff',
-            ambInt: parseFloat(document.getElementById('ambInt')?.value) || 0.6
+            ambInt: parseFloat(document.getElementById('ambInt')?.value) || 0.6,
+            // Sun Settings
+            sunColor: document.getElementById('sunColor')?.value,
+            sunInt: parseFloat(document.getElementById('sunInt')?.value),
+            sunX: parseFloat(document.getElementById('sunX')?.value),
+            sunY: parseFloat(document.getElementById('sunY')?.value),
+            sunZ: parseFloat(document.getElementById('sunZ')?.value)
         }
     };
 
@@ -110,7 +117,8 @@ export function saveMap() {
                 type: type,
                 x: pos.x, y: pos.y, z: pos.z,
                 scale: scale,
-                rotation: { z: THREE.MathUtils.radToDeg(rot.y) } // Save Y rot as Z for legacy compat or simplified
+                rot: rot.y, // Save Y rotation in radians
+                rotation: { z: THREE.MathUtils.radToDeg(rot.y) } // Save Y rot as Z for legacy compat
             });
         } else if (type === 'spawn') {
             spawnIndex++; // Increment index for each spawn
@@ -149,6 +157,14 @@ export function saveMap() {
                 scale: scale,
                 type: natureType,  // Save the nature type
                 fbx: fbxFile       // Save the FBX filename
+            });
+        } else if (type === 'light') {
+            data.lights.push({
+                x: pos.x, y: pos.y, z: pos.z,
+                color: obj.userData.color,
+                distance: obj.userData.distance,
+                decay: obj.userData.decay,
+                intensity: obj.userData.intensity || 1
             });
         }
     });
@@ -323,7 +339,23 @@ function loadMapData(mapData) {
         if (document.getElementById('ambColor')) document.getElementById('ambColor').value = settings.ambColor || '#ffffff';
         if (document.getElementById('ambInt')) document.getElementById('ambInt').value = settings.ambInt || 0.6;
 
+        // Sun
+        if (document.getElementById('sunColor')) document.getElementById('sunColor').value = settings.sunColor || '#ffffff';
+        if (document.getElementById('sunInt')) document.getElementById('sunInt').value = settings.sunInt !== undefined ? settings.sunInt : 1;
+        if (document.getElementById('sunX')) document.getElementById('sunX').value = settings.sunX !== undefined ? settings.sunX : 50;
+        if (document.getElementById('sunY')) document.getElementById('sunY').value = settings.sunY !== undefined ? settings.sunY : 100;
+        if (document.getElementById('sunZ')) document.getElementById('sunZ').value = settings.sunZ !== undefined ? settings.sunZ : 50;
+
         // Apply to scene
         updateEnvironment(settings);
+    }
+
+    // Load Lights
+    if (mapData.lights) {
+        import('./Objects.js').then(m => {
+            mapData.lights.forEach(l => {
+                m.addPointLightAt(l.x, l.y, l.z, l.color, l.distance, l.decay, l.intensity || 1);
+            });
+        });
     }
 }

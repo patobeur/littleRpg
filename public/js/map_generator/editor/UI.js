@@ -28,10 +28,7 @@ export const UI = {
         if (obj) {
             info.innerText = `${obj.userData.type} (${obj.userData.id})`;
 
-            // Auto-switch to Edit tab if desired?
-            // UI.switchTab('edit'); 
-
-            // Update Input Fields
+            // Update Transform Inputs
             const posX = document.getElementById('posX');
             const posZ = document.getElementById('posZ');
             const rotY = document.getElementById('rotY');
@@ -40,13 +37,38 @@ export const UI = {
             if (posX) posX.value = obj.position.x.toFixed(2);
             if (posZ) posZ.value = obj.position.z.toFixed(2);
             if (rotY) rotY.value = THREE.MathUtils.radToDeg(obj.rotation.y).toFixed(2);
-            if (scale) scale.value = obj.scale.x.toFixed(2); // Assuming uniform scale
+            if (scale) scale.value = obj.scale.x.toFixed(2);
+
+            // Light Properties
+            const lightProps = document.getElementById('edit-light-properties');
+            if (obj.userData.type === 'light' && obj.userData.lightType === 'point') {
+                if (lightProps) lightProps.style.display = 'block';
+
+                // Populate Inputs
+                const colorHex = '#' + new THREE.Color(obj.userData.color).getHexString();
+                const lColor = document.getElementById('editLightColor');
+                const lInt = document.getElementById('editLightInt');
+                const lDist = document.getElementById('editLightDist');
+                const lDecay = document.getElementById('editLightDecay');
+
+                if (lColor) lColor.value = colorHex;
+                if (lInt) lInt.value = obj.userData.intensity;
+                if (lDist) lDist.value = obj.userData.distance;
+                if (lDecay) lDecay.value = obj.userData.decay;
+
+            } else {
+                if (lightProps) lightProps.style.display = 'none';
+            }
+
         } else {
             info.innerText = "No Selection";
             document.getElementById('posX').value = '';
             document.getElementById('posZ').value = '';
             document.getElementById('rotY').value = '';
             document.getElementById('scale').value = '';
+
+            const lightProps = document.getElementById('edit-light-properties');
+            if (lightProps) lightProps.style.display = 'none';
         }
     },
 
@@ -73,6 +95,45 @@ export const UI = {
             if (el) el.addEventListener('change', updateTransform);
         });
 
+        // Light Property Updates
+        const updateLight = () => {
+            const obj = state.selectedObject;
+            if (!obj || obj.userData.type !== 'light') return;
+
+            const colorInput = document.getElementById('editLightColor').value;
+            const intensity = parseFloat(document.getElementById('editLightInt').value) || 0;
+            const distance = parseFloat(document.getElementById('editLightDist').value) || 0;
+            const decay = parseFloat(document.getElementById('editLightDecay').value) || 0;
+
+            const colorInt = new THREE.Color(colorInput).getHex();
+
+            // Update UserData (for save)
+            obj.userData.color = colorInt;
+            obj.userData.intensity = intensity;
+            obj.userData.distance = distance;
+            obj.userData.decay = decay;
+
+            // Update Actual Light Object
+            const light = obj.children.find(c => c.name === 'LightSource');
+            if (light) {
+                light.color.setHex(colorInt);
+                light.intensity = intensity;
+                light.distance = distance;
+                light.decay = decay;
+            }
+
+            // Update Helper Visual
+            const helper = obj.children.find(c => c.name === 'LightHelper');
+            if (helper) {
+                helper.material.color.setHex(colorInt);
+            }
+        };
+
+        ['editLightColor', 'editLightInt', 'editLightDist', 'editLightDecay'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', updateLight);
+        });
+
         // Environment
         const updateEnv = () => {
             if (!updateEnvCallback) return;
@@ -82,17 +143,20 @@ export const UI = {
                 fogNear: document.getElementById('fogNear').value,
                 fogFar: document.getElementById('fogFar').value,
                 ambColor: document.getElementById('ambColor').value,
-                ambInt: document.getElementById('ambInt').value
+                ambInt: document.getElementById('ambInt').value,
+                sunColor: document.getElementById('sunColor')?.value,
+                sunInt: document.getElementById('sunInt')?.value,
+                sunX: document.getElementById('sunX')?.value,
+                sunY: document.getElementById('sunY')?.value,
+                sunZ: document.getElementById('sunZ')?.value
             };
             updateEnvCallback(settings);
         };
 
-        ['bgColor', 'fogColor', 'fogNear', 'fogFar', 'ambColor', 'ambInt'].forEach(id => {
+        ['bgColor', 'fogColor', 'fogNear', 'fogFar', 'ambColor', 'ambInt', 'sunColor', 'sunInt', 'sunX', 'sunY', 'sunZ'].forEach(id => {
             const el = document.getElementById(id);
             if (el) {
                 el.addEventListener('input', updateEnv);
-                // Trigger initial update? 
-                // Maybe better to wait for Scene init or call manually.
             }
         });
 

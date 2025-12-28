@@ -1,5 +1,12 @@
 // Homepage JavaScript - Interactive elements and smooth scrolling
 
+// Check if user is already logged in
+(async function () {
+    if (typeof redirectIfAuthenticated !== 'undefined') {
+        await redirectIfAuthenticated();
+    }
+})();
+
 // Configuration
 const HERO_ROTATION_INTERVAL = 8000; // milliseconds (adjustable)
 

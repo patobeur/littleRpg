@@ -88,5 +88,45 @@ export class AmbianceManager {
                 if (config.ambInt !== undefined) amb.intensity = parseFloat(config.ambInt);
             }
         }
+
+        // Sun Settings
+        const dir = this.scene.children.find(c => c.isDirectionalLight);
+        if (dir) {
+            if (config.sunColor) dir.color = new THREE.Color(config.sunColor);
+            if (config.sunInt !== undefined) dir.intensity = parseFloat(config.sunInt);
+            if (config.sunPos) {
+                dir.position.set(config.sunPos.x, config.sunPos.y, config.sunPos.z);
+            }
+        }
+    }
+
+    loadLights(lightsData) {
+        // Clear existing map point lights
+        // Iterate backwards to safely remove
+        for (let i = this.scene.children.length - 1; i >= 0; i--) {
+            const child = this.scene.children[i];
+            if (child.isPointLight && child.userData.isMapLight) {
+                this.scene.remove(child);
+            }
+        }
+
+        if (!lightsData) return;
+
+        lightsData.forEach(l => {
+            const color = l.color !== undefined ? l.color : 0xffaa00;
+            const distance = l.distance !== undefined ? l.distance : 15;
+            const decay = l.decay !== undefined ? l.decay : 2;
+
+            const light = new THREE.PointLight(color, 1, distance, decay);
+            light.position.set(l.x, l.y, l.z);
+            light.userData.isMapLight = true;
+            // Shadow casting for point lights is expensive, enable if needed
+            // light.castShadow = true; 
+
+            this.scene.add(light);
+        });
+
+        console.log(`[AmbianceManager] Loaded ${lightsData.length} point lights`);
     }
 }
+

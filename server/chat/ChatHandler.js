@@ -3,6 +3,7 @@
  * Gère la réception, filtrage et diffusion des messages de chat
  */
 
+const Logger = require('../utils/logger');
 const { filterLocalChat, filterGuildChat, filterGlobalChat } = require('./ChatChannelFilter');
 
 class ChatHandler {
@@ -72,7 +73,7 @@ class ChatHandler {
             timestamp: now
         }, characterId);
 
-        console.log(`[ChatHandler] Message de ${player.name} sur ${channel}: ${cleanMessage}`);
+        Logger.chat(`${channel}] ${player.name}`, cleanMessage);
     }
 
     /**

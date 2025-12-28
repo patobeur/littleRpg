@@ -83,6 +83,16 @@ export function updateEnvironment(settings) {
         if (settings.ambColor) amb.color = new THREE.Color(settings.ambColor);
         if (settings.ambInt !== undefined) amb.intensity = parseFloat(settings.ambInt);
     }
+
+    const dir = state.scene.children.find(c => c.isDirectionalLight);
+    if (dir) {
+        if (settings.sunColor) dir.color = new THREE.Color(settings.sunColor);
+        if (settings.sunInt !== undefined) dir.intensity = parseFloat(settings.sunInt);
+
+        if (settings.sunX !== undefined && settings.sunY !== undefined && settings.sunZ !== undefined) {
+            dir.position.set(parseFloat(settings.sunX), parseFloat(settings.sunY), parseFloat(settings.sunZ));
+        }
+    }
 }
 
 export function onWindowResize() {

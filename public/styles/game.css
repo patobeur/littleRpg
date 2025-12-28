@@ -12,7 +12,7 @@
     align-items: center;
     text-shadow: 1px 1px 2px black;
     font-family: 'Cinzel', serif;
-    z-index: 9999;
+    z-index: 90;
 }
 
 .entity-name {

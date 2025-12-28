@@ -52,13 +52,26 @@ try {
                                 far: settings.fogFar !== undefined ? settings.fogFar : 50
                             };
                         }
-                        // Keep ground default for now, or add to generator later
+
+                        // Map Ambient Light settings
+                        if (settings.ambColor) {
+                            sceneConfig.ambColor = parseInt(settings.ambColor.replace('#', '0x'));
+                        }
+                        if (settings.ambInt !== undefined) {
+                            sceneConfig.ambInt = parseFloat(settings.ambInt);
+                        }
+
+                        // Map Sun Settings
+                        if (settings.sunColor) sceneConfig.sunColor = parseInt(settings.sunColor.replace('#', '0x'));
+                        if (settings.sunInt !== undefined) sceneConfig.sunInt = parseFloat(settings.sunInt);
+                        if (settings.sunX !== undefined) sceneConfig.sunPos = { x: settings.sunX, y: settings.sunY, z: settings.sunZ };
                     }
 
                     SCENES[sceneId] = {
                         name: mapData.name || sceneId,
                         isLastMap: !!mapData.isLastMap,
                         scene: sceneConfig,
+                        lights: mapData.lights || [], // Pass raw lights data
                         mapSize: mapData.mapSize || 50, // Map bounds for collision
                         // Migrate spawns: add index if missing (for old class-based maps)
                         spawns: (mapData.spawns || []).map((spawn, i) => {
