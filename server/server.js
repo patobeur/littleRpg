@@ -258,6 +258,58 @@ app.get('/api/structures', requireRole(['superAdmin']), (req, res) => {
     }
 });
 
+// List available containers from server
+app.get('/api/containers', requireRole(['superAdmin']), (req, res) => {
+    try {
+        const containersConfig = require('./models/containers.js');
+        if (!containersConfig || !containersConfig.containers) {
+            return res.json([]);
+        }
+
+        const containers = Object.keys(containersConfig.containers).map(key => {
+            const container = containersConfig.containers[key];
+            return {
+                id: key,
+                name: container.name || key,
+                scale: container.scale || 1,
+                radius: container.radius || 1,
+                fbx: container.glb // glb is the fbx filename
+            };
+        });
+
+        res.json(containers);
+    } catch (err) {
+        console.error('Failed to load containers:', err);
+        res.status(500).json({ error: 'Failed to load containers' });
+    }
+});
+
+// List available containers from server
+app.get('/api/containers', requireRole(['superAdmin']), (req, res) => {
+    try {
+        const containersConfig = require('./models/containers.js');
+        if (!containersConfig || !containersConfig.containers) {
+            return res.json([]);
+        }
+
+        const containers = Object.keys(containersConfig.containers).map(key => {
+            const container = containersConfig.containers[key];
+            return {
+                id: key,
+                name: container.name || key,
+                scale: container.scale || 1,
+                radius: container.radius || 1,
+                fbx: container.glb // glb is the fbx filename
+            };
+        });
+
+        res.json(containers);
+    } catch (err) {
+        console.error('Failed to load containers:', err);
+        res.status(500).json({ error: 'Failed to load containers' });
+    }
+});
+
 // List available enemies
 app.get('/api/enemies', requireRole(['superAdmin']), (req, res) => {
     try {

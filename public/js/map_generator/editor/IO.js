@@ -57,6 +57,7 @@ export function saveMap() {
         roads: [],
         trees: [],
         npcs: [],
+        containers: [],
         lights: [],
         sceneSettings: {
             bgColor: document.getElementById('bgColor')?.value || '#111111',
@@ -173,6 +174,12 @@ export function saveMap() {
                 npcType: obj.userData.npcType,
                 dialogueId: obj.userData.dialogueId,
                 interactionRadius: obj.userData.interactionRadius || 2.0
+            });
+        } else if (type === 'container') {
+            data.containers.push({
+                x: pos.x, y: pos.y, z: pos.z,
+                scale: scale,
+                containerType: obj.userData.containerType
             });
         }
     });
@@ -393,5 +400,16 @@ function loadMapData(mapData) {
                 });
             }
         });
+
+        if (mapData.containers) {
+            mapData.containers.forEach(c => {
+                // Use window.addContainer if exposed
+                if (window.addContainer) {
+                    const obj = window.addContainer(c.containerType, c.x, c.z);
+                    if (c.scale && obj) obj.scale.setScalar(c.scale);
+                    if (c.y !== undefined && obj) obj.position.y = c.y;
+                }
+            });
+        }
     }
 }

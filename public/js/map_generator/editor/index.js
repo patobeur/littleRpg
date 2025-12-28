@@ -4,7 +4,7 @@ import { initThree, onWindowResize, updateEnvironment } from './Scene.js';
 import { initEvents } from './Input.js';
 import { state } from './State.js';
 import { TransformGizmo } from '../tools/Gizmo.js';
-import { addStructure, addSpawn, addEnemy, addNature, addNPC, deleteSelected, addExit, addDefaultSpawnsAndExits, checkAndAddDefaultSpawnsAndExits, addPointLight } from './Objects.js';
+import { addStructure, addSpawn, addEnemy, addNature, addNPC, addContainer, deleteSelected, addExit, addDefaultSpawnsAndExits, checkAndAddDefaultSpawnsAndExits, addPointLight } from './Objects.js';
 import { refreshMapList, saveMap, loadSelectedMap } from './IO.js';
 import { generateOrganicVillage } from '../procedural/index.js';
 import { refreshScenarioList, refreshScenarioMapSelect } from './Scenario.js';
@@ -44,6 +44,7 @@ function init() {
     window.addEnemy = addEnemy;
     window.addNature = addNature;
     window.addNPC = addNPC; // Expose NPC function
+    window.addContainer = addContainer; // Expose Container function
     window.addExit = addExit;
     window.deleteSelected = deleteSelected;
     window.refreshMapList = refreshMapList;
@@ -64,7 +65,8 @@ function init() {
     refreshStructureList();
     refreshEnemyList();
     refreshNatureList();
-    refreshNPCList(); // New Refresh Call
+    refreshNPCList();
+    refreshContainerList();
 
     // Fetch Game Config
     fetch('/api/config/client')
@@ -80,6 +82,7 @@ function init() {
 window.structureMetadata = new Map();
 window.enemyMetadata = new Map();
 window.natureMetadata = new Map();
+window.containerMetadata = new Map();
 
 // Load available structures from server
 function refreshStructureList() {
@@ -210,6 +213,38 @@ function refreshNPCList() {
         .catch(err => {
             console.error('Failed to load NPCs:', err);
             selector.innerHTML = '<option value="Peter">Peter</option>';
+        });
+}
+
+// Load available containers from server
+function refreshContainerList() {
+    const selector = document.getElementById('containerType');
+    if (!selector) return;
+
+    selector.innerHTML = '<option>Loading...</option>';
+
+    fetch('/api/containers')
+        .then(r => r.json())
+        .then(containers => {
+            selector.innerHTML = '';
+            if (containers.length === 0) {
+                selector.innerHTML = '<option value="">No containers found</option>';
+                return;
+            }
+            containers.forEach(container => {
+                // Cache metadata
+                window.containerMetadata.set(container.id, container);
+
+                const opt = document.createElement('option');
+                opt.value = container.id;
+                opt.innerText = container.name;
+                selector.appendChild(opt);
+            });
+            console.log(`Loaded ${containers.length} container types`);
+        })
+        .catch(err => {
+            console.error('Failed to load containers:', err);
+            selector.innerHTML = '<option value="1box_0">1box_0</option>';
         });
 }
 

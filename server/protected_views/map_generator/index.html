@@ -31,6 +31,7 @@
             <button class="ribbon-tab" onclick="UI.switchTab('view')">View</button>
             <button class="ribbon-tab" onclick="UI.switchTab('lights')">Lights</button>
             <button class="ribbon-tab" onclick="UI.switchTab('npc')">NPCs</button>
+            <button class="ribbon-tab" onclick="UI.switchTab('containers')">Containers</button>
         </div>
 
         <!-- Panels -->
@@ -189,6 +190,24 @@
                     </div>
                 </div>
                 <div class="ribbon-group-title">NPCs</div>
+            </div>
+        </div>
+
+        <!-- CONTAINER TAB -->
+        <div id="ribbon-containers" class="ribbon-panel">
+            <div class="ribbon-group">
+                <div class="ribbon-group-content">
+                    <div class="ribbon-column">
+                        <select id="containerType" class="ribbon-input" style="width: 150px;">
+                            <option>Loading...</option>
+                        </select>
+                        <button class="ribbon-btn"
+                            onclick="addContainer(document.getElementById('containerType').value)">
+                            <i class="fas fa-box-open"></i> Add
+                        </button>
+                    </div>
+                </div>
+                <div class="ribbon-group-title">Containers</div>
             </div>
         </div>
 
