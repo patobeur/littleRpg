@@ -161,8 +161,8 @@ export const UI = {
             const obj = state.selectedObject;
             if (!obj || obj.userData.type !== 'npc') return;
 
-            const val = document.getElementById('editDialogueId').value;
-            obj.userData.dialogueId = val;
+            const val = parseInt(document.getElementById('editDialogueId').value, 10);
+            obj.userData.dialogueId = isNaN(val) ? 0 : val;
 
             // Radius
             const radVal = parseFloat(document.getElementById('editInteractionRadius').value) || 2.0;

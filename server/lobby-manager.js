@@ -938,7 +938,7 @@ class LobbyManager {
                     rotation: def.rotation || { x: 0, y: 0, z: 0 },
                     scale: structureData.scale || 1,
                     radius: structureData.radius || 3,
-                    modelPath: `/structures/${structureData.glb}`,
+                    modelPath: `/models/structures/${structureData.glb}`,
                     stats: structureData.stats
                 });
             } else {
@@ -971,7 +971,7 @@ class LobbyManager {
                     hp: enemyDef.stats.hp,
                     maxHp: enemyDef.stats.hp,
                     animation: 'idle',
-                    modelPath: `/enemies/${enemyDef.glb}`,
+                    modelPath: `/models/enemies/${enemyDef.glb}`,
                     scale: enemyDef.scale || 1,
                     radius: enemyDef.radius || 0.4, // Send radius
                     animations: enemyDef.animations,
@@ -1255,14 +1255,13 @@ class LobbyManager {
         if (interactable.type === 'npc') {
             let dialogueText = interactable.data.dialogue;
 
-            // Fallback to dialogueId if no direct text
-            if (!dialogueText && interactable.dialogueId !== undefined && dialoguesData[interactable.dialogueId]) {
-                dialogueText = dialoguesData[interactable.dialogueId].data.dialogue;
+            if (!dialogueText && interactable.dialogueId !== undefined && dialoguesData.dialogues[interactable.dialogueId]) {
+                dialogueText = dialoguesData.dialogues[interactable.dialogueId].dialogue;
             }
 
             // Default fallback
             if (!dialogueText) {
-                dialogueText = ["Bonjour !"];
+                dialogueText = ["Pardon, je ne trouve pas mes mots !"];
             }
 
             socket.emit('interaction_response', {

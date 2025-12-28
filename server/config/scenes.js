@@ -109,8 +109,8 @@ try {
                             return {
                                 id: `npc_${sceneId}_${i}`,
                                 name: def.name || n.npcType,
-                                // Model path: Priority: Def.model -> /npc/Type.fbx
-                                model: def.model ? `/npc/${def.model}` : `/npc/${n.npcType}.fbx`,
+                                // Model path: Priority: Def.model -> /models/npc/Type.fbx
+                                model: def.model ? `/models/npc/${def.model}` : `/models/npc/${n.npcType}.fbx`,
                                 position: { x: n.x, y: n.y, z: n.z },
                                 scale: n.scale || def.scale || 1,
                                 dialogueId: n.dialogueId !== undefined ? n.dialogueId : def.dialogue_id,

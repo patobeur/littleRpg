@@ -6,8 +6,8 @@ const dialogues = {
 				// plus de possibilité plus tard
 			},
 			dialogue: [
-				"Bonjour voyageur ! Bienvenue dans le monde de LittleRPG.",
-				"Attention aux monstres qui rôdent aux alentours...",
+				"Bonnes fêtes voyageur !",
+				"Je vous souhaite de belles choses et un bon gros loot ;)",
 			],
 			local_dialogue: {
 				// repeat

@@ -22,7 +22,7 @@ export class EnemyManager {
         const loader = new FBXLoader();
 
         for (const enemyState of enemyList) {
-            const modelPath = enemyState.modelPath || `/archetypes/${enemyState.type}.fbx`; // Fallback
+            const modelPath = enemyState.modelPath || `/models/archetypes/${enemyState.type}.fbx`; // Fallback
 
             try {
                 console.log(`Loading model for enemy ${enemyState.name}: ${modelPath}`);

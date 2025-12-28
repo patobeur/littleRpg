@@ -8,7 +8,7 @@ export function addStructureResult(type, x, z) {
         const fbxFile = metadata?.fbx || `${type}.fbx`; // Fallback to type.fbx
         const scale = metadata?.scale || 1;
 
-        const modelPath = `/structures/${fbxFile}`;
+        const modelPath = `/models/structures/${fbxFile}`;
         const group = new THREE.Group();
         group.userData = { type: type, id: `${type}_${Date.now()}`, isRoot: true };
 
@@ -67,7 +67,7 @@ export function addEnemyAt(type, x, z) {
     group.position.set(x, 0, z);
 
     // Try to load the actual enemy FBX model
-    const modelPath = `/enemies/${fbxFile}`;
+    const modelPath = `/models/enemies/${fbxFile}`;
 
     state.loader.load(modelPath, (fbx) => {
         // Apply same scale as game: 0.01 * metadata.scale
@@ -118,7 +118,7 @@ export function addPlaceholder(type, x, z, color) {
         // Choose a random tree model
         const treeModels = ['CommonTree_1', 'CommonTree_2', 'CommonTree_3', 'CommonTree_4', 'CommonTree_5'];
         const randomTree = treeModels[Math.floor(Math.random() * treeModels.length)];
-        const modelPath = `/natures/${randomTree}.fbx`; // Changed from /structures/ to /natures/
+        const modelPath = `/models/natures/${randomTree}.fbx`; // Changed from /structures/ to /natures/
 
         state.loader.load(modelPath, (fbx) => {
             // Remove temporary placeholder
@@ -165,7 +165,7 @@ export function addNature(type, x = 0, z = 0) {
     group.position.set(x, 0, z);
 
     // Load the nature FBX model from natures folder
-    const modelPath = `/natures/${fbxFile}`;
+    const modelPath = `/models/natures/${fbxFile}`;
 
     state.loader.load(modelPath, (fbx) => {
         fbx.traverse(c => {
@@ -224,7 +224,7 @@ export function addNPC(type, x, z) {
     ring.position.y = 0.05; // Slightly above ground
     group.add(ring);
 
-    const modelPath = `/npc/${fbxFile}`;
+    const modelPath = `/models/npc/${fbxFile}`;
 
     state.loader.load(modelPath, (fbx) => {
         fbx.scale.setScalar(0.01);

@@ -61,7 +61,7 @@ export class EnvironmentManager {
                 // Determine which FBX to load from tree data
                 // Priority: t.fbx > `${t.type}.fbx` > 'tree.fbx' (default)
                 const fbxFile = t.fbx || (t.type ? `${t.type}.fbx` : 'tree.fbx');
-                const fbxPath = `/natures/${fbxFile}`;
+                const fbxPath = `/models/natures/${fbxFile}`;
 
                 // Use mesh cache to get a clone of the tree model
                 const fbx = await meshCache.clone(fbxPath);

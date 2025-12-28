@@ -17,7 +17,7 @@ export class StructureManager {
         this.structures.clear();
 
         for (const structDef of structureList) {
-            const modelPath = structDef.modelPath || `/structures/${structDef.type}.fbx`;
+            const modelPath = structDef.modelPath || `/models/structures/${structDef.type}.fbx`;
 
             try {
                 // Use centralized mesh cache to get a clone

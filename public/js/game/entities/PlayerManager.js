@@ -19,7 +19,7 @@ export class PlayerManager {
 
         for (let i = 0; i < players.length; i++) {
             const player = players[i];
-            const modelPath = `/archetypes/${player.class.toLowerCase()}.fbx`;
+            const modelPath = `/models/archetypes/${player.class.toLowerCase()}.fbx`;
 
             try {
                 console.log(`Loading model for ${player.name}: ${modelPath}`);
@@ -58,7 +58,7 @@ export class PlayerManager {
                 }
 
                 // 2. Load Walk
-                const walkPath = `/archetypes/animations/${player.class.toLowerCase()}_Walk.fbx`;
+                const walkPath = `/models/archetypes/animations/${player.class.toLowerCase()}_Walk.fbx`;
                 try {
                     const walkFbx = await new Promise((resolve, reject) => {
                         loader.load(walkPath, resolve, undefined, reject);
