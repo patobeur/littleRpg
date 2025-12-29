@@ -139,7 +139,7 @@ export function saveMap() {
                 color: obj.userData.color // Keep color for visual display
             });
         } else if (type === 'enemy') {
-            data.enemies.push({ type: obj.userData.enemyType, x: pos.x, y: pos.y, z: pos.z, scale: scale });
+            data.enemies.push({ type: obj.userData.enemyType, x: pos.x, y: pos.y, z: pos.z, scale: scale, rot: rot.y });
         } else if (type === 'road') {
             data.roads.push({
                 x: pos.x, z: pos.z,
@@ -158,14 +158,17 @@ export function saveMap() {
                 z: pos.z,
                 scale: scale,
                 type: natureType,  // Save the nature type
-                fbx: fbxFile       // Save the FBX filename
+                fbx: fbxFile,       // Save the FBX filename
+                rot: rot.y,
+                y: pos.y
             });
+        } else if (type === 'light') {
             data.lights.push({
                 x: pos.x, y: pos.y, z: pos.z,
                 color: obj.userData.color,
                 distance: obj.userData.distance,
                 decay: obj.userData.decay,
-                intensity: obj.userData.intensity || 1
+                intensity: obj.userData.intensity
             });
         } else if (type === 'npc') {
             data.npcs.push({
@@ -316,6 +319,7 @@ function loadMapData(mapData) {
             const obj = addEnemyAt(e.type, e.x, e.z);
             if (e.scale) obj.scale.setScalar(e.scale);
             if (e.y !== undefined) obj.position.y = e.y;
+            if (e.rot !== undefined) obj.rotation.y = e.rot;
         });
     }
 
@@ -345,7 +349,10 @@ function loadMapData(mapData) {
             } else if (t.scale) {
                 obj.scale.setScalar(t.scale);
                 if (t.y !== undefined) obj.position.y = t.y;
+                if (t.rot !== undefined) obj.rotation.y = t.rot;
             }
+            // Apply rot to fallback too if needed
+            if (obj && t.rot !== undefined) obj.rotation.y = t.rot;
         });
     }
 

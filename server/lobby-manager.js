@@ -936,7 +936,7 @@ class LobbyManager {
                     name: structureData.name,
                     position: { x: def.x, y: def.y, z: def.z },
                     rotation: def.rotation || { x: 0, y: 0, z: 0 },
-                    scale: structureData.scale || 1,
+                    scale: def.scale || structureData.scale || 1,
                     radius: structureData.radius || 3,
                     modelPath: `/models/structures/${structureData.glb}`,
                     stats: structureData.stats
@@ -967,12 +967,12 @@ class LobbyManager {
                     type: spawn.type,
                     name: enemyDef.name,
                     position: { x: spawn.x, y: spawn.y, z: spawn.z },
-                    rotation: 0,
+                    rotation: spawn.rot || 0,
                     hp: enemyDef.stats.hp,
                     maxHp: enemyDef.stats.hp,
                     animation: 'idle',
                     modelPath: `/models/enemies/${enemyDef.glb}`,
-                    scale: enemyDef.scale || 1,
+                    scale: spawn.scale || enemyDef.scale || 1,
                     radius: enemyDef.radius || 0.4, // Send radius
                     animations: enemyDef.animations,
                     // Add other necessary data for client

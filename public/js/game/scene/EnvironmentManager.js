@@ -55,6 +55,7 @@ export class EnvironmentManager {
         for (const t of treeList) {
             const group = new THREE.Group();
             group.position.set(t.x, 0, t.z);
+            if (t.rot !== undefined) group.rotation.y = t.rot;
             group.name = "tree";
 
             try {

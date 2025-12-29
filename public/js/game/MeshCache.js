@@ -27,7 +27,11 @@ export class MeshCache {
 
         // Load the mesh
         const mesh = await new Promise((resolve, reject) => {
-            this.fbxLoader.load(path, resolve, undefined, reject);
+            this.fbxLoader.load(path, (loadedObject) => {
+                // Standardize scale to 0.01 for all FBX assets
+                loadedObject.scale.setScalar(0.01);
+                resolve(loadedObject);
+            }, undefined, reject);
         });
 
         // Store in cache

@@ -450,6 +450,51 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Internal server error' });
 });
 
+// Test route to list meshes in public/models (recursively)
+app.get('/api/test/meshes', (req, res) => {
+    const rootDir = path.join(__dirname, '..', 'public', 'models');
+
+    // Simple recursive file crawler
+    function getFiles(dir) {
+        let results = [];
+        const list = fs.readdirSync(dir);
+        list.forEach(function (file) {
+            file = path.join(dir, file);
+            const stat = fs.statSync(file);
+            if (stat && stat.isDirectory()) {
+                /* Recurse into a subdirectory */
+                results = results.concat(getFiles(file));
+            } else {
+                /* Is a file */
+                results.push(file);
+            }
+        });
+        return results;
+    }
+
+    try {
+        if (!fs.existsSync(rootDir)) {
+            return res.json([]);
+        }
+
+        const allFiles = getFiles(rootDir);
+        const fbxFiles = allFiles
+            .filter(f => f.toLowerCase().endsWith('.fbx'))
+            .map(f => {
+                // Determine relative path from 'public' folder for client URL
+                // e.g. full path is .../public/models/file.fbx -> models/file.fbx
+                const publicDir = path.join(__dirname, '..', 'public');
+                const relative = path.relative(publicDir, f);
+                return relative.replace(/\\/g, '/'); // Ensure forward slashes for web
+            });
+
+        res.json(fbxFiles);
+    } catch (e) {
+        console.error('Error scanning models:', e);
+        res.status(500).json({ error: 'Failed to scan models directory' });
+    }
+});
+
 // Initialize database and start server
 async function start() {
     try {

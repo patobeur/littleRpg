@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesh Viewer - Public/Models</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #333;
+            color: white;
+            font-family: sans-serif;
+        }
+
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            pointer-events: none;
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            pointer-events: none;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "/js/three/three.module.js",
+                "three/addons/": "/js/addons/"
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div id="info">
+        <h2>Mesh Viewer for public/models</h2>
+        <p>Use Mouse to **Orbit (Left Click)**, **Pan (Right Click)**, Zoom (Scroll)</p>
+        <div id="controls" style="margin: 10px 0; pointer-events: auto; display: flex; gap: 5px; flex-wrap: wrap;">
+            <!-- Buttons will be generated here -->
+        </div>
+        <div id="stats">Loading mesh list...</div>
+    </div>
+    <div id="loading">Loading...</div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x333333);
+        scene.fog = new THREE.Fog(0x333333, 10, 100);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 5, 10);
+
+        // WebGL Renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        // Label Renderer
+        const labelRenderer = new CSS2DRenderer();
+        labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        labelRenderer.domElement.style.position = 'absolute';
+        labelRenderer.domElement.style.top = '0px';
+        labelRenderer.domElement.style.pointerEvents = 'none'; // Allow clicks to pass through to canvas
+        document.body.appendChild(labelRenderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.target.set(0, 0, 0);
+        // RTS-Style Controls (User Correction: Right Click to Pan)
+        controls.mouseButtons = {
+            LEFT: THREE.MOUSE.ROTATE,
+            MIDDLE: THREE.MOUSE.DOLLY,
+            RIGHT: THREE.MOUSE.PAN
+        };
+        controls.screenSpacePanning = false; // Pan on XZ plane (ground)
+        controls.update();
+
+        // Lighting
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0);
+        scene.add(hemiLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        dirLight.position.set(5, 10, 7.5);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        // Grid Helper
+        const gridHelper = new THREE.GridHelper(100, 100);
+        scene.add(gridHelper);
+
+        // Ground Plane
+        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshPhongMaterial({ color: 0x999999, depthWrite: false }));
+        mesh.rotation.x = - Math.PI / 2;
+        mesh.receiveShadow = true;
+        scene.add(mesh);
+
+        // Reference Cube (1x1x1)
+        const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+        const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+        const referenceCube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        referenceCube.position.set(0, 0.5, 0);
+        scene.add(referenceCube);
+
+        // Label for reference cube
+        const cubeDiv = document.createElement('div');
+        cubeDiv.className = 'label';
+        cubeDiv.textContent = '1x1x1m';
+        cubeDiv.style.color = 'red';
+        cubeDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        cubeDiv.style.padding = '2px 5px';
+        cubeDiv.style.borderRadius = '3px';
+        const cubeLabel = new CSS2DObject(cubeDiv);
+        cubeLabel.position.set(0, 1.2, 0);
+        referenceCube.add(cubeLabel);
+
+        const loader = new FBXLoader();
+
+        // Store loaded objects to manage them later
+        // Structure: Map<FolderString, Array<ModelObjects>>
+        // Interaction (Raycaster)
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        let downPos = { x: 0, y: 0 };
+        window.addEventListener('pointerdown', (e) => {
+            downPos.x = e.clientX;
+            downPos.y = e.clientY;
+        });
+
+        window.addEventListener('click', (event) => {
+            const moveX = Math.abs(event.clientX - downPos.x);
+            const moveY = Math.abs(event.clientY - downPos.y);
+            // Tolerance for "jitter" click
+            if (moveX > 5 || moveY > 5) return;
+
+            // Ignore clicks on UI elements
+            if (event.target.closest('#controls') || event.target.tagName === 'BUTTON') return;
+
+            // Calculate mouse position
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            // Intersect with VISIBLE loaded models only
+            const visibleObjects = loadedModels
+                .filter(i => i.object.visible)
+                .map(i => i.object);
+
+            const intersects = raycaster.intersectObjects(visibleObjects, true);
+
+            if (intersects.length > 0) {
+                // Find the root model group for the clicked mesh
+                const hitObject = intersects[0].object;
+                const modelItem = loadedModels.find(m => m.object === hitObject || m.object.getObjectById(hitObject.id));
+
+                if (modelItem) {
+                    const obj = modelItem.object;
+                    const box = new THREE.Box3().setFromObject(obj);
+                    const center = new THREE.Vector3();
+                    box.getCenter(center);
+                    const size = new THREE.Vector3();
+                    box.getSize(size);
+
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    // Position camera: slightly up and in front
+                    const dist = maxDim * 1.5 + 2;
+
+                    camera.position.set(
+                        center.x,
+                        center.y + (maxDim * 0.5) + 1,
+                        center.z + dist
+                    );
+                    controls.target.copy(center);
+                    controls.update();
+                    console.log("Focused and moved to:", modelItem.file);
+                }
+            }
+        });
+
+        // Dynamic Ground Plane
+        // We reuse the existing 'mesh' (ground plane) but we will color it dynamically
+        const groundPlane = mesh;
+
+        function stringToColor(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            let color = '#';
+            for (let i = 0; i < 3; i++) {
+                const value = (hash >> (i * 8)) & 0xFF;
+                color += ('00' + value.toString(16)).substr(-2);
+            }
+            return color;
+        }
+
+        const loadedModels = []; // We will actually change this structure to handle folders, but for now let's keep array and sort it in layout.
+        let activeFolder = 'All'; // "All" or specific folder name
+
+        window.filterFolder = function (folderName) {
+            console.log("Filtering by:", folderName);
+            activeFolder = folderName;
+
+            // Set Ground Color
+            const colorHex = stringToColor(folderName);
+            groundPlane.material.color.set(colorHex);
+
+            // Update active button style
+            const buttons = document.querySelectorAll('#controls button');
+            buttons.forEach(btn => {
+                if (btn.textContent === folderName) {
+                    btn.style.backgroundColor = colorHex;
+                    btn.style.color = 'white';
+
+                    const r = parseInt(colorHex.substr(1, 2), 16);
+                    const g = parseInt(colorHex.substr(3, 2), 16);
+                    const b = parseInt(colorHex.substr(5, 2), 16);
+                    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+                    btn.style.color = (yiq >= 128) ? 'black' : 'white';
+
+                    btn.style.border = '2px solid white';
+                } else {
+                    btn.style.backgroundColor = '#444';
+                    btn.style.color = '#ccc';
+                    btn.style.border = '1px solid #555';
+                }
+            });
+
+            updateLayout();
+
+            // Camera Focus on First Object
+            const firstItem = loadedModels.find(item => item.folder === folderName);
+            if (firstItem) {
+                const obj = firstItem.object;
+                const box = new THREE.Box3().setFromObject(obj);
+                const center = new THREE.Vector3();
+                box.getCenter(center);
+                const size = new THREE.Vector3();
+                box.getSize(size);
+
+                const maxDim = Math.max(size.x, size.y, size.z);
+                // Closer default distance
+                const dist = maxDim * 1.5 + 2;
+
+                camera.position.set(
+                    center.x,
+                    center.y + (maxDim * 0.5) + 1,
+                    center.z + dist
+                );
+
+                controls.target.copy(center);
+                controls.update();
+            }
+        };
+
+        function updateLayout() {
+            // Sort models by folder then filename
+            loadedModels.sort((a, b) => {
+                if (a.folder < b.folder) return -1;
+                if (a.folder > b.folder) return 1;
+                if (a.file < b.file) return -1;
+                if (a.file > b.file) return 1;
+                return 0;
+            });
+
+            const itemsPerRow = 5;
+            const xSpacing = 4;
+            const zSpacing = 4;
+
+            let rowCount = 0;
+            let rowX = 0;
+            let currentZ = 0; // Use Z for rows within the display
+
+            // NOTE: In filter mode, we reset Z and X. We don't group by folder vertically if only one folder is shown.
+            // If "All", we might still group.
+
+            let lastFolder = null;
+
+            loadedModels.forEach(item => {
+                const object = item.object;
+
+                // VISIBILITY CHECK
+                const isVisible = (item.folder === activeFolder);
+
+                object.visible = isVisible;
+                if (item.label) item.label.visible = isVisible;
+                if (item.helper) item.helper.visible = isVisible;
+
+                if (!isVisible) return; // Skip layout for hidden items
+
+                // Reset position to measuring baseline
+                object.position.set(0, 0, 0);
+                object.updateMatrixWorld(true);
+
+                const box = new THREE.Box3().setFromObject(object);
+                const size = new THREE.Vector3();
+                box.getSize(size);
+
+                // Grid Logic
+                if (rowCount >= itemsPerRow) {
+                    rowCount = 0;
+                    rowX = 0;
+                    currentZ += zSpacing + (size.z > 2 ? size.z : 2);
+                }
+
+                const yOffset = -box.min.y;
+                object.position.set(rowX, yOffset, currentZ);
+
+                if (item.helper) item.helper.update();
+
+                if (item.label) {
+                    item.label.position.set(0, size.y + 0.5, 0);
+                }
+
+                rowX += (size.x > 2 ? size.x : 2) + xSpacing;
+                rowCount++;
+            });
+        }
+
+        async function loadMeshes() {
+            try {
+                const response = await fetch('/api/test/meshes');
+                const files = await response.json();
+
+                if (files.length === 0) {
+                    document.getElementById('stats').innerText = "No .fbx files found in public/models";
+                    document.getElementById('loading').style.display = 'none';
+                    return;
+                }
+
+                document.getElementById('stats').innerText = `Found ${files.length} files. Loading...`;
+
+                const folders = new Set();
+                let loadedCount = 0;
+
+                for (const file of files) {
+                    if (file.toLowerCase().includes('animations') || file.toLowerCase().includes('animation')) continue;
+
+                    try {
+                        const object = await new Promise((resolve, reject) => {
+                            loader.load(`/${file}`, (obj) => resolve(obj), undefined, (err) => reject(err));
+                        });
+
+                        let hasMesh = false;
+                        object.traverse((child) => {
+                            if (child.isMesh) {
+                                hasMesh = true;
+                                child.castShadow = true;
+                                child.receiveShadow = true;
+                            }
+                        });
+
+                        if (!hasMesh) continue;
+
+                        object.scale.set(0.01, 0.01, 0.01);
+
+                        const box = new THREE.Box3().setFromObject(object);
+                        const size = new THREE.Vector3();
+                        box.getSize(size);
+
+                        if (size.lengthSq() < 0.0001) continue;
+
+                        scene.add(object);
+                        const boxHelper = new THREE.BoxHelper(object, 0xffff00);
+                        scene.add(boxHelper);
+
+                        // Extract Folder Name
+                        // models/enemies/Torp.fbx -> enemies
+                        const parts = file.split('/');
+                        let folder = 'root';
+                        let filename = file;
+                        if (parts.length > 1) {
+                            folder = parts[parts.length - 2];
+                            filename = parts[parts.length - 1];
+                        }
+                        folders.add(folder);
+
+                        // Create Label
+                        const div = document.createElement('div');
+                        div.className = 'label';
+                        div.textContent = filename;
+                        div.style.color = 'white';
+                        div.style.fontSize = '12px';
+                        div.style.fontFamily = 'monospace';
+                        div.style.textShadow = '1px 1px 2px black';
+                        div.style.backgroundColor = 'rgba(0,0,0,0.5)';
+                        div.style.padding = '2px';
+                        div.style.borderRadius = '3px';
+
+                        const label = new CSS2DObject(div);
+                        label.position.set(0, size.y + 0.5, 0);
+                        object.add(label);
+
+                        loadedModels.push({
+                            file: file,
+                            folder: folder, // Store folder for grouping
+                            filename: filename,
+                            object: object,
+                            helper: boxHelper,
+                            label: label,
+                            originalSize: size.clone()
+                        });
+
+                        // console.log(`Loaded ${file}`);
+                        loadedCount++;
+                        document.getElementById('stats').innerText = `Loaded ${loadedCount} objects...`;
+
+                    } catch (err) {
+                        console.error(`Failed to load ${file}`, err);
+                    }
+                }
+
+                // Create Buttons
+                const controls = document.getElementById('controls');
+
+                // Note: Removing "Show All" logic, selecting first folder by default
+                const sortedFolders = Array.from(folders).sort();
+
+                if (sortedFolders.length > 0) {
+                    sortedFolders.forEach(folder => {
+                        const btn = document.createElement('button');
+                        btn.textContent = folder;
+                        // Initial style
+                        btn.style.backgroundColor = '#444';
+                        btn.style.color = '#ccc';
+                        btn.style.border = '1px solid #555';
+                        btn.style.padding = '5px 10px';
+                        btn.style.cursor = 'pointer';
+
+                        btn.onclick = () => window.filterFolder(folder);
+                        controls.appendChild(btn);
+                    });
+
+                    // Select first one by default
+                    window.filterFolder(sortedFolders[0]);
+                }
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('stats').innerText = `Displaying meshes. Select a folder.`;
+
+            } catch (err) {
+                console.error("Error fetching list", err);
+                document.getElementById('stats').innerText = "Error fetching mesh list.";
+            }
+        }
+
+        loadMeshes();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+            labelRenderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+
+</html>

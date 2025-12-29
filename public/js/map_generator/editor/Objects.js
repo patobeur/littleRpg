@@ -13,7 +13,7 @@ export function addStructureResult(type, x, z) {
         group.userData = { type: type, id: `${type}_${Date.now()}`, isRoot: true };
 
         state.loader.load(modelPath, (fbx) => {
-            fbx.scale.setScalar(scale);
+            fbx.scale.setScalar(0.01 * scale);
             if (type === 'house') {
                 fbx.rotation.x = -Math.PI / 2;
             }
@@ -124,7 +124,7 @@ export function addPlaceholder(type, x, z, color) {
             // Remove temporary placeholder
             group.remove(tempMesh);
 
-            fbx.scale.setScalar(1);
+            fbx.scale.setScalar(0.01);
             fbx.traverse(c => {
                 if (c.isMesh) {
                     c.castShadow = true;
@@ -163,6 +163,7 @@ export function addNature(type, x = 0, z = 0) {
     const group = new THREE.Group();
     group.userData = { type: 'nature', natureType: type, id: `${type}_${Date.now()}`, isRoot: true };
     group.position.set(x, 0, z);
+    group.scale.setScalar(scale);
 
     // Load the nature FBX model from natures folder
     const modelPath = `/models/natures/${fbxFile}`;
@@ -175,8 +176,9 @@ export function addNature(type, x = 0, z = 0) {
             }
         });
         group.add(fbx);
-        // Apply scale to the GROUP, not the FBX, so it affects all nested meshes
-        group.scale.setScalar(scale);
+        // FBX is default 1, we set group scale. BUT we need 0.01 base. 
+        // Either set group to 0.01 * scale, OR set FBX to 0.01
+        fbx.scale.setScalar(0.01);
         console.log(`Loaded nature: ${type} from ${fbxFile} with scale ${scale}`);
     }, undefined, (err) => {
         console.error(`Could not load ${modelPath}:`, err);
@@ -262,6 +264,7 @@ export function addContainer(type, x = 0, z = 0) {
     const group = new THREE.Group();
     group.userData = { type: 'container', containerType: type, id: `${type}_${Date.now()}`, isRoot: true };
     group.position.set(x, 0, z);
+    group.scale.setScalar(scale);
 
     // Load the container FBX model
     const modelPath = `/models/containers/${fbxFile}`;
@@ -274,7 +277,9 @@ export function addContainer(type, x = 0, z = 0) {
             }
         });
         group.add(fbx);
-        group.scale.setScalar(scale);
+
+        // Apply 0.01 default to FBX
+        fbx.scale.setScalar(0.01);
         console.log(`Loaded container: ${type} from ${fbxFile}`);
     }, undefined, (err) => {
         console.error(`Could not load ${modelPath}:`, err);

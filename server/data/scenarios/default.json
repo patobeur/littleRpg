@@ -2,9 +2,9 @@
   "id": "default",
   "name": "Un nouveau Départ",
   "maps": [
-    "testmapScenario1",
     "Aventure_0",
-    "map1"
+    "map1",
+    "testmapScenario1"
   ],
   "active": true
 }

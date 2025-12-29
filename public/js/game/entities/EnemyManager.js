@@ -32,6 +32,7 @@ export class EnemyManager {
 
                 fbx.scale.setScalar(0.01 * (enemyState.scale || 1));
                 fbx.position.set(enemyState.position.x, enemyState.position.y, enemyState.position.z);
+                if (enemyState.rotation) fbx.rotation.y = enemyState.rotation;
 
                 // Shadows
                 fbx.traverse(child => {

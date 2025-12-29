@@ -36,7 +36,7 @@ export class StructureManager {
 
                 const finalScale = structDef.scale || 1;
                 // Apply intrinsic rotation/scale to the model
-                fbx.scale.setScalar(finalScale);
+                fbx.scale.multiplyScalar(finalScale); // Multiplies the base 0.01 by finalScale
                 // Rotation -90° X pour tous les FBX (comme dans l'éditeur)
                 fbx.rotation.x = -Math.PI / 2;
 
