@@ -11,51 +11,103 @@
     <link rel="stylesheet" href="/styles/main.css">
     <link rel="stylesheet" href="/styles/components.css">
     <link rel="stylesheet" href="/styles/layouts.css">
+    <link rel="stylesheet" href="/styles/profile.css"> <!-- New Stylesheet -->
 </head>
 
 <body class="profile-layout">
     <!-- Navigation injected by nav.js -->
 
-    <!-- Profile Header -->
-    <div class="profile-header">
-        <div class="container text-center">
-            <h1>Your Profile</h1>
-            <p class="text-muted">Manage your account information</p>
-        </div>
-    </div>
-
     <!-- Profile Content -->
-    <div class="profile-content">
-        <div class="container">
-            <div class="profile-card card">
-                <div class="profile-avatar" id="profile-avatar">
-                    ?
-                </div>
+    <div class="profile-content py-8">
+        <div class="container max-w-6xl mx-auto px-4">
 
-                <div class="profile-info">
-                    <h2 class="profile-username" id="profile-username">Loading...</h2>
-                    <p class="profile-meta">
-                        Member since <span id="profile-date">...</span>
-                    </p>
-                </div>
+            <div class="profile-main-grid">
+                <!-- User Profile Card -->
+                <div class="user-profile-card mb-8">
+                    <div class="banner-bg"></div>
+                    <div class="profile-avatar-wrapper">
+                        <div class="profile-avatar-large" id="profile-avatar">
+                            ?
+                        </div>
+                    </div>
 
-                <div class="divider"></div>
+                    <div class="profile-body">
+                        <h2 class="profile-username" id="profile-username">Loading...</h2>
+                        <div class="text-sm text-accent-secondary uppercase tracking-wider font-semibold mb-4"
+                            id="profile-role">ADVENTURER</div>
 
-                <div class="profile-stats" id="profile-stats">
-                    <div class="stat-item">
-                        <span class="stat-value" id="character-count">0</span>
-                        <span class="stat-label">Characters</span>
+                        <div class="flex flex-col gap-2 mb-6">
+                            <div class="profile-info-row">
+                                <span class="profile-info-label">Email</span>
+                                <span class="profile-info-value" id="profile-email">...</span>
+                            </div>
+                            <div class="profile-info-row">
+                                <span class="profile-info-label">ID Compte</span>
+                                <span class="profile-info-value" id="profile-id">#...</span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-2">
+                            <button class="btn btn-secondary w-full" onclick="redirectTo('/dashboard.html')">
+                                ⬅️ Dashboard
+                            </button>
+                            <button class="btn btn-danger w-full" id="logout-btn">
+                                Déconnexion
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="card-footer">
-                    <button class="btn btn-secondary" onclick="redirectTo('/dashboard.html')">
-                        Back to Dashboard
-                    </button>
-                    <button class="btn btn-danger" id="logout-btn">
-                        Logout
-                    </button>
+                <!-- Global Stats Cards -->
+                <div class="profile-stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-icon">👤</div>
+                        <div class="stat-card-info">
+                            <div class="stat-card-label">Personnages</div>
+                            <div class="stat-card-value text-accent-primary" id="total-characters">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-icon">⭐</div>
+                        <div class="stat-card-info">
+                            <div class="stat-card-label">Niveau Total</div>
+                            <div class="stat-card-value text-yellow-400" id="total-level">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-icon">💰</div>
+                        <div class="stat-card-info">
+                            <div class="stat-card-label">Richesse</div>
+                            <div class="stat-card-value text-yellow-600" id="total-gold">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-icon">📅</div>
+                        <div class="stat-card-info">
+                            <div class="stat-card-label">Membre depuis</div>
+                            <div class="stat-card-value" style="font-size: 1rem;" id="member-since">-</div>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Characters Section -->
+                <div class="characters-section">
+                    <h3 class="section-title text-xl mb-4 flex items-center gap-2">
+                        <span>⚔️</span> Vos Héros
+                    </h3>
+
+                    <div id="characters-list" class="character-grid">
+                        <!-- Character cards injected here -->
+                        <div class="text-muted text-center py-4 col-span-2">Chargement des héros...</div>
+                    </div>
+
+                    <div class="mt-4 text-center">
+                        <button class="btn btn-primary btn-sm" onclick="redirectTo('/dashboard.html')">
+                            + Créer un nouveau personnage
+                        </button>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
