@@ -144,6 +144,17 @@ app.get('/api/config/client', (req, res) => {
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, '..', 'public', 'login.html')));
 app.get('/register', (req, res) => res.sendFile(path.join(__dirname, '..', 'public', 'register.html')));
 
+// Protected Game Routes
+// Intercept these static files to ensure meaningful authentication/state
+app.get(['/lobby.html', '/game.html'], (req, res, next) => {
+    // Check if user is logged in via session
+    if (!req.session || !req.session.userId) {
+        return res.redirect('/login.html');
+    }
+    // If logged in, serve the static file
+    next();
+});
+
 // Protected Admin Views
 app.get('/stats.html', requireRole(['superAdmin']), (req, res) => {
     res.sendFile(path.join(__dirname, 'protected_views', 'stats.html'));
