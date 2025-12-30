@@ -99,6 +99,9 @@ class GameEngine {
         this.networkManager.setupSockets();
         this.setupNetworkListeners();
 
+        // Show initial loading screen
+        this.uiManager.showSceneTransition('Connexion au monde...');
+
         // Load Entities FIRST (sets localCharacterId in EntityManager)
         await this.entityManager.loadPlayers(gameData.players, this.localCharacterId);
 

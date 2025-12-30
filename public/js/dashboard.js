@@ -60,49 +60,41 @@
 				character.class === "Warrior"
 					? "tank.jpg"
 					: character.class === "Mage"
-					? "mage.jpg"
-					: "healer.jpg";
+						? "mage.jpg"
+						: "healer.jpg";
 			div.innerHTML = `
         <div class="slot-header">
-            <img class="slot-image" src="/medias/archetypes/${classImg}" alt="${
-				character.class
-			}">
+            <img class="slot-image" src="/medias/archetypes/${classImg}" alt="${character.class
+				}">
             <div class="slot-info">
                 <div class="character-name">${character.name}</div>
                 <div class="slot-meta">
                     <span class="badge badge-primary">${getClassName(
-								character.class
-							)}</span>
-                    <span class="text-xs text-muted">Niv. ${
-								character.level
-							}</span>
+					character.class
+				)}</span>
+                    <span class="text-xs text-muted">Niv. ${character.level
+				}</span>
                 </div>
             </div>
         </div>
         
         <div class="slot-stats-grid">
-            <div class="stat-entry"><span class="stat-icon">💪</span> <span class="stat-val">${
-					character.strength
+            <div class="stat-entry"><span class="stat-icon">💪</span> <span class="stat-val">${character.strength
 				}</span></div>
-            <div class="stat-entry"><span class="stat-icon">🧠</span> <span class="stat-val">${
-					character.intelligence
+            <div class="stat-entry"><span class="stat-icon">🧠</span> <span class="stat-val">${character.intelligence
 				}</span></div>
-            <div class="stat-entry"><span class="stat-icon">⚡</span> <span class="stat-val">${
-					character.dexterity
+            <div class="stat-entry"><span class="stat-icon">⚡</span> <span class="stat-val">${character.dexterity
 				}</span></div>
-            <div class="stat-entry"><span class="stat-icon">❤️</span> <span class="stat-val">${
-					character.max_hp
+            <div class="stat-entry"><span class="stat-icon">❤️</span> <span class="stat-val">${character.max_hp
 				}</span></div>
         </div>
 
         <div class="character-actions">
-          <button class="btn btn-sm btn-secondary rename-btn" data-character-id="${
-					character.id
+          <button class="btn btn-sm btn-secondary rename-btn" data-character-id="${character.id
 				}">
             Renommer
           </button>
-          <button class="btn btn-sm btn-danger delete-btn" data-character-id="${
-					character.id
+          <button class="btn btn-sm btn-danger delete-btn" data-character-id="${character.id
 				}">
             Supprimer
           </button>
@@ -372,6 +364,58 @@
 
 	// ... (rest of code)
 
+	// Global Loading Modal
+	function showGlobalLoading(message = 'Chargement...') {
+		let modal = document.getElementById('global-loading-modal');
+		if (!modal) {
+			modal = document.createElement('div');
+			modal.id = 'global-loading-modal';
+			modal.style.cssText = `
+                position: fixed;
+                top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                z-index: 50000;
+                color: white;
+                font-family: 'Cinzel', serif;
+            `;
+			document.body.appendChild(modal);
+		}
+
+		modal.innerHTML = `
+            <div style="text-align: center;">
+                <div style="
+                    width: 50px; 
+                    height: 50px; 
+                    border: 4px solid #333; 
+                    border-top: 4px solid #8b5cf6; 
+                    border-radius: 50%; 
+                    animation: spin 1s linear infinite;
+                    margin: 0 auto 20px auto;
+                "></div>
+                <h2 style="font-size: 2rem; color: white; margin: 0;">${message}</h2>
+                <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+            </div>
+        `;
+		modal.style.display = 'flex';
+	}
+
+	function hideGlobalLoading() {
+		const modal = document.getElementById('global-loading-modal');
+		if (modal) {
+			modal.style.display = 'none';
+		}
+	}
+
+	// Load dashboard on page load
+	showGlobalLoading('Chargement du Dashboard...');
+	loadDashboard().then(() => hideGlobalLoading());
+
+	// ... Event Listeners updates ...
+
 	document
 		.getElementById("create-game-btn-confirm")
 		.addEventListener("click", () => {
@@ -381,21 +425,26 @@
 				return;
 			}
 
-			sessionStorage.setItem(
-				"selectedCharacter",
-				JSON.stringify(selectedCharacter)
-			);
-			sessionStorage.setItem("isLobbyOwner", "true");
-			// Store scenarioId so lobby.js can use it
-			sessionStorage.setItem(
-				"currentLobby",
-				JSON.stringify({
-					code: "......",
-					players: [],
-					scenarioId: scenarioId,
-				})
-			);
-			window.location.href = "/lobby.html";
+			showGlobalLoading('Création du salon...');
+
+			// Small delay to let the modal render before redirection (which freezes UI)
+			setTimeout(() => {
+				sessionStorage.setItem(
+					"selectedCharacter",
+					JSON.stringify(selectedCharacter)
+				);
+				sessionStorage.setItem("isLobbyOwner", "true");
+				// Store scenarioId so lobby.js can use it
+				sessionStorage.setItem(
+					"currentLobby",
+					JSON.stringify({
+						code: "......",
+						players: [],
+						scenarioId: scenarioId,
+					})
+				);
+				window.location.href = "/lobby.html";
+			}, 500);
 		});
 
 	document.getElementById("join-lobby-btn").addEventListener("click", () => {
@@ -408,16 +457,20 @@
 			return;
 		}
 
-		sessionStorage.setItem(
-			"selectedCharacter",
-			JSON.stringify(selectedCharacter)
-		);
-		sessionStorage.setItem("isLobbyOwner", "false");
-		sessionStorage.setItem(
-			"currentLobby",
-			JSON.stringify({ code: code, players: [] })
-		); // Placeholder
-		window.location.href = "/lobby.html";
+		showGlobalLoading('Rejoindre le salon...');
+
+		setTimeout(() => {
+			sessionStorage.setItem(
+				"selectedCharacter",
+				JSON.stringify(selectedCharacter)
+			);
+			sessionStorage.setItem("isLobbyOwner", "false");
+			sessionStorage.setItem(
+				"currentLobby",
+				JSON.stringify({ code: code, players: [] })
+			); // Placeholder
+			window.location.href = "/lobby.html";
+		}, 500);
 	});
 
 	// Close modal when clicking outside
@@ -446,7 +499,4 @@
 				closeRenameModal();
 			}
 		});
-
-	// Load dashboard on page load
-	loadDashboard();
 })();

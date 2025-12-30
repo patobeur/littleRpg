@@ -336,14 +336,14 @@ export class UIManager {
                     cursor: pointer;
                     transition: all 0.2s ease;
                     box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
-                ">Retour au Lobby</button>
+                ">Retour au Dashboard</button>
             </div>
         `;
 
         modal.style.display = 'flex';
 
         document.getElementById('end-game-btn').onclick = () => {
-            window.location.href = '/lobby.html';
+            window.location.href = '/dashboard.html';
         };
     }
 }

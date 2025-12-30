@@ -15,3 +15,4 @@ change_password.js
 AI_INSTRUCTIONS.md
 public/js/map_generator/editor/IO_save.js
 public/js/map_generator/editor/Objects_save.js
+data/rpg.db-journal
