@@ -200,6 +200,7 @@ export function loadMapData(mapData) {
         if (document.getElementById('fogFar')) document.getElementById('fogFar').value = settings.fogFar || 100;
         if (document.getElementById('ambColor')) document.getElementById('ambColor').value = settings.ambColor || '#ffffff';
         if (document.getElementById('ambInt')) document.getElementById('ambInt').value = settings.ambInt || 0.6;
+        if (document.getElementById('groundColor')) document.getElementById('groundColor').value = settings.groundColor || '#ffffff';
 
         // Sun
         if (document.getElementById('sunColor')) document.getElementById('sunColor').value = settings.sunColor || '#ffffff';

@@ -15,8 +15,10 @@ export class CollisionManager {
      * @param {number} size - New map bounds
      */
     setMapBounds(size) {
-        this.mapBounds = size || 50;
-        console.log(`Map bounds updated to: ${this.mapBounds}`);
+        // Apply limit = size - 1 as requested
+        const baseSize = size || 50;
+        this.mapBounds = baseSize - 1;
+        console.log(`Map bounds updated to: ${this.mapBounds} (Size: ${baseSize})`);
     }
 
     /**

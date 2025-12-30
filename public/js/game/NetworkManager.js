@@ -88,8 +88,7 @@ export class NetworkManager {
 
         this.socket.on('game_complete', () => {
             console.log('🎉 Game Complete!');
-            alert('Félicitations ! Vous avez terminé toutes les scènes !');
-            window.location.href = '/dashboard.html';
+            // UI handled by UIManager via game.js listener
         });
     }
 

@@ -52,6 +52,9 @@ class Character {
                 class: charClass,
                 level: 1,
                 experience: 0,
+                gold: 0,
+                silver: 0,
+                copper: 0,
                 inventory: [],
                 ...baseStats
             };
@@ -119,6 +122,17 @@ class Character {
             'UPDATE characters SET level = ?, experience = ? WHERE id = ?',
             [level, experience, id]
         );
+    }
+
+    // Add rewards (XP, Gold, Silver, Copper)
+    static async addRewards(id, experience, gold, silver = 0, copper = 0) {
+        // We need to get current values first to increment them
+        // But for simplicity/atomic update, we can do direct SQL increment
+        await database.run(
+            'UPDATE characters SET experience = experience + ?, gold = gold + ?, silver = silver + ?, copper = copper + ? WHERE id = ?',
+            [experience, gold, silver, copper, id]
+        );
+        console.log(`[Character DB] Awarded ${experience} XP, ${gold}G ${silver}S ${copper}C to char ${id}`);
     }
 
     // Update character stats (health/mana)

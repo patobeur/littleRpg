@@ -18,24 +18,25 @@ class CollisionSystem {
      * @returns {boolean} true if valid, false if collision
      */
     isValidPosition(position, sceneId, radius = 0.5) {
-        // 1. Check Scene Boundaries (Simple box for now, can be expanded)
-        if (!this.checkBoundaries(position)) {
+        // 1. Check Scene Boundaries
+        if (!this.checkBoundaries(position, sceneId)) {
             return false;
         }
-
-        // 2. Check Static Obstacles (Walls, etc.)
-        // For now, we assume everything is walkable except explicit exclusion zones if we had them.
-        // We will implement a simple "Map Bounds" check.
-
-        // TODO: Load scene-specific obstacles (rocks, buildings) from config
 
         return true;
     }
 
-    checkBoundaries(position) {
-        // Simple global bounds to prevent falling off the world
-        const MAX_RANGE = 50;
-        if (Math.abs(position.x) > MAX_RANGE || Math.abs(position.z) > MAX_RANGE) {
+    checkBoundaries(position, sceneId) {
+        // Dynamic bounds based on scene config
+        const sceneConfig = getSceneConfig(sceneId);
+        // Default to 50 if mapSize is missing
+        const mapSize = sceneConfig && sceneConfig.mapSize ? sceneConfig.mapSize : 50;
+
+        // Strict limit: Map Size - 1 (as requested)
+        const limit = mapSize - 1;
+
+        if (Math.abs(position.x) > limit || Math.abs(position.z) > limit) {
+            // console.log(`[Collision] Position ${position.x},${position.z} out of bounds (limit: ${limit})`);
             return false;
         }
         return true;

@@ -53,7 +53,7 @@ export function initThree() {
     // 7. Ground Plane (Invisible mostly, for raycast)
     const plane = new THREE.Mesh(
         new THREE.PlaneGeometry(200, 200),
-        new THREE.MeshStandardMaterial({ color: 0x1a1a1a, depthWrite: true })
+        new THREE.MeshStandardMaterial({ color: 0xffffff, depthWrite: true })
     );
     plane.rotation.x = -Math.PI / 2;
     plane.receiveShadow = true;
@@ -103,6 +103,7 @@ export function updateEnvironment(settings) {
         if (settings.ambInt !== undefined) amb.intensity = parseFloat(settings.ambInt);
     }
 
+    // Environment Lights
     const dir = state.scene.children.find(c => c.isDirectionalLight);
     if (dir) {
         if (settings.sunColor) dir.color = new THREE.Color(settings.sunColor);
@@ -111,6 +112,12 @@ export function updateEnvironment(settings) {
         if (settings.sunX !== undefined && settings.sunY !== undefined && settings.sunZ !== undefined) {
             dir.position.set(parseFloat(settings.sunX), parseFloat(settings.sunY), parseFloat(settings.sunZ));
         }
+    }
+
+    // Ground Color
+    const ground = state.scene.children.find(c => c.userData.isGround);
+    if (ground && settings.groundColor) {
+        ground.material.color = new THREE.Color(settings.groundColor);
     }
 }
 
@@ -148,9 +155,10 @@ export function updateGrid(width, depth) {
     const gridHelper = new THREE.GridHelper(size, divisions, 0x444444, 0x222222);
     state.scene.add(gridHelper);
 
+    const groundColor = document.getElementById('groundColor')?.value || '#ffffff';
     const plane = new THREE.Mesh(
         new THREE.PlaneGeometry(w, d),
-        new THREE.MeshStandardMaterial({ color: 0x1a1a1a, depthWrite: true })
+        new THREE.MeshStandardMaterial({ color: groundColor, depthWrite: true })
     );
     plane.rotation.x = -Math.PI / 2;
     plane.receiveShadow = true;

@@ -209,4 +209,141 @@ export class UIManager {
         this.responseContent.innerHTML = html;
         responseContainer.style.display = 'flex';
     }
+
+
+    // --- New Modals (Downloading & End Game) ---
+
+    showSceneTransition(mapName) {
+        // Create or reuse modal container
+        let modal = document.getElementById('scene-transition-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'scene-transition-modal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                color: white;
+                font-family: 'Cinzel', serif;
+                animation: fadeIn 0.5s ease;
+            `;
+            document.body.appendChild(modal);
+        }
+
+        modal.innerHTML = `
+            <div style="text-align: center;">
+                <h1 style="font-size: 3rem; margin-bottom: 20px; color: #a78bfa;">Chargement...</h1>
+                <div style="font-size: 1.5rem; color: #ddd; margin-bottom: 40px;">Nouvel environnement détecté</div>
+                
+                <div style="
+                    width: 300px; 
+                    height: 4px; 
+                    background: #333; 
+                    border-radius: 2px; 
+                    overflow: hidden; 
+                    margin: 0 auto 30px auto;
+                ">
+                    <div style="
+                        width: 100%; 
+                        height: 100%; 
+                        background: #8b5cf6; 
+                        animation: loadingBar 2s infinite ease-in-out;
+                        transform-origin: left;
+                    "></div>
+                </div>
+
+                <h2 style="font-size: 2.5rem; color: white;">${mapName || 'Zone Inconnue'}</h2>
+                <style>
+                    @keyframes loadingBar {
+                        0% { transform: scaleX(0); }
+                        50% { transform: scaleX(1); }
+                        100% { transform: scaleX(0); transform-origin: right; }
+                    }
+                </style>
+            </div>
+        `;
+
+        modal.style.display = 'flex';
+
+        // Auto-hide is handled by the caller (game logic) usually?
+        // Or we can just leave it up until the scene is ready. 
+        // For "downloading" feel, we can show it for a fixed time or until next scene signal.
+        // For now, let's auto-hide after a short delay since the game loads fast, 
+        // to give the player time to read.
+        setTimeout(() => {
+            modal.style.opacity = '0';
+            modal.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                modal.style.display = 'none';
+                modal.style.opacity = '1';
+            }, 500);
+        }, 3000);
+    }
+
+    showEndGameModal(rewards) {
+        let modal = document.getElementById('end-game-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'end-game-modal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0, 0, 0, 0.95);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                z-index: 20000;
+                color: white;
+                font-family: 'Cinzel', serif;
+                animation: fadeIn 1s ease;
+            `;
+            document.body.appendChild(modal);
+        }
+
+        modal.innerHTML = `
+            <div style="text-align: center; max-width: 600px; padding: 40px; background: rgba(20, 20, 30, 0.8); border: 1px solid #8b5cf6; border-radius: 15px; box-shadow: 0 0 50px rgba(139, 92, 246, 0.2);">
+                <h1 style="font-size: 4rem; margin: 0 0 20px 0; color: #fbbf24; text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);">Aventure Terminée!</h1>
+                <p style="font-size: 1.5rem; color: #ddd; margin-bottom: 40px; line-height: 1.6;">
+                    Félicitations, aventuriers ! Vous avez triomphé des épreuves.
+                </p>
+                
+                <div style="display: flex; justify-content: center; gap: 40px; margin-bottom: 40px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; color: #a78bfa; font-weight: bold;">+${rewards.xp || 0}</div>
+                        <div style="font-size: 1rem; color: #aaa; text-transform: uppercase; letter-spacing: 2px;">Expérience</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; color: #fbbf24; font-weight: bold;">+${rewards.gold || 0}</div>
+                        <div style="font-size: 1rem; color: #aaa; text-transform: uppercase; letter-spacing: 2px;">Pièces d'Or</div>
+                    </div>
+                </div>
+
+                <button id="end-game-btn" style="
+                    background: #8b5cf6;
+                    color: white;
+                    border: none;
+                    padding: 15px 40px;
+                    font-size: 1.2rem;
+                    font-family: inherit;
+                    font-weight: bold;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+                ">Retour au Lobby</button>
+            </div>
+        `;
+
+        modal.style.display = 'flex';
+
+        document.getElementById('end-game-btn').onclick = () => {
+            window.location.href = '/lobby.html';
+        };
+    }
 }

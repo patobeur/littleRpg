@@ -97,6 +97,7 @@ class GameEngine {
         // Init Managers
         this.sceneManager.init();
         this.networkManager.setupSockets();
+        this.setupNetworkListeners();
 
         // Load Entities FIRST (sets localCharacterId in EntityManager)
         await this.entityManager.loadPlayers(gameData.players, this.localCharacterId);
@@ -190,12 +191,21 @@ class GameEngine {
         this.currentSceneConfig = data.config;
 
         // Apply Ambiance
-        if (data.config.scene) {
-            this.sceneManager.updateAmbiance(data.config.scene);
-            // Load Point Lights if available
-            if (data.config.lights && this.sceneManager.ambianceManager) {
-                this.sceneManager.ambianceManager.loadLights(data.config.lights);
-            }
+        // Update Scene Ambiance (Lights, Fog, Ground, Grid)
+        if (data.config.sceneSettings) {
+            // Merge mapSize into settings for AmbianceManager to resize grid
+            const ambConfig = {
+                ...data.config.sceneSettings,
+                mapSize: data.config.mapSize
+            };
+            this.sceneManager.updateAmbiance(ambConfig);
+        } else if (data.config.mapSize) {
+            // If no sceneSettings but mapSize exists, still update grid
+            this.sceneManager.updateAmbiance({ mapSize: data.config.mapSize });
+        }
+        // Load Point Lights if available
+        if (data.config.lights && this.sceneManager.ambianceManager) {
+            this.sceneManager.ambianceManager.loadLights(data.config.lights);
         }
 
         // Update map bounds for collision
@@ -277,6 +287,34 @@ class GameEngine {
 
         }, 500);
     }
+
+    setupNetworkListeners() {
+        const socket = this.networkManager.socket;
+
+        if (!socket) return;
+
+        // Custom Scene Transition UI
+        socket.on('scene_changed', (data) => {
+            // Scene name from config or ID
+            const mapName = data.config?.name || data.sceneId;
+            this.uiManager.showSceneTransition(mapName);
+
+            // Logic delegated to NetworkManager -> game.handleSceneChange
+            // Do NOT call this.handleSceneChange(data) here, or it runs twice!
+        });
+
+        // Game Complete (End Game) UI
+        socket.on('game_complete', (data) => {
+            if (data && data.rewards) {
+                this.uiManager.showEndGameModal(data.rewards);
+            } else {
+                this.uiManager.showEndGameModal({ xp: 100, gold: 10 });
+            }
+        });
+    }
+
+    // ...
+
 
     checkTeleportZones() {
         const targetModel = this.entityManager.targetModel;

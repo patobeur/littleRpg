@@ -26,6 +26,7 @@ export function saveMap() {
             fogFar: parseFloat(document.getElementById('fogFar')?.value) || 100,
             ambColor: document.getElementById('ambColor')?.value || '#ffffff',
             ambInt: parseFloat(document.getElementById('ambInt')?.value) || 0.6,
+            groundColor: document.getElementById('groundColor')?.value || '#ffffff',
             // Sun Settings
             sunColor: document.getElementById('sunColor')?.value,
             sunInt: parseFloat(document.getElementById('sunInt')?.value),

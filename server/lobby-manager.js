@@ -803,14 +803,17 @@ class LobbyManager {
         if (!nextScene) {
             console.log(`[LobbyManager] No more scenes! End of game.`);
 
-            // Game complete - clear all positions
+            // Game complete - clear all positions and award rewards
+            const rewards = { xp: 100, gold: 10 };
+            console.log(`[LobbyManager] Game complete - awarding rewards to all players in lobby ${code}`);
+
             for (const player of lobby.players) {
                 await Character.clearPosition(player.characterId);
+                await Character.addRewards(player.characterId, rewards.xp, rewards.gold);
                 this.playerStates.delete(player.characterId);
             }
-            console.log(`[LobbyManager] Game complete - cleared all positions for lobby ${code}`);
 
-            this.io.to(code).emit('game_complete');
+            this.io.to(code).emit('game_complete', { rewards });
             return;
         }
 

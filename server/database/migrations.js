@@ -116,6 +116,57 @@ const migrations = [
 			console.log("  ✓ Performance indexes");
 		},
 	},
+	{
+		version: 3,
+		name: "Add gold to characters",
+		up: async () => {
+			// Add gold column to characters table
+			try {
+				await database.run(`
+                    ALTER TABLE characters ADD COLUMN gold INTEGER DEFAULT 0
+                `);
+				console.log("✅ Migration 3: Added gold column to characters table");
+			} catch (err) {
+				// Column might already exist if re-running
+				if (err.message.includes("duplicate column name")) {
+					console.log("ℹ️  Column 'gold' already exists in characters table");
+				} else {
+					throw err;
+				}
+			}
+		},
+	},
+	{
+		version: 4,
+		name: "Add silver and copper to characters",
+		up: async () => {
+			try {
+				await database.run(`
+                    ALTER TABLE characters ADD COLUMN silver INTEGER DEFAULT 0
+                `);
+				console.log("✅ Migration 4: Added silver column to characters table");
+			} catch (err) {
+				if (err.message.includes("duplicate column name")) {
+					console.log("ℹ️  Column 'silver' already exists");
+				} else {
+					throw err;
+				}
+			}
+
+			try {
+				await database.run(`
+                    ALTER TABLE characters ADD COLUMN copper INTEGER DEFAULT 0
+                `);
+				console.log("✅ Migration 4: Added copper column to characters table");
+			} catch (err) {
+				if (err.message.includes("duplicate column name")) {
+					console.log("ℹ️  Column 'copper' already exists");
+				} else {
+					throw err;
+				}
+			}
+		},
+	},
 ];
 
 // Seed default admin account
