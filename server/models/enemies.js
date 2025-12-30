@@ -23,7 +23,7 @@ const enemies = {
 			xp: 75,
 			lv: 4,
 			inventory: [],
-			png: "Alistar.png",
+			png: "Alistar.jpg",
 			glb: "Alistar.fbx",
 			animations: {
 				walk_path: "models/enemies/animations/Alistar_Walk.fbx",
@@ -53,14 +53,14 @@ const enemies = {
 				mana: 20,
 				physiqueArmor: 20,
 				magicArmor: 10,
-				attackSpeed: 1000 // ms
+				attackSpeed: 1000, // ms
 			},
 			scale: 1.5,
 			radius: 0.6,
 			xp: 35,
 			lv: 4,
 			inventory: [],
-			png: "Torp.png",
+			png: "Torp.jpg",
 			glb: "Torp.fbx", // dans enemies/
 			animations: {
 				walk_path: "models/enemies/animations/Torp_Walk.fbx",
@@ -90,14 +90,14 @@ const enemies = {
 				mana: 20,
 				physiqueArmor: 5,
 				magicArmor: 5,
-				attackSpeed: 1200 // ms
+				attackSpeed: 1200, // ms
 			},
 			scale: 0.8,
 			radius: 0.4,
 			xp: 25,
 			lv: 4,
 			inventory: [],
-			png: "Zephyr.png",
+			png: "Zephyr.jpg",
 			glb: "Zephyr.fbx", // dans enemies/
 			animations: {
 				walk_path: "models/enemies/animations/Zephyr_Walk.fbx",

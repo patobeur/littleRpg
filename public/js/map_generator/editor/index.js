@@ -1,6 +1,6 @@
 import { UI } from './UI.js';
 import * as THREE from 'three';
-import { initThree, onWindowResize, updateEnvironment } from './Scene.js';
+import { initThree, onWindowResize, updateEnvironment, updateGrid } from './Scene.js';
 import { initEvents } from './Input.js';
 import { state } from './State.js';
 import { TransformGizmo } from '../tools/Gizmo.js';
@@ -16,9 +16,25 @@ function init() {
     state.gizmo = new TransformGizmo(state.scene, state.camera, state.renderer.domElement);
     state.gizmo.attachToScene(state.scene);
 
-    // Disable controls while dragging
-    state.gizmo.onDragStart = () => { state.controls.enabled = false; };
-    state.gizmo.onDragEnd = () => { state.controls.enabled = true; };
+    // Gizmo Events (Custom Class)
+    state.gizmo.onDragStart = () => {
+        state.controls.enabled = false;
+    };
+
+    state.gizmo.onDragEnd = () => {
+        state.controls.enabled = true;
+    };
+
+    state.gizmo.onChange = () => {
+        if (state.selectedObject) {
+            UI.updateSelection(state.selectedObject);
+
+            // AUTO-UPDATE ROADS
+            if (state.selectedObject.userData.type === 'road_joint' || state.selectedObject.userData.type === 'skeleton_node') {
+                import('./RoadNetwork.js').then(m => m.RoadNetwork.updateNode(state.selectedObject));
+            }
+        }
+    };
 
     // Events
     initEvents();
@@ -52,13 +68,19 @@ function init() {
     window.checkAndAddDefaultSpawnsAndExits = checkAndAddDefaultSpawnsAndExits;
     window.addPointLight = addPointLight;
 
+    // Make functions available globally for HTML buttons
+    window.generateRoadsOnly = generateRoadsOnly;
+    window.generateStructuresOnly = generateStructuresOnly;
+    window.generateNatureOnly = generateNatureOnly;
+    window.clearMap = clearMap;
+    window.newMap = newMap;
 
     animate();
 
     console.log('Map Generator Initialized (Refactored)');
 
     // Initial Gen
-    // generateVillage(10); // Start empty as requested
+    newMap(); // Initialize with default UI values (10x10)
     refreshMapList();
     refreshScenarioList();
     refreshScenarioMapSelect();
@@ -67,6 +89,25 @@ function init() {
     refreshNatureList();
     refreshNPCList();
     refreshContainerList();
+
+    // Display values for all sliders
+    document.querySelectorAll('input[type=range]').forEach(input => {
+        // Create bubble element
+        if (input.nextElementSibling && input.nextElementSibling.classList.contains('value-bubble')) return; // Avoid duplicates
+
+        const bubble = document.createElement('span');
+        bubble.classList.add('value-bubble');
+        bubble.innerText = input.value;
+        input.parentNode.appendChild(bubble);
+
+        // Update on change
+        input.addEventListener('input', () => {
+            bubble.innerText = input.value;
+        });
+
+        // Also update if value is set programmatically (mutation observer or manual trigger needed usually, but we'll hook into common updates if needed)
+        // For now, listener covers user interaction.
+    });
 
     // Fetch Game Config
     fetch('/api/config/client')
@@ -255,48 +296,199 @@ function animate() {
 }
 
 // Logic bridging (Generators to Scene)
-function generateMap() {
-    const type = document.getElementById('genType').value;
-    const size = parseInt(document.getElementById('genSize').value);
+// Logic bridging (Generators to Scene)
+// --- GENERATION HANDLERS ---
+import { PRNG } from '../procedural/PRNG.js';
+import { generateRoadsData, generateStructuresData, generateNatureData } from '../procedural/index.js';
 
-    // Clear
-    state.objects.forEach(obj => state.scene.remove(obj));
-    state.objects = [];
+function clearMap() {
+    // Remove all standard allowed objects
+    const toRemove = state.objects.filter(o =>
+        o.userData.type === 'structure' ||
+        o.userData.type === 'nature' ||
+        o.userData.type === 'enemy' ||
+        o.userData.type === 'road_joint' ||
+        o.userData.type === 'road' ||
+        o.userData.type === 'skeleton_node' ||
+        o.userData.type === 'spawn' ||
+        o.userData.type === 'exit' ||
+        o.userData.type === 'npc' ||
+        o.userData.type === 'container' ||
+        o.userData.type === 'light'
+    );
+
+    // Also remove roads which are usually not in state.objects directly but in RoadNetwork internal + scene
+    // RoadNetwork.clear() should handle this ideally, but for now we rely on re-init.
+    // If RoadNetwork has meshes, we need to clear them.
+    import('./RoadNetwork.js').then(m => {
+        m.RoadNetwork.clear();
+        // Force reset graph
+        m.RoadNetwork.graph = null;
+    });
+
+    toRemove.forEach(o => {
+        state.scene.remove(o);
+        const idx = state.objects.indexOf(o);
+        if (idx > -1) state.objects.splice(idx, 1);
+    });
+
+    if (state.skeletonGroup) {
+        state.scene.remove(state.skeletonGroup);
+        state.skeletonGroup = null;
+    }
+
     state.selectedObject = null;
     state.gizmo.detach();
-
-    // Add Defaults
     addDefaultSpawnsAndExits();
-
-    if (type === 'village') {
-        const data = generateOrganicVillage(Date.now(), size * 5);
-        buildGeneratedMap(data);
-    } else {
-        // generateForest(size); 
-    }
 }
 
-async function buildGeneratedMap(data) {
-    if (data.roads) {
-        const material = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.9 });
-        data.roads.edges.forEach(edge => {
-            const nA = data.roads.nodes[edge.a];
-            const nB = data.roads.nodes[edge.b];
+function newMap() {
+    clearMap();
+    const w = parseInt(document.getElementById('genWidth').value) || 10;
+    const d = parseInt(document.getElementById('genDepth').value) || 10;
+    updateGrid(w, d);
+    resetEnvironment();
+}
 
-            const dx = nB.x - nA.x;
-            const dz = nB.z - nA.z;
-            const len = Math.sqrt(dx * dx + dz * dz);
-            const angle = Math.atan2(dx, dz);
+function resetEnvironment() {
+    // Reset UI Inputs
+    if (document.getElementById('ambInt')) document.getElementById('ambInt').value = 5.0; // Max intensity as requested
+    if (document.getElementById('ambColor')) document.getElementById('ambColor').value = '#ffffff';
+    if (document.getElementById('sunInt')) document.getElementById('sunInt').value = 1.0;
+    if (document.getElementById('sunColor')) document.getElementById('sunColor').value = '#ffffff';
+    if (document.getElementById('bgColor')) document.getElementById('bgColor').value = '#111111';
+    if (document.getElementById('fogEnabled')) document.getElementById('fogEnabled').checked = false;
 
-            const roadMesh = new THREE.Mesh(new THREE.BoxGeometry(6, 0.1, len), material);
-            roadMesh.position.set((nA.x + nB.x) / 2, 0.05, (nA.z + nB.z) / 2);
-            roadMesh.rotation.y = angle;
+    // Apply to Scene
+    updateEnvironment({
+        ambInt: 5.0, // Max
+        ambColor: '#ffffff',
+        sunInt: 1.0,
+        sunColor: '#ffffff',
+        bgColor: '#111111',
+        fogEnabled: false
+    });
+}
 
-            roadMesh.userData = { type: 'road', id: `road_${edge.a}_${edge.b}`, len: len, isRoot: true };
 
-            state.scene.add(roadMesh);
-            state.objects.push(roadMesh);
+function generateRoadsOnly() {
+    clearMap();
+
+    const w = parseInt(document.getElementById('genWidth').value) || 10;
+    const d = parseInt(document.getElementById('genDepth').value) || 10;
+    const bounds = { x: w * 5, z: d * 5 };
+
+    // Update Grid/Ground to match
+    updateGrid(w, d);
+
+    const roadWidth = parseFloat(document.getElementById('genRoadWidth').value) || 3.5;
+    const roadSmooth = parseInt(document.getElementById('genRoadSmooth').value) || 8;
+    const config = { roadWidth, roadSmooth };
+
+    const prng = new PRNG(Date.now());
+    const roadsData = generateRoadsData(prng, bounds);
+
+    import('./RoadNetwork.js').then(m => {
+        m.RoadNetwork.build(roadsData, config);
+    });
+}
+
+function generateStructuresOnly() {
+    // 1. Clear existing structures
+    const toRemove = state.objects.filter(o =>
+        o.userData.type === 'structure' ||
+        o.userData.type === 'house' ||
+        (window.structureMetadata && window.structureMetadata.has(o.userData.type))
+    );
+    toRemove.forEach(o => {
+        state.scene.remove(o);
+        state.objects.splice(state.objects.indexOf(o), 1);
+    });
+
+    import('./RoadNetwork.js').then(m => {
+        if (!m.RoadNetwork.graph) {
+            alert("No roads found! Generate roads first.");
+            return;
+        }
+
+        const houseDensity = parseInt(document.getElementById('genHouseDensity').value) || 50;
+        // Formula: 100 density -> 5 spacing, 10 density -> 50 spacing
+        // linear interp: density 10 -> 45, density 100 -> 5
+        const spacing = Math.max(5, 50 - (houseDensity * 0.45));
+
+        const prng = new PRNG(Date.now());
+        const structureTypes = Array.from(window.structureMetadata.values());
+
+        const structuresData = generateStructuresData(prng, m.RoadNetwork.graph, structureTypes, spacing);
+
+        // Build
+        structuresData.forEach(s => {
+            import('./Objects.js').then(mod => {
+                mod.addStructureResult(s.type, s.x, s.z).then(obj => {
+                    obj.rotation.y = s.rot;
+                });
+            });
         });
+
+    });
+}
+
+function generateNatureOnly() {
+    // 1. Clear existing nature
+    const toRemove = state.objects.filter(o => o.userData.type === 'nature');
+    toRemove.forEach(o => {
+        state.scene.remove(o);
+        state.objects.splice(state.objects.indexOf(o), 1);
+    });
+
+    import('./RoadNetwork.js').then(m => {
+        if (!m.RoadNetwork.graph) {
+            alert("No roads found! Generate roads first.");
+            return;
+        }
+
+        const w = parseInt(document.getElementById('genWidth').value) || 10;
+        const d = parseInt(document.getElementById('genDepth').value) || 10;
+        const bounds = { x: w * 5, z: d * 5 };
+
+        // Ensure grid matches
+        updateGrid(w, d);
+
+        const natureDensity = parseInt(document.getElementById('genNatureDensity').value) || 100;
+        // 100 -> 1.0, 200 -> 2.0
+        const multiplier = natureDensity / 100.0;
+
+        const prng = new PRNG(Date.now());
+        const natureTypes = Array.from(window.natureMetadata.values());
+
+        // We need existing structures for collision avoidance
+        // Let's gather them from scene objects
+        const existingStructures = state.objects
+            .filter(o => o.userData.type === 'structure')
+            .map(o => ({ x: o.position.x, z: o.position.z }));
+
+        const natureData = generateNatureData(prng, m.RoadNetwork.graph, existingStructures, bounds, natureTypes, multiplier);
+
+        // Build
+        natureData.forEach(t => {
+            const type = t.type || 'tree';
+            import('./Objects.js').then(mod => mod.addNature(type, t.x, t.z));
+        });
+    });
+}
+
+// Deprecated or keep for legacy "Generate All" if we kept the button?
+// We removed the button, so we can remove this or keep as alias.
+function generateMap() {
+    generateRoadsOnly();
+    // Chain with timeouts or promises if we wanted full gen? 
+    // But user wants manual control now.
+}
+
+async function buildGeneratedMap(data, config) {
+    if (data.roads) {
+        // Delegate to RoadNetwork manager
+        import('./RoadNetwork.js').then(m => m.RoadNetwork.build(data.roads, config));
     }
 
     if (data.structures) {
@@ -311,13 +503,31 @@ async function buildGeneratedMap(data) {
 
     if (data.trees) {
         data.trees.forEach(t => {
-            import('./Objects.js').then(m => m.addPlaceholder('tree', t.x, t.z, 0x228b22));
+            // Use the specific type if available, else 'tree'
+            const type = t.type || 'tree';
+            import('./Objects.js').then(m => m.addNature(type, t.x, t.z));
+        });
+    }
+
+    if (data.enemies) {
+        data.enemies.forEach(e => {
+            import('./Objects.js').then(m => {
+                const obj = m.addEnemy(e.type, e.x, e.z);
+                // Note: addEnemy returns the group directly (not a promise) 
+                // but loading is async. We can set rotation immediately on group container
+                if (obj) obj.rotation.y = e.rot;
+            });
         });
     }
 }
 
 function generateVillage(size) {
-    const data = generateOrganicVillage(12345, size * 5);
+    const assets = {
+        structureTypes: Array.from(window.structureMetadata.values()),
+        natureTypes: Array.from(window.natureMetadata.values()),
+        enemyTypes: Array.from(window.enemyMetadata.values())
+    };
+    const data = generateOrganicVillage(12345, size * 5, assets);
     buildGeneratedMap(data);
 }
 

@@ -1,6 +1,9 @@
-export function placeHouses(prng, graph) {
+export function placeHouses(prng, graph, structureTypes, spacing = 15) {
     const items = [];
     const occupied = [];
+
+    // If no structure types, return empty
+    if (!structureTypes || structureTypes.length === 0) return items;
 
     function collides(x, z, r) {
         for (let o of occupied) {
@@ -21,10 +24,15 @@ export function placeHouses(prng, graph) {
         const dir = { x: dx / dist, z: dz / dist };
         const norm = { x: -dir.z, z: dir.x };
 
-        const startOffset = 8;
-        const endOffset = 8;
+        const startOffset = 2;
+        const endOffset = 2;
 
-        for (let t = startOffset; t < dist - endOffset; t += prng.range(12, 18)) {
+        for (let t = startOffset; t < dist - endOffset; t += prng.range(spacing, spacing + 6)) {
+            // Pick a random structure type for this attempt
+            const typeIdx = Math.floor(prng.random() * structureTypes.length);
+            const structDef = structureTypes[typeIdx];
+            const structRadius = (structDef.radius || 2) * (structDef.scale || 1) * 3; // Approx buffer
+
             // Left Check
             if (prng.random() > 0.3) {
                 const setback = prng.range(6, 10);
@@ -32,9 +40,9 @@ export function placeHouses(prng, graph) {
                 const hz = nA.z + dir.z * t + norm.z * setback;
                 const angle = Math.atan2(dir.x, dir.z);
 
-                if (!collides(hx, hz, 6)) {
-                    items.push({ type: 'house', x: hx, z: hz, rot: angle });
-                    occupied.push({ x: hx, z: hz, r: 6 });
+                if (!collides(hx, hz, structRadius)) {
+                    items.push({ type: structDef.id, x: hx, z: hz, rot: angle });
+                    occupied.push({ x: hx, z: hz, r: structRadius });
                 }
             }
 
@@ -45,9 +53,9 @@ export function placeHouses(prng, graph) {
                 const hz = nA.z + dir.z * t + norm.z * setback;
                 const angle = Math.atan2(dir.x, dir.z) + Math.PI;
 
-                if (!collides(hx, hz, 6)) {
-                    items.push({ type: 'house', x: hx, z: hz, rot: angle });
-                    occupied.push({ x: hx, z: hz, r: 6 });
+                if (!collides(hx, hz, structRadius)) {
+                    items.push({ type: structDef.id, x: hx, z: hz, rot: angle });
+                    occupied.push({ x: hx, z: hz, r: structRadius });
                 }
             }
         }

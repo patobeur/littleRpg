@@ -92,6 +92,23 @@ export const UI = {
         }
     },
 
+    // Toggle Road Skeleton
+    toggleSkeleton: () => {
+        const btn = document.getElementById('btnSkeleton');
+        if (state.skeletonGroup) {
+            state.skeletonGroup.visible = !state.skeletonGroup.visible;
+            if (state.skeletonGroup.visible) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        } else {
+            // If no generation yet, just toggle visually to indicate preference?
+            // Or maybe do nothing. For now, visual feedback only if group exists.
+            btn.classList.toggle('active');
+        }
+    },
+
     // Bind Input Events to Scene Actions
     initBindings: (updateGizmoCallback, updateEnvCallback) => {
         // Selection Transforms
@@ -184,6 +201,7 @@ export const UI = {
             if (!updateEnvCallback) return;
             const settings = {
                 bgColor: document.getElementById('bgColor').value,
+                fogEnabled: document.getElementById('fogEnabled').checked,
                 fogColor: document.getElementById('fogColor').value,
                 fogNear: document.getElementById('fogNear').value,
                 fogFar: document.getElementById('fogFar').value,
@@ -198,10 +216,16 @@ export const UI = {
             updateEnvCallback(settings);
         };
 
-        ['bgColor', 'fogColor', 'fogNear', 'fogFar', 'ambColor', 'ambInt', 'sunColor', 'sunInt', 'sunX', 'sunY', 'sunZ'].forEach(id => {
+        ['bgColor', 'fogEnabled', 'fogColor', 'fogNear', 'fogFar', 'ambColor', 'ambInt', 'sunColor', 'sunInt', 'sunX', 'sunY', 'sunZ'].forEach(id => {
             const el = document.getElementById(id);
             if (el) {
+                // Use 'change' for checkbox/color sometimes better, but 'input' gives real-time
+                // Checkbox fires 'change' mostly. 'input' also fires on new browsers.
+                // Let's listen to both or just 'change' if 'input' fails? 
+                // Using 'input' for sliders is crucial. 
+                // For checkbox, 'change' is standard.
                 el.addEventListener('input', updateEnv);
+                el.addEventListener('change', updateEnv);
             }
         });
 

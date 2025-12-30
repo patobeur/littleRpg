@@ -1,22 +1,38 @@
-/* Ribbon Layout */
+/* Elegant Ribbon Theme - Slate & Gold */
+:root {
+    --bg-body: #0f172a;
+    /* Deep Slate */
+    --bg-ribbon: rgba(30, 41, 59, 0.95);
+    /* Opaque Slate for readability */
+    --bg-panel: #1e293b;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --gold-primary: #d4af37;
+    /* Elegant Gold */
+    --gold-glow: rgba(212, 175, 55, 0.3);
+    --border-color: rgba(255, 255, 255, 0.1);
+}
+
 body {
     display: flex;
     flex-direction: column;
     height: 100vh;
     overflow: hidden;
-    background-color: #1a1a1a;
-    color: #e0e0e0;
+    background-color: var(--bg-body);
+    color: var(--text-primary);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 #ribbon-container {
     height: 140px;
-    /* Standard ribbon height */
-    background-color: #2b2b2b;
-    border-bottom: 2px solid var(--gold-primary, #ffc107);
+    background-color: var(--bg-ribbon);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 2px solid var(--gold-primary);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     z-index: 100;
 }
 
@@ -30,58 +46,86 @@ body {
 /* Tabs */
 .ribbon-tabs {
     display: flex;
-    background-color: #202020;
-    padding-left: 10px;
+    background-color: rgba(15, 23, 42, 0.95);
+    padding-left: 20px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+    height: 32px;
+    /* Fixed small height */
 }
 
 .ribbon-tab {
-    padding: 8px 16px;
+    padding: 0 20px;
+    height: 32px;
+    /* Match container */
+    display: flex;
+    align-items: center;
     cursor: pointer;
     background: transparent;
     border: none;
-    color: #aaa;
-    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
     text-transform: uppercase;
+    letter-spacing: 0.05em;
     border-top: 3px solid transparent;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
 }
 
 .ribbon-tab:hover {
-    color: white;
-    background-color: #333;
+    color: var(--text-primary);
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
 .ribbon-tab.active {
-    color: white;
-    background-color: #2b2b2b;
-    border-top: 3px solid var(--gold-primary, #ffc107);
-    font-weight: bold;
+    color: var(--gold-primary);
+    background-color: transparent;
+    border-top: 3px solid var(--gold-primary);
+    font-weight: 600;
+    text-shadow: 0 0 10px var(--gold-glow);
 }
 
 /* Ribbon Content (Panels) */
 .ribbon-panel {
     display: none;
     flex: 1;
-    padding: 5px 10px;
-    align-items: center;
+    padding: 5px 20px;
+    align-items: flex-start;
+    /* IMPORTANT: Align top to avoid pushing bottoms */
     overflow-x: auto;
-    gap: 10px;
+    gap: 15px;
+    padding-bottom: 20px;
+    /* Space for Group Titles */
 }
 
 .ribbon-panel.active {
     display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Groups */
 .ribbon-group {
     display: flex;
     flex-direction: row;
-    gap: 5px;
-    padding: 0 10px;
-    border-right: 1px solid #444;
+    gap: 10px;
+    padding: 10px 15px 15px 15px;
+    /* Bottom padding for title */
+    border-right: 1px solid var(--border-color);
     height: 100%;
     align-items: center;
     position: relative;
+    box-sizing: border-box;
 }
 
 .ribbon-group:last-child {
@@ -90,64 +134,77 @@ body {
 
 .ribbon-group-title {
     position: absolute;
-    bottom: 2px;
+    bottom: 5px;
+    /* Slight lift */
     left: 0;
     width: 100%;
     text-align: center;
-    font-size: 0.7rem;
-    color: #888;
+    font-size: 0.65rem;
+    /* Smaller Font */
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
     pointer-events: none;
+    font-weight: 600;
 }
 
 .ribbon-group-content {
     display: flex;
-    gap: 5px;
-    margin-bottom: 12px;
-    /* Space for title */
+    gap: 10px;
     align-items: center;
+    /* Removed fixed margin-bottom to rely on padding */
 }
 
 /* Controls */
 .ribbon-column {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
+    justify-content: center;
 }
 
+/* Buttons */
 .ribbon-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    color: #ddd;
-    padding: 5px;
-    min-width: 50px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    padding: 6px;
+    min-width: 60px;
     cursor: pointer;
-    font-size: 0.8rem;
-    height: 60px;
-    /* Large button height */
+    font-size: 0.7rem;
+    /* Smaller text */
+    height: 56px;
+    /* Reduced height to prevent overlap */
+    transition: all 0.2s ease;
 }
 
 .ribbon-btn:hover {
-    background-color: #3a3a3a;
-    border-color: #555;
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--gold-primary);
+    box-shadow: 0 0 10px var(--gold-glow);
+    transform: translateY(-1px);
 }
 
 .ribbon-btn.small {
     flex-direction: row;
-    height: 24px;
-    gap: 5px;
-    justify-content: flex-start;
-    padding: 0 5px;
+    height: 26px;
+    gap: 8px;
+    justify-content: center;
+    padding: 0 10px;
     width: auto;
+    background: rgba(0, 0, 0, 0.2);
 }
 
 .ribbon-btn i {
-    font-size: 1.2rem;
-    margin-bottom: 4px;
+    font-size: 1.3rem;
+    margin-bottom: 3px;
+    color: var(--gold-primary);
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
 }
 
 .ribbon-btn.small i {
@@ -155,28 +212,99 @@ body {
     margin-bottom: 0;
 }
 
+/* Inputs */
 .ribbon-input-group {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     margin-bottom: 2px;
+    position: relative;
 }
 
 .ribbon-label {
-    font-size: 0.75rem;
-    color: #bbb;
-    min-width: 50px;
+    font-size: 0.70rem;
+    color: var(--text-secondary);
+    min-width: 45px;
+    font-weight: 500;
 }
 
 .ribbon-input {
-    background: #111;
-    border: 1px solid #444;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.ribbon-input:focus {
+    border-color: var(--gold-primary);
+}
+
+/* Dropdown fix for dark mode */
+select.ribbon-input {
+    background-color: rgba(30, 41, 59, 1);
     color: white;
-    padding: 2px 5px;
-    border-radius: 3px;
-    font-size: 0.8rem;
+}
+
+select.ribbon-input option {
+    background-color: #1e293b;
+    color: #f1f5f9;
+    padding: 10px;
 }
 
 input[type="range"] {
     width: 80px;
+    accent-color: var(--gold-primary);
+    cursor: pointer;
+}
+
+/* Tooltips - Fixed Position */
+[data-title] {
+    position: relative;
+}
+
+[data-title]:hover::after {
+    content: attr(data-title);
+    position: absolute;
+    top: 100%;
+    /* Move BELOW */
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.98);
+    border: 1px solid var(--gold-primary);
+    color: var(--text-primary);
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 9999;
+    margin-top: 5px;
+    /* Small gap */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+    opacity: 0;
+    animation: fadeInTooltip 0.2s forwards;
+    animation-delay: 0.3s;
+}
+
+@keyframes fadeInTooltip {
+    to {
+        opacity: 1;
+    }
+}
+
+/* Value Bubbles */
+.value-bubble {
+    font-size: 0.65rem;
+    color: var(--gold-primary);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 1px 4px;
+    border-radius: 3px;
+    min-width: 18px;
+    text-align: center;
+    margin-left: 4px;
+    border: 1px solid rgba(212, 175, 55, 0.2);
 }

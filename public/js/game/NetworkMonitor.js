@@ -131,15 +131,15 @@ class NetworkMonitor {
     report() {
         const stats = this.getStats();
 
-        console.log('\n📊 Network Performance Report');
-        console.log('═'.repeat(50));
-        console.log(`Uptime: ${Math.round(stats.elapsed)}s`);
-        console.log(`Messages Sent: ${stats.messagesSent} (${stats.sentPerSec.toFixed(1)}/s)`);
-        console.log(`Messages Received: ${stats.messagesReceived} (${stats.receivedPerSec.toFixed(1)}/s)`);
-        console.log(`Batches Received: ${stats.batchesReceived} (${(stats.batchRatio * 100).toFixed(1)}% of messages)`);
-        console.log(`Bandwidth Sent: ${stats.bandwidthSent}`);
-        console.log(`Bandwidth Received: ${stats.bandwidthReceived}`);
-        console.log(`Avg Message Size: ${stats.avgMessageSize} bytes`);
+        // console.log('\n📊 Network Performance Report');
+        // console.log('═'.repeat(50));
+        // console.log(`Uptime: ${Math.round(stats.elapsed)}s`);
+        // console.log(`Messages Sent: ${stats.messagesSent} (${stats.sentPerSec.toFixed(1)}/s)`);
+        // console.log(`Messages Received: ${stats.messagesReceived} (${stats.receivedPerSec.toFixed(1)}/s)`);
+        // console.log(`Batches Received: ${stats.batchesReceived} (${(stats.batchRatio * 100).toFixed(1)}% of messages)`);
+        // console.log(`Bandwidth Sent: ${stats.bandwidthSent}`);
+        // console.log(`Bandwidth Received: ${stats.bandwidthReceived}`);
+        // console.log(`Avg Message Size: ${stats.avgMessageSize} bytes`);
 
         // Top message types
         const breakdown = this.getDetailedStats();

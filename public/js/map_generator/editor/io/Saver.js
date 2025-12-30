@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { state } from '../State.js';
+import { RoadNetwork } from '../RoadNetwork.js';
 
 export function saveMap() {
     const name = document.getElementById('mapName').value || 'untitled';
@@ -19,6 +20,7 @@ export function saveMap() {
         lights: [],
         sceneSettings: {
             bgColor: document.getElementById('bgColor')?.value || '#111111',
+            fogEnabled: document.getElementById('fogEnabled')?.checked,
             fogColor: document.getElementById('fogColor')?.value || '#111111',
             fogNear: parseFloat(document.getElementById('fogNear')?.value) || 20,
             fogFar: parseFloat(document.getElementById('fogFar')?.value) || 100,
@@ -30,7 +32,8 @@ export function saveMap() {
             sunX: parseFloat(document.getElementById('sunX')?.value),
             sunY: parseFloat(document.getElementById('sunY')?.value),
             sunZ: parseFloat(document.getElementById('sunZ')?.value)
-        }
+        },
+        roadNetwork: RoadNetwork.graph // Save the graph data!
     };
 
     // Calculate map size based on object positions
@@ -50,35 +53,12 @@ export function saveMap() {
         let distance = Math.sqrt(pos.x * pos.x + pos.z * pos.z);
 
         // For roads, calculate the endpoint positions considering rotation
-        if (type === 'road') {
-            const len = obj.userData.len || 6;
-            const halfLen = (len * scale) / 2;
-
-            // Road extends along Z axis locally, then rotated by rot.y
-            // Calculate both endpoints
-            const endpoint1X = pos.x + Math.sin(rot.y) * halfLen;
-            const endpoint1Z = pos.z + Math.cos(rot.y) * halfLen;
-            const endpoint2X = pos.x - Math.sin(rot.y) * halfLen;
-            const endpoint2Z = pos.z - Math.cos(rot.y) * halfLen;
-
-            const dist1 = Math.sqrt(endpoint1X * endpoint1X + endpoint1Z * endpoint1Z);
-            const dist2 = Math.sqrt(endpoint2X * endpoint2X + endpoint2Z * endpoint2Z);
-
-            distance = Math.max(dist1, dist2);
-        }
-
-        // Add some margin for object size/collision
-        const margin = (type === 'structure' || type === 'house') ? 5 :
-            (type === 'road') ? 3 : 2;
-        maxDistance = Math.max(maxDistance, distance + margin);
-
         if (type === 'house' || type === 'structure') {
             data.structures.push({
                 type: type,
                 x: pos.x, y: pos.y, z: pos.z,
                 scale: scale,
-                rot: rot.y, // Save Y rotation in radians
-                rotation: { z: THREE.MathUtils.radToDeg(rot.y) } // Save Y rot as Z for legacy compat
+                rot: rot.y // Save Y rotation in radians
             });
         } else if (type === 'spawn') {
             spawnIndex++; // Increment index for each spawn
@@ -99,11 +79,39 @@ export function saveMap() {
         } else if (type === 'enemy') {
             data.enemies.push({ type: obj.userData.enemyType, x: pos.x, y: pos.y, z: pos.z, scale: scale, rot: rot.y });
         } else if (type === 'road') {
+            // New RoadNetwork meshes store edge data, but for game compat we simply save the mesh properties.
+            // Calculate actual length based on geometry and scale
+            const geoLen = obj.geometry?.parameters?.depth || 6;
+            const len = geoLen * obj.scale.z;
+            const halfLen = len / 2;
+
+            // Road extends along Z axis locally, then rotated by rot.y
+            // Calculate both endpoints
+            const endpoint1X = pos.x + Math.sin(rot.y) * halfLen;
+            const endpoint1Z = pos.z + Math.cos(rot.y) * halfLen;
+            const endpoint2X = pos.x - Math.sin(rot.y) * halfLen;
+            const endpoint2Z = pos.z - Math.cos(rot.y) * halfLen;
+
+            const dist1 = Math.sqrt(endpoint1X * endpoint1X + endpoint1Z * endpoint1Z);
+            const dist2 = Math.sqrt(endpoint2X * endpoint2X + endpoint2Z * endpoint2Z);
+
+            distance = Math.max(dist1, dist2);
+
+            // Save for Game
             data.roads.push({
                 x: pos.x, z: pos.z,
                 rot: rot.y,
-                len: obj.userData.len || 6, // Default len if missing
-                scale: scale
+                len: len,
+                scale: 1
+            });
+        } else if (type === 'road_joint') {
+            // Joints are cylinders
+            // Game uses generic roads, so we might need a flag
+            data.roads.push({
+                x: pos.x, z: pos.z,
+                rot: rot.y,
+                isJoint: true,
+                scale: 1
             });
         } else if (type === 'tree' || type === 'nature') {
             // Get nature metadata if available
@@ -145,10 +153,21 @@ export function saveMap() {
         }
     });
 
-    // Round up to nearest 5 and add safety margin
-    data.mapSize = Math.ceil(maxDistance / 5) * 5 + 10;
+    // Use explicit dimensions from generator if available
+    const genW = document.getElementById('genWidth');
+    const genD = document.getElementById('genDepth');
+    if (genW && genD) {
+        data.width = parseInt(genW.value);
+        data.depth = parseInt(genD.value);
+        data.mapSize = Math.max(data.width, data.depth) * 5 + 10; // Approx max size for server compat
+    } else {
+        // Fallback: Round up to nearest 5 and add safety margin
+        data.mapSize = Math.ceil(maxDistance / 5) * 5 + 10;
+        data.width = data.mapSize / 5;
+        data.depth = data.mapSize / 5;
+    }
 
-    console.log(`Map size calculated: ${data.mapSize} (based on max distance: ${maxDistance.toFixed(2)})`);
+    console.log(`Map dimensions saved: ${data.width}x${data.depth}`);
 
     fetch('/api/maps', {
         method: 'POST',

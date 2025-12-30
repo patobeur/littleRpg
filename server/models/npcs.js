@@ -14,7 +14,7 @@ const npcs = {
 			xp: 75,
 			lv: 4,
 			inventory: [],
-			png: "Peter.png",
+			png: "Peter.jpg",
 			glb: "Peter.fbx",
 			animations: {
 				//walk_path: "animations/Peter_Walk.fbx",
@@ -34,7 +34,7 @@ const npcs = {
 			xp: 75,
 			lv: 4,
 			inventory: [],
-			png: "Peter0.png",
+			png: "Peter0.jpg",
 			glb: "Peter0.fbx",
 			animations: {
 				//walk_path: "animations/Peter_Walk.fbx",

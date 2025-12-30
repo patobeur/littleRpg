@@ -24,14 +24,26 @@ export class EnvironmentManager {
         const mat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.9, side: THREE.DoubleSide });
 
         roadsList.forEach(r => {
-            const len = r.len || 6;
-            const geo = new THREE.PlaneGeometry(6, len);
-            const mesh = new THREE.Mesh(geo, mat);
+            let mesh;
+            if (r.isJoint) {
+                // Render Joint (Cylinder)
+                // Width 6 -> Radius 3. Height slightly higher to avoid z-fight or same?
+                // Editor uses 0.1 height. Road plane is flat.
+                // Let's use a flat cylinder or circle. Cylinder matches editor style.
+                const geo = new THREE.CylinderGeometry(3, 3, 0.05, 12); // Radius 3 (Half of 6), Height 0.05
+                mesh = new THREE.Mesh(geo, mat);
+                mesh.position.set(r.x, 0.02, r.z); // Same height as road?
+            } else {
+                // Render Road (Plane)
+                const len = r.len || 6;
+                const geo = new THREE.PlaneGeometry(6, len);
+                mesh = new THREE.Mesh(geo, mat);
 
-            mesh.rotation.x = -Math.PI / 2;
-            mesh.rotation.z = r.rot;
+                mesh.rotation.x = -Math.PI / 2;
+                mesh.rotation.z = r.rot;
+                mesh.position.set(r.x, 0.02, r.z);
+            }
 
-            mesh.position.set(r.x, 0.02, r.z);
             if (r.scale) mesh.scale.setScalar(r.scale);
 
             mesh.receiveShadow = true;

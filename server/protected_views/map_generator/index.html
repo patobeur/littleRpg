@@ -55,15 +55,7 @@
                 <div class="ribbon-group-title">Load Map</div>
             </div>
 
-            <div class="ribbon-group">
-                <div class="ribbon-group-content">
-                    <button class="ribbon-btn" onclick="location.reload();">
-                        <i class="fas fa-file"></i>
-                        New Map
-                    </button>
-                </div>
-                <div class="ribbon-group-title">New Map</div>
-            </div>
+
 
             <div class="ribbon-group">
                 <div class="ribbon-group-content">
@@ -81,6 +73,101 @@
                 <div class="ribbon-group-title">Save</div>
             </div>
 
+
+        </div>
+
+        <!-- HOME TAB (Generation) -->
+        <div id="ribbon-home" class="ribbon-panel active">
+            <!-- MAP GROUP -->
+            <div class="ribbon-group">
+                <div class="ribbon-group-content">
+                    <div class="ribbon-column">
+                        <div class="ribbon-input-group">
+                            <span class="ribbon-label">Width</span>
+                            <input type="number" id="genWidth" class="ribbon-input" value="10" min="5"
+                                style="width:40px;">
+                        </div>
+                        <div class="ribbon-input-group">
+                            <span class="ribbon-label">Depth</span>
+                            <input type="number" id="genDepth" class="ribbon-input" value="10" min="5"
+                                style="width:40px;">
+                        </div>
+                    </div>
+                    <div class="ribbon-column">
+                        <button class="ribbon-btn" onclick="newMap()">
+                            <i class="fas fa-file"></i>
+                            New Map
+                        </button>
+                    </div>
+                </div>
+                <div class="ribbon-group-title">Map</div>
+            </div>
+
+            <!-- ROADS GROUP -->
+            <div class="ribbon-group">
+                <div class="ribbon-group-content">
+                    <div class="ribbon-column">
+                        <div class="ribbon-input-group">
+                            <span class="ribbon-label">Width</span>
+                            <input type="number" id="genRoadWidth" class="ribbon-input" min="0.5" max="5.0" step="0.5"
+                                value="3.5" style="width:40px;">
+                        </div>
+                        <div class="ribbon-input-group">
+                            <span class="ribbon-label">Smooth</span>
+                            <input type="number" id="genRoadSmooth" class="ribbon-input" min="3" max="32" value="8"
+                                style="width:40px;">
+                        </div>
+                    </div>
+                    <div class="ribbon-column">
+                        <button id="btnSkeleton" class="ribbon-btn toggle-btn small" onclick="UI.toggleSkeleton()"
+                            title="Toggle Skeleton" data-title="Afficher/Masquer le squelette des routes">
+                            <i class="fas fa-project-diagram"></i>
+                        </button>
+                        <button class="ribbon-btn small" onclick="generateRoadsOnly()"
+                            data-title="Générer le réseau routier">
+                            <i class="fas fa-road"></i> Gen Roads
+                        </button>
+                    </div>
+                </div>
+                <div class="ribbon-group-title">Roads</div>
+            </div>
+
+            <!-- ARCHITECTURE GROUP -->
+            <div class="ribbon-group">
+                <div class="ribbon-group-content">
+                    <div class="ribbon-column">
+                        <div class="ribbon-input-group" data-title="Densité des maisons (génération procédurale)">
+                            <span class="ribbon-label">Density</span>
+                            <input type="range" id="genHouseDensity" class="ribbon-input" min="10" max="100" value="50"
+                                style="width:80px;" title="House Spacing">
+                        </div>
+                        <button class="ribbon-btn small" onclick="generateStructuresOnly()"
+                            data-title="Générer des maisons automatiquement le long des routes">
+                            <i class="fas fa-home"></i> Gen Houses
+                        </button>
+                    </div>
+                </div>
+                <div class="ribbon-group-title">Architecture</div>
+            </div>
+
+            <!-- NATURE GROUP -->
+            <div class="ribbon-group">
+                <div class="ribbon-group-content">
+                    <div class="ribbon-column">
+                        <div class="ribbon-input-group" data-title="Densité de la végétation">
+                            <span class="ribbon-label">Density</span>
+                            <input type="range" id="genNatureDensity" class="ribbon-input" min="0" max="200" value="100"
+                                style="width:80px;" title="Vegetation Density">
+                        </div>
+                        <button class="ribbon-btn small" onclick="generateNatureOnly()"
+                            data-title="Générer arbres et rochers automatiquement">
+                            <i class="fas fa-tree"></i> Gen Nature
+                        </button>
+                    </div>
+                </div>
+                <div class="ribbon-group-title">Nature</div>
+            </div>
+            <!-- SPAWNS & EXITS GROUP -->
             <div class="ribbon-group">
                 <div class="ribbon-group-content">
                     <button class="ribbon-btn" onclick="checkAndAddDefaultSpawnsAndExits()">
@@ -90,42 +177,16 @@
                 </div>
                 <div class="ribbon-group-title">Spawns & Exits</div>
             </div>
-        </div>
-
-        <!-- HOME TAB (Generation) -->
-        <div id="ribbon-home" class="ribbon-panel active">
+            <!-- CLEAR GROUP -->
             <div class="ribbon-group">
                 <div class="ribbon-group-content">
-                    <div class="ribbon-column">
-                        <div class="ribbon-input-group">
-                            <span class="ribbon-label">Type</span>
-                            <select id="genType" class="ribbon-input">
-                                <option value="village">Village</option>
-                                <option value="forest">Forest</option>
-                            </select>
-                        </div>
-                        <div class="ribbon-input-group">
-                            <span class="ribbon-label">Size</span>
-                            <input type="number" id="genSize" class="ribbon-input" value="10" min="5"
-                                style="width:60px;">
-                        </div>
-                        <div class="ribbon-input-group">
-                            <span class="ribbon-label">Density</span>
-                            <input type="range" id="genDensity" class="ribbon-input" min="10" max="90" value="50">
-                        </div>
-                    </div>
-                </div>
-                <div class="ribbon-group-title">Configuration</div>
-            </div>
-
-            <div class="ribbon-group">
-                <div class="ribbon-group-content">
-                    <button class="ribbon-btn" onclick="generateMap()">
-                        <i class="fas fa-magic"></i>
-                        Generate
+                    <button class="ribbon-btn"
+                        onclick="if(confirm('Êtes-vous sûr de vouloir vider la carte ?')) clearMap()"
+                        style="color: #ff6666;">
+                        <i class="fas fa-trash-alt"></i> Clear
                     </button>
                 </div>
-                <div class="ribbon-group-title">Action</div>
+                <div class="ribbon-group-title">Clear</div>
             </div>
         </div>
 
@@ -388,50 +449,65 @@
 
         <!-- VIEW TAB -->
         <div id="ribbon-view" class="ribbon-panel">
+            <!-- SKY GROUP -->
             <div class="ribbon-group">
                 <div class="ribbon-group-content">
                     <div class="ribbon-column">
-                        <div class="ribbon-input-group">
-                            <span class="ribbon-label">Sky</span>
+                        <div class="ribbon-input-group" data-title="Couleur du ciel / fond">
+                            <span class="ribbon-label">Color</span>
                             <input type="color" id="bgColor" value="#111111"
                                 style="height:20px; padding:0; border:none;">
                         </div>
-                        <div class="ribbon-input-group">
-                            <span class="ribbon-label">Fog</span>
+                    </div>
+                </div>
+                <div class="ribbon-group-title">Sky</div>
+            </div>
+
+            <!-- FOG GROUP -->
+            <div class="ribbon-group">
+                <div class="ribbon-group-content">
+                    <div class="ribbon-column">
+                        <div class="ribbon-input-group" data-title="Activer le brouillard">
+                            <span class="ribbon-label">Active</span>
+                            <input type="checkbox" id="fogEnabled">
+                        </div>
+                        <div class="ribbon-input-group" data-title="Couleur du brouillard">
+                            <span class="ribbon-label">Color</span>
                             <input type="color" id="fogColor" value="#111111"
                                 style="height:20px; padding:0; border:none;">
                         </div>
                     </div>
                     <div class="ribbon-column">
-                        <div class="ribbon-input-group">
+                        <div class="ribbon-input-group" data-title="Distance de début du brouillard">
                             <span class="ribbon-label">Near</span>
                             <input type="range" id="fogNear" min="0" max="100" value="20">
                         </div>
-                        <div class="ribbon-input-group">
+                        <div class="ribbon-input-group" data-title="Distance de fin du brouillard">
                             <span class="ribbon-label">Far</span>
                             <input type="range" id="fogFar" min="50" max="300" value="100">
                         </div>
                     </div>
                 </div>
-                <div class="ribbon-group-title">Atmosphere</div>
+                <div class="ribbon-group-title">Fog</div>
             </div>
 
-
+            <!-- AMBIENT GROUP -->
             <div class="ribbon-group">
                 <div class="ribbon-group-content">
                     <div class="ribbon-column">
-                        <div class="ribbon-input-group">
-                            <span class="ribbon-label">Ambient</span>
+                        <div class="ribbon-input-group" data-title="Couleur de la lumière ambiante">
+                            <span class="ribbon-label">Color</span>
                             <input type="color" id="ambColor" value="#ffffff"
                                 style="height:20px; padding:0; border:none;">
                         </div>
-                        <div class="ribbon-input-group">
+                        <div class="ribbon-input-group" data-title="Intensité globale (Luminosité générale)">
                             <span class="ribbon-label">Intens.</span>
-                            <input type="range" id="ambInt" min="0" max="2" step="0.1" value="0.6">
+                            <!-- Default 1.0, Max 5 -->
+                            <input type="range" id="ambInt" min="0" max="5" step="0.1" value="1.0">
                         </div>
                     </div>
                 </div>
-                <div class="ribbon-group-title">Lighting</div>
+                <div class="ribbon-group-title">Ambient</div>
             </div>
         </div>
 

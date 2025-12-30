@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { state } from '../State.js';
-import { updateEnvironment } from '../Scene.js';
+import { updateEnvironment, updateGrid } from '../Scene.js';
+import { RoadNetwork } from '../RoadNetwork.js';
 import { addStructureResult } from '../entities/Structure.js';
 import { addEnemyAt } from '../entities/Enemy.js';
 import { addNature, addPlaceholder } from '../entities/Nature.js';
@@ -38,10 +39,27 @@ export function loadMapData(mapData) {
     state.objects.length = 0; // Clear array
     state.selectedObject = null;
     state.gizmo.detach();
+
+    // Clear Road Network and Skeleton
+    RoadNetwork.clear();
+
     document.getElementById('mapName').value = mapData.name || 'loaded_map';
 
     const cb = document.getElementById('isLastMap');
     if (cb) cb.checked = !!mapData.isLastMap;
+
+    // Restore Map Dimensions
+    const w = mapData.width || (mapData.mapSize ? Math.round(mapData.mapSize / 5) : 10);
+    const d = mapData.depth || (mapData.mapSize ? Math.round(mapData.mapSize / 5) : 10);
+
+    const wInput = document.getElementById('genWidth');
+    const dInput = document.getElementById('genDepth');
+    if (wInput) wInput.value = w;
+    if (dInput) dInput.value = d;
+
+    // Update Grid
+    updateGrid(w, d);
+
 
     if (mapData.structures) {
         mapData.structures.forEach(s => {
@@ -126,7 +144,13 @@ export function loadMapData(mapData) {
         });
     }
 
-    if (mapData.roads) {
+    if (mapData.roadNetwork) {
+        // Load editable Road Network
+        const rw = parseFloat(document.getElementById('genRoadWidth')?.value) || 3.5;
+        const rs = parseInt(document.getElementById('genRoadSmooth')?.value) || 8;
+        RoadNetwork.build(mapData.roadNetwork, { roadWidth: rw, roadSmooth: rs });
+    } else if (mapData.roads) {
+        // Legacy Load (Dumb Meshes)
         mapData.roads.forEach(r => {
             const obj = addRoad(r.len, r.x, r.z, r.rot);
             if (r.scale) obj.scale.setScalar(r.scale);
@@ -170,6 +194,7 @@ export function loadMapData(mapData) {
 
         // Update VIEW tab inputs
         if (document.getElementById('bgColor')) document.getElementById('bgColor').value = settings.bgColor || '#111111';
+        if (document.getElementById('fogEnabled')) document.getElementById('fogEnabled').checked = !!settings.fogEnabled;
         if (document.getElementById('fogColor')) document.getElementById('fogColor').value = settings.fogColor || '#111111';
         if (document.getElementById('fogNear')) document.getElementById('fogNear').value = settings.fogNear || 20;
         if (document.getElementById('fogFar')) document.getElementById('fogFar').value = settings.fogFar || 100;
