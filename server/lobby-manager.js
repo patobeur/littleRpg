@@ -939,6 +939,7 @@ class LobbyManager {
                     name: structureData.name,
                     position: { x: def.x, y: def.y, z: def.z },
                     rotation: def.rotation || { x: 0, y: 0, z: 0 },
+                    rot: def.rot,
                     scale: def.scale || structureData.scale || 1,
                     radius: structureData.radius || 3,
                     modelPath: `/models/structures/${structureData.glb}`,

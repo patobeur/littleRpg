@@ -1,5 +1,5 @@
 {
-  "name": "Lobby",
+  "name": "Lobby2",
   "isLastMap": false,
   "structures": [
     {
@@ -582,8 +582,8 @@
   ],
   "trees": [
     {
-      "x": 34.59894250209811,
-      "z": -41.95734032239685,
+      "x": 22.675977595266005,
+      "z": -22.186201525531203,
       "scale": 1.2,
       "type": "CommonTree_4",
       "fbx": "CommonTree_4.fbx",
@@ -591,26 +591,17 @@
       "y": 0
     },
     {
-      "x": 22.222058828566105,
-      "z": -38.79635380373949,
-      "scale": 1.2,
-      "type": "CommonTree_3",
-      "fbx": "CommonTree_3.fbx",
+      "x": -3.35,
+      "z": -4.43,
+      "scale": 4.7,
+      "type": "rock",
+      "fbx": "Rock_1.fbx",
       "rot": 0,
       "y": 0
     },
     {
-      "x": 9.334812021153263,
-      "z": -48.19961540393223,
-      "scale": 1.2,
-      "type": "CommonTree_1",
-      "fbx": "CommonTree_1.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": 36.88749049180902,
-      "z": -9.266773709899399,
+      "x": -24.7386962201759,
+      "z": 4.5909136870504685,
       "scale": 1.2,
       "type": "tree",
       "fbx": "tree.fbx",
@@ -618,134 +609,8 @@
       "y": 0
     },
     {
-      "x": 13.631244355784066,
-      "z": -29.72737651255999,
-      "scale": 1.2,
-      "type": "BushBerries_2",
-      "fbx": "BushBerries_2.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": -9.460098977041712,
-      "z": -27.740987062520354,
-      "scale": 1.2,
-      "type": "CommonTree_5",
-      "fbx": "CommonTree_5.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": 32.765614215678006,
-      "z": -26.140582008772245,
-      "scale": 1.2,
-      "type": "rock",
-      "fbx": "Rock_1.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": -26.41827932788833,
-      "z": -4.0643118572985655,
-      "scale": 1.2,
-      "type": "CommonTree_4",
-      "fbx": "CommonTree_4.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": -5.69,
-      "z": 2.26,
-      "scale": 5.7,
-      "type": "CommonTree_2",
-      "fbx": "CommonTree_2.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": -22.1771629323702,
-      "z": 27.718766533821817,
-      "scale": 1.2,
-      "type": "BushBerries_2",
-      "fbx": "BushBerries_2.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": -23.562562825656773,
-      "z": 8.974099563239278,
-      "scale": 1.2,
-      "type": "CommonTree_1",
-      "fbx": "CommonTree_1.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": 7.110437002917003,
-      "z": 28.43916134789417,
-      "scale": 1.2,
-      "type": "CommonTree_4",
-      "fbx": "CommonTree_4.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": -3.5531331565923985,
-      "z": 36.19088707519913,
-      "scale": 1.2,
-      "type": "rock",
-      "fbx": "Rock_1.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": 46.124352752822794,
-      "z": 11.118271623336756,
-      "scale": 1.2,
-      "type": "CommonTree_4",
-      "fbx": "CommonTree_4.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": 45.63083483784991,
-      "z": 25.36694683816882,
-      "scale": 1.2,
-      "type": "CommonTree_2",
-      "fbx": "CommonTree_2.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": 32.78138941165582,
-      "z": 29.09725466385012,
-      "scale": 1.2,
-      "type": "CommonTree_3",
-      "fbx": "CommonTree_3.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": 17.491212927643748,
-      "z": 35.66929527547932,
-      "scale": 1.2,
-      "type": "CommonTree_3",
-      "fbx": "CommonTree_3.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": 26.906646470484013,
-      "z": 45.12399931372036,
-      "scale": 1.2,
-      "type": "BushBerries_1",
-      "fbx": "BushBerries_1.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": -35.617029895238716,
-      "z": -11.86201598926893,
+      "x": -24.175143549735644,
+      "z": -12.835873437405125,
       "scale": 1.2,
       "type": "tree",
       "fbx": "tree.fbx",
@@ -753,116 +618,8 @@
       "y": 0
     },
     {
-      "x": -36.541427912280625,
-      "z": 4.568902692611604,
-      "scale": 1.2,
-      "type": "rock",
-      "fbx": "Rock_1.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": -43.26261566228384,
-      "z": 23.539450452296034,
-      "scale": 1.2,
-      "type": "CommonTree_5",
-      "fbx": "CommonTree_5.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": -35.521553668778935,
-      "z": 35.071525571059695,
-      "scale": 1.2,
-      "type": "rock",
-      "fbx": "Rock_1.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": -42.542495490757815,
-      "z": 45.443820103625164,
-      "scale": 1.2,
-      "type": "BushBerries_2",
-      "fbx": "BushBerries_2.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": -46.55462114119554,
-      "z": -4.272718169536594,
-      "scale": 1.2,
-      "type": "CommonTree_1",
-      "fbx": "CommonTree_1.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": 48.436316350768905,
-      "z": -30.469995615412312,
-      "scale": 1.2,
-      "type": "CommonTree_4",
-      "fbx": "CommonTree_4.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": 47.75355821607342,
-      "z": -46.44574399771967,
-      "scale": 1.2,
-      "type": "CommonTree_3",
-      "fbx": "CommonTree_3.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": -47.22622933574931,
-      "z": -17.818955508791767,
-      "scale": 1.2,
-      "type": "CommonTree_2",
-      "fbx": "CommonTree_2.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": -9.697560112417843,
-      "z": 25.56589856417333,
-      "scale": 1.2,
-      "type": "CommonTree_2",
-      "fbx": "CommonTree_2.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": 5.926633015595821,
-      "z": 14.757882846322271,
-      "scale": 1.2,
-      "type": "CommonTree_2",
-      "fbx": "CommonTree_2.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": -24.287066278202193,
-      "z": -16.23886115420263,
-      "scale": 1.2,
-      "type": "BushBerries_1",
-      "fbx": "BushBerries_1.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": 48.07084679771515,
-      "z": 41.10604476893873,
-      "scale": 1.2,
-      "type": "CommonTree_2",
-      "fbx": "CommonTree_2.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": -16.474076899284896,
-      "z": -37.76475460807575,
+      "x": 10.435499790212651,
+      "z": -13.352984591410962,
       "scale": 1.2,
       "type": "tree",
       "fbx": "tree.fbx",
@@ -870,53 +627,8 @@
       "y": 0
     },
     {
-      "x": -34.864755229295916,
-      "z": -31.766068593547118,
-      "scale": 1.2,
-      "type": "CommonTree_2",
-      "fbx": "CommonTree_2.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": -28.523114057112352,
-      "z": 46.338033888023205,
-      "scale": 1.2,
-      "type": "BushBerries_2",
-      "fbx": "BushBerries_2.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": 6.600848860690088,
-      "z": 48.92623294209409,
-      "scale": 1.2,
-      "type": "CommonTree_2",
-      "fbx": "CommonTree_2.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": 49.12250276433136,
-      "z": -1.6905502904486398,
-      "scale": 1.2,
-      "type": "CommonTree_2",
-      "fbx": "CommonTree_2.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": 3.1779254050653387,
-      "z": -6.176227167484862,
-      "scale": 1.2,
-      "type": "rock",
-      "fbx": "Rock_1.fbx",
-      "rot": 0,
-      "y": 0
-    },
-    {
-      "x": -14.425017548169548,
-      "z": 41.616273336652455,
+      "x": -8.835160187165918,
+      "z": -15.34556967173135,
       "scale": 1.2,
       "type": "CommonTree_1",
       "fbx": "CommonTree_1.fbx",
@@ -924,17 +636,25 @@
       "y": 0
     },
     {
-      "x": -46.24831680075217,
-      "z": -47.78575397032045,
+      "x": 9.271372209269623,
+      "z": 12.868930513937096,
       "scale": 1.2,
-      "type": "CommonTree_1",
-      "fbx": "CommonTree_1.fbx",
+      "type": "tree",
+      "fbx": "tree.fbx",
       "rot": 0,
       "y": 0
     }
   ],
   "npcs": [],
-  "containers": [],
+  "containers": [
+    {
+      "x": 0,
+      "y": 0.5,
+      "z": 0,
+      "scale": 2,
+      "containerType": "1box_0"
+    }
+  ],
   "lights": [],
   "sceneSettings": {
     "bgColor": "#aad0ff",
@@ -1238,7 +958,7 @@
     ]
   },
   "mapSize": {
-    "width": 120,
-    "height": 120
+    "width": 50,
+    "height": 50
   }
 }

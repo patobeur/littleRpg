@@ -1,6 +1,6 @@
 import { UI } from './UI.js';
 import * as THREE from 'three';
-import { initThree, onWindowResize, updateEnvironment, updateGrid } from './Scene.js';
+import { initThree, onWindowResize, updateEnvironment, updateGround } from './Scene.js';
 import { initEvents } from './Input.js';
 import { state } from './State.js';
 import { TransformGizmo } from '../tools/Gizmo.js';
@@ -344,9 +344,9 @@ function clearMap() {
 
 function newMap() {
     clearMap();
-    const w = parseInt(document.getElementById('genWidth').value) || 10;
-    const d = parseInt(document.getElementById('genDepth').value) || 10;
-    updateGrid(w, d);
+    const w = parseInt(document.getElementById('genWidth').value) || 50;
+    const d = parseInt(document.getElementById('genDepth').value) || 50;
+    updateGround(w, d);
     resetEnvironment();
 }
 
@@ -374,12 +374,12 @@ function resetEnvironment() {
 function generateRoadsOnly() {
     clearMap();
 
-    const w = parseInt(document.getElementById('genWidth').value) || 10;
-    const d = parseInt(document.getElementById('genDepth').value) || 10;
-    const bounds = { x: w * 5, z: d * 5 };
+    const w = parseInt(document.getElementById('genWidth').value) || 50;
+    const d = parseInt(document.getElementById('genDepth').value) || 50;
+    const bounds = { x: w / 2, z: d / 2 };
 
-    // Update Grid/Ground to match
-    updateGrid(w, d);
+    // Update Ground to match
+    updateGround(w, d);
 
     const roadWidth = parseFloat(document.getElementById('genRoadWidth').value) || 3.5;
     const roadSmooth = parseInt(document.getElementById('genRoadSmooth').value) || 8;
@@ -447,12 +447,12 @@ function generateNatureOnly() {
             return;
         }
 
-        const w = parseInt(document.getElementById('genWidth').value) || 10;
-        const d = parseInt(document.getElementById('genDepth').value) || 10;
-        const bounds = { x: w * 5, z: d * 5 };
+        const w = parseInt(document.getElementById('genWidth').value) || 50;
+        const d = parseInt(document.getElementById('genDepth').value) || 50;
+        const bounds = { x: w / 2, z: d / 2 };
 
-        // Ensure grid matches
-        updateGrid(w, d);
+        // Ensure ground matches
+        updateGround(w, d);
 
         const natureDensity = parseInt(document.getElementById('genNatureDensity').value) || 100;
         // 100 -> 1.0, 200 -> 2.0

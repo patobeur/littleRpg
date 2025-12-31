@@ -27,6 +27,7 @@ export function saveMap() {
             ambColor: document.getElementById('ambColor')?.value || '#ffffff',
             ambInt: parseFloat(document.getElementById('ambInt')?.value) || 0.6,
             groundColor: document.getElementById('groundColor')?.value || '#ffffff',
+            groundType: document.getElementById('groundType')?.value || 'default',
             // Sun Settings
             sunColor: document.getElementById('sunColor')?.value,
             sunInt: parseFloat(document.getElementById('sunInt')?.value),
@@ -155,17 +156,23 @@ export function saveMap() {
     });
 
     // Use explicit dimensions from generator if available
+    // Use explicit dimensions from generator if available
     const genW = document.getElementById('genWidth');
     const genD = document.getElementById('genDepth');
     if (genW && genD) {
-        data.width = parseInt(genW.value);
-        data.depth = parseInt(genD.value);
-        data.mapSize = Math.max(data.width, data.depth) * 5 + 10; // Approx max size for server compat
+        // Explicitly set mapSize as object based on total width/depth
+        // No multiplier: 1:1
+        data.mapSize = {
+            width: parseInt(genW.value),
+            height: parseInt(genD.value)
+        };
     } else {
         // Fallback: Round up to nearest 5 and add safety margin
-        data.mapSize = Math.ceil(maxDistance / 5) * 5 + 10;
-        data.width = data.mapSize / 5;
-        data.depth = data.mapSize / 5;
+        const rawSize = Math.ceil(maxDistance / 5) * 5 + 10;
+        data.mapSize = {
+            width: rawSize * 2, // Assuming rawSize was a radius-like
+            height: rawSize * 2
+        };
     }
 
     console.log(`Map dimensions saved: ${data.width}x${data.depth}`);

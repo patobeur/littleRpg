@@ -84,13 +84,13 @@
                     <div class="ribbon-column">
                         <div class="ribbon-input-group">
                             <span class="ribbon-label">Width</span>
-                            <input type="number" id="genWidth" class="ribbon-input" value="10" min="5"
-                                style="width:40px;">
+                            <input type="number" id="genWidth" class="ribbon-input" value="50" min="10"
+                                style="width:50px;">
                         </div>
                         <div class="ribbon-input-group">
                             <span class="ribbon-label">Depth</span>
-                            <input type="number" id="genDepth" class="ribbon-input" value="10" min="5"
-                                style="width:40px;">
+                            <input type="number" id="genDepth" class="ribbon-input" value="50" min="10"
+                                style="width:50px;">
                         </div>
                     </div>
                     <div class="ribbon-column">
@@ -518,6 +518,17 @@
                             <span class="ribbon-label">Color</span>
                             <input type="color" id="groundColor" value="#ffffff"
                                 style="height:20px; padding:0; border:none;">
+                        </div>
+                        <div class="ribbon-input-group" data-title="Texture / Type de sol">
+                            <span class="ribbon-label">Type</span>
+                            <select id="groundType" class="ribbon-input" style="width: 80px;">
+                                <option value="default">Default</option>
+                                <option value="grass">Grass</option>
+                                <option value="sand">Sand</option>
+                                <option value="rock">Rock</option>
+                                <option value="dirt">Dirt</option>
+                                <option value="lava">Lava</option>
+                            </select>
                         </div>
                     </div>
                 </div>

@@ -73,7 +73,10 @@ try {
                         isLastMap: !!mapData.isLastMap,
                         scene: sceneConfig,
                         lights: mapData.lights || [], // Pass raw lights data
-                        mapSize: mapData.mapSize || 50, // Map bounds for collision
+                        lights: mapData.lights || [], // Pass raw lights data
+                        // Normalize mapSize to object format { width, height }
+                        // Strictly read mapSize from data. It MUST be an object {width, height}
+                        mapSize: mapData.mapSize || { width: 100, height: 100 }, // No more normalization logic
                         // Migrate spawns: add index if missing (for old class-based maps)
                         spawns: (mapData.spawns || []).map((spawn, i) => {
                             if (!spawn.index && spawn.class) {

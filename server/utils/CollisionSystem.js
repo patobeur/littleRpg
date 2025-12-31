@@ -29,14 +29,14 @@ class CollisionSystem {
     checkBoundaries(position, sceneId) {
         // Dynamic bounds based on scene config
         const sceneConfig = getSceneConfig(sceneId);
-        // Default to 50 if mapSize is missing
-        const mapSize = sceneConfig && sceneConfig.mapSize ? sceneConfig.mapSize : 50;
+        const mapSize = sceneConfig && sceneConfig.mapSize ? sceneConfig.mapSize : { width: 100, height: 100 };
 
-        // Strict limit: Map Size - 1 (as requested)
-        const limit = mapSize - 1;
+        // Map is centered at 0,0. Width/Height are total sizes.
+        // So limit is half size.
+        const limitX = (mapSize.width / 2) - 1;
+        const limitZ = (mapSize.height / 2) - 1;
 
-        if (Math.abs(position.x) > limit || Math.abs(position.z) > limit) {
-            // console.log(`[Collision] Position ${position.x},${position.z} out of bounds (limit: ${limit})`);
+        if (Math.abs(position.x) > limitX || Math.abs(position.z) > limitZ) {
             return false;
         }
         return true;

@@ -45,9 +45,9 @@ export function initThree() {
     dirLight.shadow.camera.bottom = -50;
     state.scene.add(dirLight);
 
-    // 6. Grid
-    const gridHelper = new THREE.GridHelper(100, 100, 0x444444, 0x222222);
-    state.scene.add(gridHelper);
+    // 6. Grid - REMOVED per user request
+    // const gridHelper = new THREE.GridHelper(100, 100, 0x444444, 0x222222);
+    // state.scene.add(gridHelper);
 
     // 7. Ground Plane (Invisible mostly, for raycast)
     // 7. Ground Plane (Invisible mostly, for raycast)
@@ -114,10 +114,50 @@ export function updateEnvironment(settings) {
         }
     }
 
-    // Ground Color
+    // Ground Generic Settings
+    if (settings.groundType) {
+        updateGroundType(settings.groundType);
+    }
+
+    // Ground Color (Override if specific color provided after type)
     const ground = state.scene.children.find(c => c.userData.isGround);
     if (ground && settings.groundColor) {
         ground.material.color = new THREE.Color(settings.groundColor);
+    }
+}
+
+export function updateGroundType(type) {
+    const ground = state.scene.children.find(c => c.userData.isGround);
+    const colorInput = document.getElementById('groundColor');
+
+    let color = null;
+    let roughness = 0.8;
+
+    // Presets
+    switch (type) {
+        case 'grass': color = '#5c9c5c'; roughness = 0.9; break;
+        case 'sand': color = '#e6c288'; roughness = 1.0; break; // Warmer sand
+        case 'rock': color = '#666666'; roughness = 0.6; break;
+        case 'dirt': color = '#8b5a2b'; roughness = 1.0; break;
+        case 'lava': color = '#cf1020'; roughness = 0.5; break;
+        case 'default': color = '#5c9c5c'; roughness = 0.9; break; // Default to grass green
+        default: return;
+    }
+
+    // Apply if preset found
+    if (color) {
+        if (colorInput) colorInput.value = color;
+        if (ground) {
+            ground.material.color = new THREE.Color(color);
+            ground.material.roughness = roughness;
+
+            // Lava special effect? For now just color.
+            if (type === 'lava') {
+                ground.material.emissive = new THREE.Color(0x330000);
+            } else {
+                ground.material.emissive = new THREE.Color(0x000000);
+            }
+        }
     }
 }
 
@@ -130,34 +170,20 @@ export function onWindowResize() {
     state.renderer.setSize(viewport.offsetWidth, viewport.offsetHeight);
 }
 
-export function updateGrid(width, depth) {
-    // Width and Depth are in "generation units"
-    // Remove old grids and ground planes using backwards loop for safety
+export function updateGround(width, depth) {
+    // Width and Depth are now 1:1 with World Units
+    // Remove old ground planes
     for (let i = state.scene.children.length - 1; i >= 0; i--) {
         const child = state.scene.children[i];
-        if (child.isGridHelper || child.userData.isGround || (child.isMesh && child.geometry.type === 'PlaneGeometry' && child.rotation.x === -Math.PI / 2)) {
-            // Check for older untagged planes too (geometry check fallback)
+        if (child.userData.isGround || (child.isMesh && child.geometry.type === 'PlaneGeometry' && child.rotation.x === -Math.PI / 2)) {
             state.scene.remove(child);
             if (child.geometry) child.geometry.dispose();
         }
     }
 
-    // Create New
-    // Inputs are typically 10-50 range from UI. Multiplier 5 used in generation.
-    const w = width * 5;
-    const d = depth * 5;
-
-    // GridHelper(size, divisions)
-    // Size should cover w/d. Usage of exact size implies the grid matches the build area.
-    const size = Math.max(w, d);
-    const divisions = size / 5; // 5 units per cell
-
-    const gridHelper = new THREE.GridHelper(size, divisions, 0x444444, 0x222222);
-    state.scene.add(gridHelper);
-
-    const groundColor = document.getElementById('groundColor')?.value || '#ffffff';
+    const groundColor = document.getElementById('groundColor')?.value || '#5c9c5c';
     const plane = new THREE.Mesh(
-        new THREE.PlaneGeometry(w, d),
+        new THREE.PlaneGeometry(width, depth),
         new THREE.MeshStandardMaterial({ color: groundColor, depthWrite: true })
     );
     plane.rotation.x = -Math.PI / 2;

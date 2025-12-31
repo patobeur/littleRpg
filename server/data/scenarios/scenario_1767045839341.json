@@ -2,7 +2,12 @@
   "id": "scenario_1767045839341",
   "name": "Aventures à venir.",
   "maps": [
-    "Springfield"
+    "Springfield",
+    "new_village",
+    "new_villagev2",
+    "Lobby",
+    "Lobby2",
+    "test"
   ],
   "active": true
 }

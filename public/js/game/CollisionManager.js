@@ -7,18 +7,25 @@ import * as THREE from 'three';
 export class CollisionManager {
     constructor(game) {
         this.game = game;
-        this.mapBounds = 50; // Simple square map limit (default)
+        this.mapLimits = { x: 50, z: 50 }; // Default limits
     }
 
     /**
      * Update map bounds dynamically based on scene config
-     * @param {number} size - New map bounds
+     * @param {number|object} size - New map bounds
      */
     setMapBounds(size) {
-        // Apply limit = size - 1 as requested
-        const baseSize = size || 50;
-        this.mapBounds = baseSize - 1;
-        console.log(`Map bounds updated to: ${this.mapBounds} (Size: ${baseSize})`);
+        if (typeof size === 'object') {
+            // Size is total width/height. Limit is half - 1.
+            this.mapLimits = {
+                x: (size.width / 2) - 1,
+                z: (size.height / 2) - 1
+            };
+        } else {
+            // Default Fallback (should not happen with normalized config)
+            this.mapLimits = { x: 49, z: 49 };
+        }
+        console.log(`Map bounds updated to: X=${this.mapLimits.x}, Z=${this.mapLimits.z}`);
     }
 
     /**
@@ -29,7 +36,7 @@ export class CollisionManager {
      */
     isValidPosition(position, radius = 0.5) {
         // 1. Check Map Bounds
-        if (Math.abs(position.x) > this.mapBounds || Math.abs(position.z) > this.mapBounds) {
+        if (Math.abs(position.x) > this.mapLimits.x || Math.abs(position.z) > this.mapLimits.z) {
             return false;
         }
 

@@ -2,6 +2,7 @@
   "id": "scenario_1767129819216",
   "name": "Lobby",
   "maps": [
+    "test",
     "Lobby"
   ],
   "active": true

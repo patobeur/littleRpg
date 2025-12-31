@@ -48,13 +48,6 @@ export class AmbianceManager {
         this.groundMesh.rotation.x = -Math.PI / 2;
         this.groundMesh.receiveShadow = true;
         this.scene.add(this.groundMesh);
-
-        if (Config.displayGrid) {
-            const grid = new THREE.GridHelper(100, 50, 0x444466, 0x222233);
-            grid.position.y = 0.01;
-            grid.userData.isGameGrid = true;
-            this.scene.add(grid);
-        }
     }
 
     /**
@@ -64,23 +57,23 @@ export class AmbianceManager {
     resizeGround(mapSize) {
         if (!this.groundMesh) return;
 
-        // Map Size is the "radius" in some contexts, but here it seems to be total size in editor logic?
-        // Wait, collision logic says "limit = mapSize - 1". It assumes mapSize is the HALF-width (radius).
-        // Let's verify collision logic: "min: -limit, max: +limit".
-        // So mapSize = 60 means the world is -60 to +60. Total width = 120.
-        // Editor saves "mapSize" as "max(w, d) * 5 + 10". If w=10 (units), w*5 = 50. mapSize ~ 60.
-        // So mapSize IS the half-width.
-
-        const size = mapSize * 2; // Total width for plane
-        const halfSize = mapSize;
+        let width, height;
+        if (typeof mapSize === 'object') {
+            // New format: { width, height }
+            width = mapSize.width;
+            height = mapSize.height;
+        } else {
+            // Legacy format: mapSize was "radius"
+            width = mapSize * 2;
+            height = mapSize * 2;
+        }
 
         // Update Plane
         this.groundMesh.geometry.dispose();
-        this.groundMesh.geometry = new THREE.PlaneGeometry(size, size);
+        this.groundMesh.geometry = new THREE.PlaneGeometry(width, height);
 
-        // Update Grid
+        // Update Grid - REMOVED as per user request
         // Remove ALL existing grids to prevent stacking
-        // Use backwards loop and check for both class type and userdata tag
         for (let i = this.scene.children.length - 1; i >= 0; i--) {
             const child = this.scene.children[i];
             if (child.isGridHelper || child.userData.isGameGrid) {
@@ -88,20 +81,6 @@ export class AmbianceManager {
                 if (child.geometry) child.geometry.dispose();
             }
         }
-
-        if (Config.displayGrid) {
-            // Create new grid aligned with ground
-            // GridHelper(size, divisions)
-            const divisions = size / 5; // Keep 5-unit cells
-            const grid = new THREE.GridHelper(size, divisions, 0x444466, 0x222233);
-            grid.position.y = 0.01;
-            grid.userData.isGameGrid = true;
-            this.scene.add(grid);
-        }
-
-        // No grid in production (requested by user)?
-        // User said: "quand le jeu sera en prod il n'y aura plus de grille en jeu"
-        // But for "dev", we keep it. We can add a flag later or just leave it for now.
     }
 
     /**
@@ -125,12 +104,36 @@ export class AmbianceManager {
 
         // Ground Material
         if (this.groundMesh) {
-            // Apply color
-            const groundColor = config.groundColor || 0xffffff;
-            this.groundMesh.material.color.set(groundColor);
+            let color = 0x5c9c5c; // Default Green
+            let roughness = 0.8;
+            let emissive = 0x000000;
 
+            // 1. Determine base color from type
+            if (config.groundType) {
+                switch (config.groundType) {
+                    case 'grass': color = 0x5c9c5c; roughness = 0.9; break;
+                    case 'sand': color = 0xe6c288; roughness = 1.0; break;
+                    case 'rock': color = 0x666666; roughness = 0.6; break;
+                    case 'dirt': color = 0x8b5a2b; roughness = 1.0; break;
+                    case 'lava': color = 0xcf1020; roughness = 0.5; emissive = 0x330000; break;
+                    case 'default': color = 0x5c9c5c; roughness = 0.9; break;
+                }
+            }
+
+            // 2. Override with specific color if provided and not undefined/null
+            if (config.groundColor) {
+                // Use set(color) which handles hex strings and numbers
+                this.groundMesh.material.color.set(config.groundColor);
+            } else {
+                // Fallback to type color or default
+                this.groundMesh.material.color.setHex(color);
+            }
+
+            this.groundMesh.material.roughness = roughness;
+            this.groundMesh.material.emissive.setHex(emissive);
+
+            // Legacy support
             if (config.ground) {
-                // Legacy support just in case
                 if (config.ground.color) this.groundMesh.material.color.setHex(config.ground.color);
                 this.groundMesh.material.roughness = config.ground.roughness;
                 this.groundMesh.material.metalness = config.ground.metalness;

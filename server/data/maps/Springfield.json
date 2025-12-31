@@ -960,6 +960,8 @@
     "fogFar": 100,
     "ambColor": "#ffffff",
     "ambInt": 5,
+    "groundColor": "#5c9c5c",
+    "groundType": "grass",
     "sunColor": "#ffffff",
     "sunInt": 1,
     "sunX": 50,
@@ -1224,7 +1226,8 @@
       }
     ]
   },
-  "width": 10,
-  "depth": 10,
-  "mapSize": 60
+  "mapSize": {
+    "width": 120,
+    "height": 120
+  }
 }

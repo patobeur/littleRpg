@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { state } from '../State.js';
-import { updateEnvironment, updateGrid } from '../Scene.js';
+import { updateEnvironment, updateGround } from '../Scene.js';
 import { RoadNetwork } from '../RoadNetwork.js';
 import { addStructureResult } from '../entities/Structure.js';
 import { addEnemyAt } from '../entities/Enemy.js';
@@ -49,16 +49,30 @@ export function loadMapData(mapData) {
     if (cb) cb.checked = !!mapData.isLastMap;
 
     // Restore Map Dimensions
-    const w = mapData.width || (mapData.mapSize ? Math.round(mapData.mapSize / 5) : 10);
-    const d = mapData.depth || (mapData.mapSize ? Math.round(mapData.mapSize / 5) : 10);
+    // Use mapSize width/height directly as they are now 1:1 world units
+    // Fallback logic for old maps: if width/depth exist (small numbers), multiply by 5?
+    // Or just rely on mapSize if present.
+    // If mapSize exists, use it. If not, fallback to existing width * 5 (legacy support).
+
+    let w = 50;
+    let d = 50;
+
+    if (mapData.mapSize && typeof mapData.mapSize === 'object') {
+        w = mapData.mapSize.width || 50;
+        d = mapData.mapSize.height || 50;
+    } else if (mapData.width && mapData.depth) {
+        // Legacy: width/depth were "chunks" (x5)
+        w = mapData.width * 5;
+        d = mapData.depth * 5;
+    }
 
     const wInput = document.getElementById('genWidth');
     const dInput = document.getElementById('genDepth');
     if (wInput) wInput.value = w;
     if (dInput) dInput.value = d;
 
-    // Update Grid
-    updateGrid(w, d);
+    // Update Ground
+    updateGround(w, d);
 
 
     if (mapData.structures) {
@@ -201,6 +215,7 @@ export function loadMapData(mapData) {
         if (document.getElementById('ambColor')) document.getElementById('ambColor').value = settings.ambColor || '#ffffff';
         if (document.getElementById('ambInt')) document.getElementById('ambInt').value = settings.ambInt || 0.6;
         if (document.getElementById('groundColor')) document.getElementById('groundColor').value = settings.groundColor || '#ffffff';
+        if (document.getElementById('groundType')) document.getElementById('groundType').value = settings.groundType || 'default';
 
         // Sun
         if (document.getElementById('sunColor')) document.getElementById('sunColor').value = settings.sunColor || '#ffffff';

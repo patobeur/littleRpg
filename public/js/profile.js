@@ -39,6 +39,14 @@
             // 3. Render Characters List
             renderCharacterList(characters);
 
+            // 4. Check Character Limit (Max 3)
+            const createBtn = document.getElementById('create-char-btn');
+            if (createBtn) {
+                if (characters.length >= 3) {
+                    createBtn.style.display = 'none';
+                }
+            }
+
         } catch (error) {
             console.error('Failed to load profile:', error);
             alert('Impossible de charger le profil via API.');
@@ -103,20 +111,6 @@
         if (!sceneId) return 'Inconnu';
         return sceneId.charAt(0).toUpperCase() + sceneId.slice(1).replace('_', ' ');
     }
-
-    // Logout handler
-    async function handleLogout() {
-        try {
-            await API.auth.logout();
-            window.location.href = '/login.html'; // Direct redirect for cleaner exp
-        } catch (error) {
-            console.error('Logout failed:', error);
-        }
-    }
-
-    // Event listeners
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
 
     // Initial load
     loadProfile();

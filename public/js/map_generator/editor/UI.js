@@ -207,6 +207,7 @@ export const UI = {
                 fogFar: document.getElementById('fogFar').value,
                 ambColor: document.getElementById('ambColor').value,
                 ambInt: document.getElementById('ambInt').value,
+                groundType: document.getElementById('groundType')?.value,
                 groundColor: document.getElementById('groundColor')?.value,
                 sunColor: document.getElementById('sunColor')?.value,
                 sunInt: document.getElementById('sunInt')?.value,
@@ -217,7 +218,7 @@ export const UI = {
             updateEnvCallback(settings);
         };
 
-        ['bgColor', 'fogEnabled', 'fogColor', 'fogNear', 'fogFar', 'ambColor', 'ambInt', 'groundColor', 'sunColor', 'sunInt', 'sunX', 'sunY', 'sunZ'].forEach(id => {
+        ['bgColor', 'fogEnabled', 'fogColor', 'fogNear', 'fogFar', 'ambColor', 'ambInt', 'groundType', 'groundColor', 'sunColor', 'sunInt', 'sunX', 'sunY', 'sunZ'].forEach(id => {
             const el = document.getElementById(id);
             if (el) {
                 // Use 'change' for checkbox/color sometimes better, but 'input' gives real-time
