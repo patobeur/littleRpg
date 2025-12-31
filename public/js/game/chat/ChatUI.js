@@ -140,6 +140,32 @@ export class ChatUI {
      * @param {Object} data - Données du message
      */
     addMessage(data) {
+        // Ajouter à l'historique (données brutes)
+        this.messageHistory.push(data);
+
+        // Limiter l'historique
+        if (this.messageHistory.length > this.maxMessages) {
+            this.messageHistory.shift();
+        }
+
+        // Afficher seulement si on est sur le bon canal
+        if (data.channel === this.chatManager.currentChannel) {
+            const messageEl = this.createMessageElement(data);
+            this.messagesContainer.appendChild(messageEl);
+            this.scrollToBottom();
+        } else {
+            // Si on n'est pas sur le bon canal, on pourrait vouloir afficher un indicateur
+            // mais l'utilisateur a demandé une séparation stricte
+            this.showNewMessageIndicator();
+        }
+    }
+
+    /**
+     * Crée l'élément DOM pour un message
+     * @param {Object} data - Données du message
+     * @returns {HTMLElement} Élément du message
+     */
+    createMessageElement(data) {
         const { channel, playerName, message, timestamp, isSystem } = data;
 
         // Créer l'élément message
@@ -169,17 +195,23 @@ export class ChatUI {
             `;
         }
 
-        // Ajouter au conteneur
-        this.messagesContainer.appendChild(messageEl);
-        this.messageHistory.push(messageEl);
+        return messageEl;
+    }
 
-        // Limiter l'historique
-        if (this.messageHistory.length > this.maxMessages) {
-            const oldest = this.messageHistory.shift();
-            oldest.remove();
-        }
+    /**
+     * Affiche les messages du canal actuel
+     */
+    renderMessages() {
+        this.messagesContainer.innerHTML = '';
+        const currentChannel = this.chatManager.currentChannel;
 
-        // Auto-scroll vers le bas
+        this.messageHistory.forEach(data => {
+            if (data.channel === currentChannel) {
+                const messageEl = this.createMessageElement(data);
+                this.messagesContainer.appendChild(messageEl);
+            }
+        });
+
         this.scrollToBottom();
     }
 
@@ -226,6 +258,9 @@ export class ChatUI {
             this.inputElement.disabled = false;
             this.inputElement.placeholder = 'Entrez votre message...';
         }
+
+        // Rafraîchir l'affichage des messages
+        this.renderMessages();
     }
 
     /**

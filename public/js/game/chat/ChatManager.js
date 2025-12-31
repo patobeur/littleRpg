@@ -130,9 +130,9 @@ export class ChatManager {
 
         console.log(`[ChatManager] Canal changé: ${channelName}`);
 
-        // Message de confirmation
-        const config = ChatChannels[channelName];
-        this.addSystemMessage(`Canal changé: ${config.name} ${config.icon}`);
+        // Message de confirmation supprimé (géré visuellement par les onglets)
+        // const config = ChatChannels[channelName];
+        // this.addSystemMessage(`Canal changé: ${config.name} ${config.icon}`);
     }
 
     /**
