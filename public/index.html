@@ -1,494 +1,414 @@
 <!DOCTYPE html>
 <html lang="fr">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>LittleRPG - Entrez dans un monde d'aventures épiques</title>
-		<meta
-			name="description"
-			content="Rejoignez des milliers de héros dans LittleRPG, un monde de magie et d'aventures sans fin." />
-		<link
-			rel="icon"
-			type="image/png"
-			href="/medias/littlerpg_favicon_32.png" />
 
-		<!-- Styles -->
-		<link rel="stylesheet" href="/styles/main.css" />
-		<link rel="stylesheet" href="/styles/components.css" />
-		<link rel="stylesheet" href="/styles/home.css" />
-	</head>
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>LittleRPG - Entrez dans un monde d'aventures épiques</title>
+	<meta name="description"
+		content="Rejoignez des milliers de héros dans LittleRPG, un monde de magie et d'aventures sans fin." />
+	<link rel="icon" type="image/png" href="/medias/littlerpg_favicon_32.png" />
 
-	<body>
-		<!-- Navigation injected by nav.js -->
+	<!-- Open Graph / Facebook -->
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="http://87.106.51.5:8080/" />
+	<meta property="og:title" content="LittleRPG - Entrez dans un monde d'aventures épiques" />
+	<meta property="og:description"
+		content="Rejoignez des milliers de héros dans LittleRPG, un monde de magie et d'aventures sans fin." />
+	<meta property="og:image" content="http://87.106.51.5:8080/medias/hero1.jpg" />
 
-		<!-- Hero Section -->
-		<section class="hero">
-			<div class="hero-background">
-				<img
-					src="/medias/hero1.jpg"
-					alt="Hero background 1"
-					class="hero-image active"
-					data-zoom="left" />
-				<img
-					src="/medias/hero2.jpg"
-					alt="Hero background 2"
-					class="hero-image"
-					data-zoom="right" />
-				<img
-					src="/medias/hero3.jpg"
-					alt="Hero background 3"
-					class="hero-image"
-					data-zoom="left" />
-				<img
-					src="/medias/hero4.jpg"
-					alt="Hero background 4"
-					class="hero-image"
-					data-zoom="right" />
-				<div class="hero-overlay"></div>
-			</div>
-			<div class="hero-content">
-				<div class="container">
-					<h1 class="hero-title">
-						<img
-							src="/medias/littlerpg_logo.png"
-							alt="LittleRPG"
-							class="hero-logo" />
-					</h1>
-					<p class="hero-subtitle"
-						>Entrez dans un royaume de magie et d'aventures sans fin</p
-					>
-					<div class="hero-cta">
-						<a
-							href="/register.html"
-							class="btn btn-primary btn-lg btn-glow">
-							<span>Commencez votre aventure</span>
-							<svg
-								class="btn-icon"
-								width="20"
-								height="20"
-								viewBox="0 0 20 20"
-								fill="none"
-								xmlns="http://www.w3.org/2000/svg">
-								<path
-									d="M7.5 15L12.5 10L7.5 5"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round" />
-							</svg>
-						</a>
-						<a href="/login.html" class="btn btn-secondary btn-lg"
-							>J'ai déjà un compte.</a
-						>
-					</div>
+	<!-- Twitter -->
+	<meta property="twitter:card" content="summary_large_image" />
+	<meta property="twitter:url" content="http://87.106.51.5:8080/" />
+	<meta property="twitter:title" content="LittleRPG - Entrez dans un monde d'aventures épiques" />
+	<meta property="twitter:description"
+		content="Rejoignez des milliers de héros dans LittleRPG, un monde de magie et d'aventures sans fin." />
+	<meta property="twitter:image" content="http://87.106.51.5:8080/medias/hero1.jpg" />
+
+	<!-- Styles -->
+	<link rel="stylesheet" href="/styles/main.css" />
+	<link rel="stylesheet" href="/styles/components.css" />
+	<link rel="stylesheet" href="/styles/home.css" />
+</head>
+
+<body>
+	<!-- Navigation injected by nav.js -->
+
+	<!-- Hero Section -->
+	<section class="hero">
+		<div class="hero-background">
+			<img src="/medias/hero1.jpg" alt="Hero background 1" class="hero-image active" data-zoom="left" />
+			<img src="/medias/hero2.jpg" alt="Hero background 2" class="hero-image" data-zoom="right" />
+			<img src="/medias/hero3.jpg" alt="Hero background 3" class="hero-image" data-zoom="left" />
+			<img src="/medias/hero4.jpg" alt="Hero background 4" class="hero-image" data-zoom="right" />
+			<div class="hero-overlay"></div>
+		</div>
+		<div class="hero-content">
+			<div class="container">
+				<h1 class="hero-title">
+					<img src="/medias/littlerpg_logo.png" alt="LittleRPG" class="hero-logo" />
+				</h1>
+				<p class="hero-subtitle">Entrez dans un royaume de magie et d'aventures sans fin</p>
+				<div class="hero-cta">
+					<a href="/register.html" class="btn btn-primary btn-lg btn-glow">
+						<span>Commencez votre aventure</span>
+						<svg class="btn-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"
+							xmlns="http://www.w3.org/2000/svg">
+							<path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2"
+								stroke-linecap="round" stroke-linejoin="round" />
+						</svg>
+					</a>
+					<a href="/login.html" class="btn btn-secondary btn-lg">J'ai déjà un compte.</a>
 				</div>
 			</div>
-			<div class="hero-scroll-indicator">
-				<div class="scroll-icon"></div>
-			</div>
-		</section>
+		</div>
+		<div class="hero-scroll-indicator">
+			<div class="scroll-icon"></div>
+		</div>
+	</section>
 
-		<!-- News Section -->
-		<section id="news" class="news-section">
-			<div class="container">
-				<h2 class="section-title">Actualités et nouveautés</h2>
-				<div class="news-grid">
-					<article class="news-card news-card-featured">
-						<div class="news-card-image">
-							<img
-								src="/medias/articles/article1.jpg"
-								alt="La grande aventure commence bientôt" />
-							<div class="news-badge">Nouveau</div>
+	<!-- News Section -->
+	<section id="news" class="news-section">
+		<div class="container">
+			<h2 class="section-title">Actualités et nouveautés</h2>
+			<div class="news-grid">
+				<article class="news-card news-card-featured">
+					<div class="news-card-image">
+						<img src="/medias/articles/article1.jpg" alt="La grande aventure commence bientôt" />
+						<div class="news-badge">Nouveau</div>
+					</div>
+					<div class="news-card-content">
+						<h3 class="news-card-title">La grande aventure commence bientôt !</h3>
+						<p class="news-card-description">
+							Préparez-vous à explorer un monde vaste et immersif
+							rempli de quêtes épiques, de combats stratégiques et de
+							défis sans fin. Rejoignez vos amis pour des aventures
+							inoubliables.
+						</p>
+						<div class="news-card-footer">
+							<span class="news-date">Décembre 2025</span>
 						</div>
-						<div class="news-card-content">
-							<h3 class="news-card-title"
-								>La grande aventure commence bientôt !</h3
-							>
-							<p class="news-card-description">
-								Préparez-vous à explorer un monde vaste et immersif
-								rempli de quêtes épiques, de combats stratégiques et de
-								défis sans fin. Rejoignez vos amis pour des aventures
-								inoubliables.
-							</p>
-							<div class="news-card-footer">
-								<span class="news-date">Décembre 2025</span>
+					</div>
+				</article>
+
+				<article class="news-card">
+					<div class="news-card-image news-card-image-2">
+						<img src="/medias/articles/article2.jpg" alt="Système de combat tactique" />
+					</div>
+					<div class="news-card-content">
+						<h3 class="news-card-title">Système de combat tactique</h3>
+						<p class="news-card-description">
+							Maîtrisez des compétences uniques, combinez des sorts
+							puissants et développez des stratégies pour vaincre vos
+							ennemis.
+						</p>
+					</div>
+				</article>
+
+				<article class="news-card">
+					<div class="news-card-image news-card-image-3">
+						<img src="/medias/articles/article3.jpg" alt="Multijoueur coopératif" />
+					</div>
+					<div class="news-card-content">
+						<h3 class="news-card-title">Multijoueur coopératif</h3>
+						<p class="news-card-description">
+							Formez des alliances, affrontez des donjons épiques et
+							participez à des batailles intenses avec vos amis.
+						</p>
+					</div>
+				</article>
+				<article class="news-card">
+					<div class="news-card-image news-card-image-4">
+						<img src="/medias/articles/article4.jpg" alt="Équipement et personnages" />
+					</div>
+					<div class="news-card-content">
+						<h3 class="news-card-title">Équipement et personnages</h3>
+						<p class="news-card-description">
+							Créez des personnages uniques, améliorez-les avec des
+							équipements et des compétences pour affronter des défis
+							sans fin.
+						</p>
+					</div>
+				</article>
+				<article class="news-card">
+					<div class="news-card-image news-card-image-5">
+						<img src="/medias/articles/article5.jpg" alt="Montez en Niveau" />
+					</div>
+					<div class="news-card-content">
+						<h3 class="news-card-title">Montez en Niveau</h3>
+						<p class="news-card-description">
+							Montez en niveau, améliorez vos compétences et affrontez
+							des défis sans fin.
+						</p>
+					</div>
+				</article>
+			</div>
+		</div>
+	</section>
+	<!-- Lore Section -->
+	<section id="lore" class="lore-section">
+		<div class="container">
+			<div class="lore-container">
+				<h2 class="section-title">Les Chroniques des Oubliés</h2>
+				<div class="lore-quote">
+					"On raconte que le monde ne se souvient jamais des premiers
+					pas. Il ne retient que les conquêtes finales, les héros
+					couronnés, les généraux victorieux."
+				</div>
+				<div class="lore-text">
+					<p>Mais avant chaque victoire, il y a eu des silhouettes
+						anonymes, des corps fatigués, des noms jamais gravés dans
+						la pierre. Ces silhouettes, ce sont les
+						<span class="lore-highlight">Mignons</span>.
+					</p>
+					<p>Partez à l’aventure pour aider, protéger et soutenir vos
+						compagnons au cœur de donjons instables et imprévisibles.
+						Salle après salle, affrontez des dangers inconnus,
+						découvrez des situations uniques, faites des choix qui
+						comptent.</p>
+					<p>Chaque mignon est différent.
+						<span class="lore-highlight">Tank</span>,
+						<span class="lore-highlight">Soigneur</span> ou
+						<span class="lore-highlight">Mage</span>, chacun progresse
+						à sa manière : il gagne de l’expérience, débloque des
+						compétences, trouve des objets… et apprend de ses erreurs.
+					</p>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- Classes/Mignons Section -->
+	<section id="mignons" class="classes-section">
+		<div class="container">
+			<h2 class="section-title">3 emplacements pour 3 Mignons</h2>
+			<p class="section-subtitle">
+				Vous ne jouez qu’un seul mignon à la fois, mais vous pouvez en
+				créer trois et les faire progresser. Chaque mignon est unique,
+				avec ses pouvoirs… et ses faiblesses.
+			</p>
+
+			<div class="classes-grid">
+				<div class="class-card">
+					<div class="class-image-container">
+						<img src="/medias/archetypes/tank.jpg" alt="Le Tank" class="class-image" />
+					</div>
+					<h3 class="class-title">Les tanks</h3>
+					<p class="class-description">Taillés pour encaisser l’impensable. Ils se dressent entre
+						vos alliés et l’issue fatale.</p>
+					<span class="class-tag">Endurance</span>
+				</div>
+
+				<div class="class-card">
+					<div class="class-image-container">
+						<img src="/medias/archetypes/healer.jpg" alt="Le Healer" class="class-image" />
+					</div>
+					<h3 class="class-title">Les supports</h3>
+					<p class="class-description">Celui qui refuse que chaque blessure signe une fin. Une
+						lueur d’espoir au cœur des ténèbres.</p>
+					<span class="class-tag">Soutien</span>
+				</div>
+
+				<div class="class-card">
+					<div class="class-image-container">
+						<img src="/medias/archetypes/mage.jpg" alt="Le Mage" class="class-image" />
+					</div>
+					<h3 class="class-title">Les arcanes</h3>
+					<p class="class-description">Fragiles, mais porteurs d'une puissance que le monde
+						n'avait pas anticipée : la force brute de l'Éther.</p>
+					<span class="class-tag">Puissance</span>
+				</div>
+				<div class="class-card">
+					<div class="class-image-container">
+						<img src="/medias/archetypes/archer.jpg" alt="Le Mage" class="class-image" />
+					</div>
+					<h3 class="class-title">Les archers</h3>
+					<p class="class-description">Rapides, précis, implacables. Ils frappent à distance
+						avant même d’être repérés, et transforment chaque ouverture
+						en tir fatal. Là où les autres avancent, eux contrôlent
+						l’espace.</p>
+					<span class="class-tag bientot">Bientôt</span>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- Features Section -->
+	<section id="features" class="features-section">
+		<div class="container">
+			<h2 class="section-title">Incarnez un mignon</h2>
+			<p class="section-subtitle">
+				Chaque salle est une épreuve, mais aussi un récit. Le monde ne se
+				répète jamais exactement, il apprend de vos mignons.
+			</p>
+
+			<div class="rooms-showcase">
+				<div class="room-content">
+					<ul class="room-list">
+						<li class="room-item">
+							<span class="room-item-icon">🕯️</span>
+							<div class="room-item-text">
+								<h4>L'Autel Ancien</h4>
+								<p>Offre un pouvoir immense... contre l'un de vos
+									souvenirs les plus précieux.</p>
 							</div>
-						</div>
-					</article>
-
-					<article class="news-card">
-						<div class="news-card-image news-card-image-2">
-							<img
-								src="/medias/articles/article2.jpg"
-								alt="Système de combat tactique" />
-						</div>
-						<div class="news-card-content">
-							<h3 class="news-card-title">Système de combat tactique</h3>
-							<p class="news-card-description">
-								Maîtrisez des compétences uniques, combinez des sorts
-								puissants et développez des stratégies pour vaincre vos
-								ennemis.
-							</p>
-						</div>
-					</article>
-
-					<article class="news-card">
-						<div class="news-card-image news-card-image-3">
-							<img
-								src="/medias/articles/article3.jpg"
-								alt="Multijoueur coopératif" />
-						</div>
-						<div class="news-card-content">
-							<h3 class="news-card-title">Multijoueur coopératif</h3>
-							<p class="news-card-description">
-								Formez des alliances, affrontez des donjons épiques et
-								participez à des batailles intenses avec vos amis.
-							</p>
-						</div>
-					</article>
-					<article class="news-card">
-						<div class="news-card-image news-card-image-4">
-							<img
-								src="/medias/articles/article4.jpg"
-								alt="Équipement et personnages" />
-						</div>
-						<div class="news-card-content">
-							<h3 class="news-card-title">Équipement et personnages</h3>
-							<p class="news-card-description">
-								Créez des personnages uniques, améliorez-les avec des
-								équipements et des compétences pour affronter des défis
-								sans fin.
-							</p>
-						</div>
-					</article>
-					<article class="news-card">
-						<div class="news-card-image news-card-image-5">
-							<img
-								src="/medias/articles/article5.jpg"
-								alt="Montez en Niveau" />
-						</div>
-						<div class="news-card-content">
-							<h3 class="news-card-title">Montez en Niveau</h3>
-							<p class="news-card-description">
-								Montez en niveau, améliorez vos compétences et affrontez
-								des défis sans fin.
-							</p>
-						</div>
-					</article>
+						</li>
+						<li class="room-item">
+							<span class="room-item-icon">👹</span>
+							<div class="room-item-text">
+								<h4>Le Monstre Suppliant</h4>
+								<p>Parfois, la force n'est pas la seule issue.
+									Écouterez-vous son récit avant de frapper ?</p>
+							</div>
+						</li>
+						<li class="room-item">
+							<span class="room-item-icon">👻</span>
+							<div class="room-item-text">
+								<h4>Les Échos du Passé</h4>
+								<p>Des salles vides où flottent les souvenirs
+									d'escouades disparues avant vous.</p>
+							</div>
+						</li>
+					</ul>
 				</div>
-			</div>
-		</section>
-		<!-- Lore Section -->
-		<section id="lore" class="lore-section">
-			<div class="container">
-				<div class="lore-container">
-					<h2 class="section-title">Les Chroniques des Oubliés</h2>
-					<div class="lore-quote">
-						"On raconte que le monde ne se souvient jamais des premiers
-						pas. Il ne retient que les conquêtes finales, les héros
-						couronnés, les généraux victorieux."
-					</div>
-					<div class="lore-text">
-						<p
-							>Mais avant chaque victoire, il y a eu des silhouettes
-							anonymes, des corps fatigués, des noms jamais gravés dans
-							la pierre. Ces silhouettes, ce sont les
-							<span class="lore-highlight">Mignons</span>.
-						</p>
-						<p
-							>Partez à l’aventure pour aider, protéger et soutenir vos
-							compagnons au cœur de donjons instables et imprévisibles.
-							Salle après salle, affrontez des dangers inconnus,
-							découvrez des situations uniques, faites des choix qui
-							comptent.</p
-						>
-						<p
-							>Chaque mignon est différent.
-							<span class="lore-highlight">Tank</span>,
-							<span class="lore-highlight">Soigneur</span> ou
-							<span class="lore-highlight">Mage</span>, chacun progresse
-							à sa manière : il gagne de l’expérience, débloque des
-							compétences, trouve des objets… et apprend de ses erreurs.
-						</p>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- Classes/Mignons Section -->
-		<section id="mignons" class="classes-section">
-			<div class="container">
-				<h2 class="section-title">3 emplacements pour 3 Mignons</h2>
-				<p class="section-subtitle">
-					Vous ne jouez qu’un seul mignon à la fois, mais vous pouvez en
-					créer trois et les faire progresser. Chaque mignon est unique,
-					avec ses pouvoirs… et ses faiblesses.
-				</p>
-
-				<div class="classes-grid">
-					<div class="class-card">
-						<div class="class-image-container">
-							<img
-								src="/medias/archetypes/tank.jpg"
-								alt="Le Tank"
-								class="class-image" />
-						</div>
-						<h3 class="class-title">Les tanks</h3>
-						<p class="class-description"
-							>Taillés pour encaisser l’impensable. Ils se dressent entre
-							vos alliés et l’issue fatale.</p
-						>
-						<span class="class-tag">Endurance</span>
-					</div>
-
-					<div class="class-card">
-						<div class="class-image-container">
-							<img
-								src="/medias/archetypes/healer.jpg"
-								alt="Le Healer"
-								class="class-image" />
-						</div>
-						<h3 class="class-title">Les supports</h3>
-						<p class="class-description"
-							>Celui qui refuse que chaque blessure signe une fin. Une
-							lueur d’espoir au cœur des ténèbres.</p
-						>
-						<span class="class-tag">Soutien</span>
-					</div>
-
-					<div class="class-card">
-						<div class="class-image-container">
-							<img
-								src="/medias/archetypes/mage.jpg"
-								alt="Le Mage"
-								class="class-image" />
-						</div>
-						<h3 class="class-title">Les arcanes</h3>
-						<p class="class-description"
-							>Fragiles, mais porteurs d'une puissance que le monde
-							n'avait pas anticipée : la force brute de l'Éther.</p
-						>
-						<span class="class-tag">Puissance</span>
-					</div>
-					<div class="class-card">
-						<div class="class-image-container">
-							<img
-								src="/medias/archetypes/archer.jpg"
-								alt="Le Mage"
-								class="class-image" />
-						</div>
-						<h3 class="class-title">Les archers</h3>
-						<p class="class-description"
-							>Rapides, précis, implacables. Ils frappent à distance
-							avant même d’être repérés, et transforment chaque ouverture
-							en tir fatal. Là où les autres avancent, eux contrôlent
-							l’espace.</p
-						>
-						<span class="class-tag bientot">Bientôt</span>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- Features Section -->
-		<section id="features" class="features-section">
-			<div class="container">
-				<h2 class="section-title">Incarnez un mignon</h2>
-				<p class="section-subtitle">
-					Chaque salle est une épreuve, mais aussi un récit. Le monde ne se
-					répète jamais exactement, il apprend de vos mignons.
-				</p>
-
-				<div class="rooms-showcase">
-					<div class="room-content">
-						<ul class="room-list">
-							<li class="room-item">
-								<span class="room-item-icon">🕯️</span>
-								<div class="room-item-text">
-									<h4>L'Autel Ancien</h4>
-									<p
-										>Offre un pouvoir immense... contre l'un de vos
-										souvenirs les plus précieux.</p
-									>
-								</div>
-							</li>
-							<li class="room-item">
-								<span class="room-item-icon">👹</span>
-								<div class="room-item-text">
-									<h4>Le Monstre Suppliant</h4>
-									<p
-										>Parfois, la force n'est pas la seule issue.
-										Écouterez-vous son récit avant de frapper ?</p
-									>
-								</div>
-							</li>
-							<li class="room-item">
-								<span class="room-item-icon">👻</span>
-								<div class="room-item-text">
-									<h4>Les Échos du Passé</h4>
-									<p
-										>Des salles vides où flottent les souvenirs
-										d'escouades disparues avant vous.</p
-									>
-								</div>
-							</li>
-						</ul>
-					</div>
-					<div class="room-content">
-						<div
-							class="feature-card"
-							style="
+				<div class="room-content">
+					<div class="feature-card" style="
 								height: 100%;
 								display: flex;
 								flex-direction: column;
 								justify-content: center;
 							">
-							<span class="feature-icon">🗡️</span>
-							<h3 class="feature-title"
-								>La fin du voyage est un Héritage</h3
-							>
-							<p class="feature-description">
-								Un mignon qui s'en va laisse un vide... mais aussi une
-								mémoire. Certaines compétences et décisions influencent
-								ceux qui viendront après. La fin n'est pas un échec,
-								c'est une transmission.
-							</p>
-						</div>
-					</div>
-				</div>
-
-				<div class="features-grid">
-					<div class="feature-card">
-						<div class="feature-icon">🗡️</div>
-						<h3 class="feature-title">Combat épique</h3>
+						<span class="feature-icon">🗡️</span>
+						<h3 class="feature-title">La fin du voyage est un Héritage</h3>
 						<p class="feature-description">
-							Affrontez des ennemis redoutables avec un système de combat
-							dynamique et stratégique. Maîtrisez vos compétences et
-							devenez un héros légendaire.
-						</p>
-					</div>
-
-					<div class="feature-card">
-						<div class="feature-icon">🏰</div>
-						<h3 class="feature-title">Monde immersif</h3>
-						<p class="feature-description">
-							Explorez des royaumes vastes et détaillés, des forêts
-							mystiques aux donjons sinistres. Chaque zone regorge de
-							secrets à découvrir.
-						</p>
-					</div>
-
-					<div class="feature-card">
-						<div class="feature-icon">🤝</div>
-						<h3 class="feature-title">Coopération</h3>
-						<p class="feature-description">
-							Unissez vos forces avec d'autres aventuriers pour vaincre
-							des boss redoutables et conquérir les donjons les plus
-							dangereux.
-						</p>
-					</div>
-
-					<div class="feature-card">
-						<div class="feature-icon">⚡</div>
-						<h3 class="feature-title">Compétences uniques</h3>
-						<p class="feature-description">
-							Développez votre mignon avec un large éventail de
-							compétences et de sorts. Créez votre propre style de jeu
-							unique.
-						</p>
-					</div>
-
-					<div class="feature-card">
-						<div class="feature-icon">🎮</div>
-						<h3 class="feature-title">Gameplay accessible</h3>
-						<p class="feature-description">
-							Un jeu facile à prendre en main mais difficile à maîtriser,
-							parfait pour les débutants comme les vétérans.
-						</p>
-					</div>
-
-					<div class="feature-card">
-						<div class="feature-icon">🌟</div>
-						<h3 class="feature-title">Évolution constante</h3>
-						<p class="feature-description">
-							De nouvelles aventures, quêtes et défis sont ajoutés
-							régulièrement pour garder l'expérience fraîche et
-							excitante.
+							Un mignon qui s'en va laisse un vide... mais aussi une
+							mémoire. Certaines compétences et décisions influencent
+							ceux qui viendront après. La fin n'est pas un échec,
+							c'est une transmission.
 						</p>
 					</div>
 				</div>
 			</div>
-		</section>
 
-		<!-- Independent Development Section -->
-		<section
-			class="lore-section"
-			style="background: var(--color-bg-secondary)">
-			<div class="container">
-				<div class="lore-container">
-					<h2 class="section-title" style="color: #4ade80"
-						>DÉVELOPPEMENT INDÉPENDANT</h2
-					>
-					<div class="lore-text" style="text-align: center">
-						<p
-							>LittleMoba est un projet passionné, développé de manière
-							<span style="color: #4ade80; font-weight: 600"
-								>100% indépendante</span
-							>. Loin des grosses productions, ce jeu est le fruit d'un
-							amour pour les jeux vidéos et le développement web.
-						</p>
-						<p style="margin-top: 2rem"
-							>Chaque mise à jour, chaque champion et chaque ligne de
-							code est conçu pour offrir une expérience fun et
-							accessible. Merci de faire partie de l'aventure !</p
-						>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- CTA Section -->
-		<section class="cta-section">
-			<div class="container">
-				<div class="cta-content">
-					<h2 class="cta-title"
-						>Commencez votre périple dès aujourd'hui</h2
-					>
-					<p class="cta-subtitle">
-						Entamez votre périple et essayez LittleRPG !
+			<div class="features-grid">
+				<div class="feature-card">
+					<div class="feature-icon">🗡️</div>
+					<h3 class="feature-title">Combat épique</h3>
+					<p class="feature-description">
+						Affrontez des ennemis redoutables avec un système de combat
+						dynamique et stratégique. Maîtrisez vos compétences et
+						devenez un héros légendaire.
 					</p>
-					<div class="cta-buttons">
-						<a
-							href="/register.html"
-							class="btn btn-primary btn-lg btn-glow">
-							Commencer l'aventure
-						</a>
-						<a href="/login.html" class="btn btn-outline btn-lg">
-							J'ai déjà un compte
-						</a>
-					</div>
+				</div>
+
+				<div class="feature-card">
+					<div class="feature-icon">🏰</div>
+					<h3 class="feature-title">Monde immersif</h3>
+					<p class="feature-description">
+						Explorez des royaumes vastes et détaillés, des forêts
+						mystiques aux donjons sinistres. Chaque zone regorge de
+						secrets à découvrir.
+					</p>
+				</div>
+
+				<div class="feature-card">
+					<div class="feature-icon">🤝</div>
+					<h3 class="feature-title">Coopération</h3>
+					<p class="feature-description">
+						Unissez vos forces avec d'autres aventuriers pour vaincre
+						des boss redoutables et conquérir les donjons les plus
+						dangereux.
+					</p>
+				</div>
+
+				<div class="feature-card">
+					<div class="feature-icon">⚡</div>
+					<h3 class="feature-title">Compétences uniques</h3>
+					<p class="feature-description">
+						Développez votre mignon avec un large éventail de
+						compétences et de sorts. Créez votre propre style de jeu
+						unique.
+					</p>
+				</div>
+
+				<div class="feature-card">
+					<div class="feature-icon">🎮</div>
+					<h3 class="feature-title">Gameplay accessible</h3>
+					<p class="feature-description">
+						Un jeu facile à prendre en main mais difficile à maîtriser,
+						parfait pour les débutants comme les vétérans.
+					</p>
+				</div>
+
+				<div class="feature-card">
+					<div class="feature-icon">🌟</div>
+					<h3 class="feature-title">Évolution constante</h3>
+					<p class="feature-description">
+						De nouvelles aventures, quêtes et défis sont ajoutés
+						régulièrement pour garder l'expérience fraîche et
+						excitante.
+					</p>
 				</div>
 			</div>
-		</section>
+		</div>
+	</section>
 
-		<!-- Footer -->
-		<footer class="main-footer">
-			<div class="container">
-				<div class="footer-content">
-					<div class="footer-logo">
-						<span class="logo-icon">⚔️</span>
-						<span class="logo-text">LittleRPG</span>
-					</div>
-					<p class="footer-text"
-						>© 2025 LittleRPG. Un monde d'aventures vous attend.</p
-					>
+	<!-- Independent Development Section -->
+	<section class="lore-section" style="background: var(--color-bg-secondary)">
+		<div class="container">
+			<div class="lore-container">
+				<h2 class="section-title" style="color: #4ade80">DÉVELOPPEMENT INDÉPENDANT</h2>
+				<div class="lore-text" style="text-align: center">
+					<p>LittleMoba est un projet passionné, développé de manière
+						<span style="color: #4ade80; font-weight: 600">100% indépendante</span>. Loin des grosses
+						productions, ce jeu est le fruit d'un
+						amour pour les jeux vidéos et le développement web.
+					</p>
+					<p style="margin-top: 2rem">Chaque mise à jour, chaque champion et chaque ligne de
+						code est conçu pour offrir une expérience fun et
+						accessible. Merci de faire partie de l'aventure !</p>
 				</div>
 			</div>
-		</footer>
+		</div>
+	</section>
 
-		<!-- Scripts -->
-		<script src="/js/utils.js"></script>
-		<script src="/js/nav.js"></script>
-		<script src="/js/home.js"></script>
-	</body>
+	<!-- CTA Section -->
+	<section class="cta-section">
+		<div class="container">
+			<div class="cta-content">
+				<h2 class="cta-title">Commencez votre périple dès aujourd'hui</h2>
+				<p class="cta-subtitle">
+					Entamez votre périple et essayez LittleRPG !
+				</p>
+				<div class="cta-buttons">
+					<a href="/register.html" class="btn btn-primary btn-lg btn-glow">
+						Commencer l'aventure
+					</a>
+					<a href="/login.html" class="btn btn-outline btn-lg">
+						J'ai déjà un compte
+					</a>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- Footer -->
+	<footer class="main-footer">
+		<div class="container">
+			<div class="footer-content">
+				<div class="footer-logo">
+					<span class="logo-icon">⚔️</span>
+					<span class="logo-text">LittleRPG</span>
+				</div>
+				<p class="footer-text">© 2025 LittleRPG. Un monde d'aventures vous attend.</p>
+			</div>
+		</div>
+	</footer>
+
+	<!-- Scripts -->
+	<script src="/js/utils.js"></script>
+	<script src="/js/nav.js"></script>
+	<script src="/js/home.js"></script>
+</body>
+
 </html>
